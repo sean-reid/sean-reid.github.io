@@ -12,478 +12,254 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #000;
-            color: #fff;
-            overflow-x: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica', 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #1a1a1a;
+            background: #fafafa;
+            padding: 2rem 1rem;
         }
 
-        .hero {
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            cursor: pointer;
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
         }
 
-        .hero-content {
-            text-align: center;
-            z-index: 2;
+        header {
+            margin-bottom: 4rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid #e0e0e0;
         }
 
         h1 {
-            font-size: clamp(3rem, 10vw, 8rem);
-            font-weight: 300;
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
             letter-spacing: -0.02em;
-            margin-bottom: 1rem;
-            opacity: 0;
-            animation: fadeIn 1.5s ease forwards;
         }
 
         .tagline {
-            font-size: clamp(1rem, 2vw, 1.5rem);
-            opacity: 0.5;
-            font-weight: 300;
-            letter-spacing: 0.3em;
-            text-transform: uppercase;
-            opacity: 0;
-            animation: fadeIn 1.5s ease 0.5s forwards;
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 2rem;
         }
 
-        @keyframes fadeIn {
-            to { opacity: 1; }
+        .experience {
+            margin-bottom: 3rem;
         }
 
-        .grid {
+        .experience h2 {
+            font-size: 1.3rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+
+        .exp-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 0;
-            padding: 0;
+            gap: 1rem;
         }
 
-        .card {
-            aspect-ratio: 1;
-            background: #111;
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
-            border: 1px solid #222;
+        .exp-item {
+            padding: 1rem 0;
+            border-bottom: 1px solid #f0f0f0;
         }
 
-        .card:hover .overlay {
-            opacity: 1;
+        .exp-item:last-child {
+            border-bottom: none;
         }
 
-        .card:hover {
-            border-color: #444;
+        .exp-company {
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 0.25rem;
         }
 
-        .card-bg {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.6s ease;
+        .exp-role {
+            color: #666;
+            font-size: 0.95rem;
         }
 
-        .card:hover .card-bg {
-            transform: scale(1.05);
+        .projects {
+            margin-bottom: 3rem;
         }
 
-        .overlay {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            padding: 2rem;
-            opacity: 0;
-            transition: opacity 0.4s ease;
+        .projects h2 {
+            font-size: 1.3rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            color: #333;
         }
 
-        @media (max-width: 768px) {
-            .overlay {
-                opacity: 1;
-            }
+        .project-grid {
+            display: grid;
+            gap: 2rem;
         }
 
-        .card-title {
-            font-size: 1.5rem;
-            font-weight: 400;
-            margin-bottom: 0.5rem;
+        .project {
+            padding: 1.5rem;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        .card-meta {
+        .project:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .project-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 0.75rem;
+        }
+
+        .project-desc {
+            color: #555;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .project-link {
+            display: inline-block;
+            margin-top: 0.75rem;
+            color: #0366d6;
+            text-decoration: none;
             font-size: 0.9rem;
-            opacity: 0.6;
-            font-weight: 300;
+            transition: color 0.2s;
         }
 
-        .icon-grid {
-            position: absolute;
-            inset: 0;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(4, 1fr);
-            gap: 2px;
-            padding: 2rem;
-        }
-
-        .icon-cell {
-            background: #1a1a1a;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            transition: all 0.3s ease;
-        }
-
-        .icon-cell:hover {
-            background: #2a2a2a;
-            transform: scale(1.05);
+        .project-link:hover {
+            color: #0256c7;
         }
 
         footer {
-            padding: 4rem 2rem;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e0e0e0;
             text-align: center;
-            background: #0a0a0a;
-            border-top: 1px solid #222;
         }
 
-        .contact-links {
+        .links {
             display: flex;
+            justify-content: center;
             gap: 2rem;
-            justify-content: center;
-            margin-top: 2rem;
             flex-wrap: wrap;
         }
 
-        .contact-links a {
-            color: #888;
+        .links a {
+            color: #333;
             text-decoration: none;
-            font-size: 1rem;
-            transition: color 0.3s ease;
-            letter-spacing: 0.1em;
+            font-size: 0.95rem;
+            transition: color 0.2s;
         }
 
-        .contact-links a:hover {
-            color: #fff;
+        .links a:hover {
+            color: #0366d6;
         }
 
-        .scroll-hint {
-            position: absolute;
-            bottom: 2rem;
-            left: 50%;
-            transform: translateX(-50%);
-            opacity: 0.3;
-            animation: bounce 2s infinite;
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateX(-50%) translateY(0); }
-            50% { transform: translateX(-50%) translateY(-10px); }
-        }
-
-        @media (max-width: 768px) {
-            .grid {
-                grid-template-columns: 1fr;
+        @media (max-width: 600px) {
+            body {
+                padding: 1.5rem 1rem;
             }
-            
-            .card {
-                aspect-ratio: 4/3;
+
+            h1 {
+                font-size: 2rem;
             }
-        }
 
-        .waveform {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 100px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 3px;
-        }
+            .tagline {
+                font-size: 1rem;
+            }
 
-        .bar {
-            width: 4px;
-            background: #333;
-            border-radius: 2px;
-            animation: wave 1.5s ease-in-out infinite;
-        }
+            header {
+                margin-bottom: 3rem;
+            }
 
-        .bar:nth-child(1) { height: 20%; animation-delay: 0s; }
-        .bar:nth-child(2) { height: 40%; animation-delay: 0.1s; }
-        .bar:nth-child(3) { height: 60%; animation-delay: 0.2s; }
-        .bar:nth-child(4) { height: 80%; animation-delay: 0.3s; }
-        .bar:nth-child(5) { height: 50%; animation-delay: 0.4s; }
-        .bar:nth-child(6) { height: 30%; animation-delay: 0.5s; }
+            .project {
+                padding: 1.25rem;
+            }
 
-        @keyframes wave {
-            0%, 100% { transform: scaleY(1); }
-            50% { transform: scaleY(1.5); background: #666; }
-        }
-
-        .laser-beam {
-            position: absolute;
-            width: 4px;
-            height: 120px;
-            background: linear-gradient(to bottom, transparent, #ff0040, #ff0040, transparent);
-            transform-origin: center top;
-            opacity: 0.8;
-            filter: blur(1px);
-        }
-
-        .mirror {
-            width: 40px;
-            height: 8px;
-            background: linear-gradient(135deg, #333, #666, #333);
-            border-radius: 2px;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-        }
-
-        .scrambled-letters {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 2rem;
-            font-family: monospace;
-            font-size: 2rem;
-        }
-
-        .letter {
-            width: 50px;
-            height: 50px;
-            background: #1a1a1a;
-            border: 2px solid #333;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        .letter:nth-child(odd) { animation-delay: 0s; }
-        .letter:nth-child(even) { animation-delay: 1.5s; }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-10px) rotate(5deg); }
-        }
-
-        .wikipedia-icon {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 8rem;
-            opacity: 0.3;
+            .links {
+                gap: 1.5rem;
+            }
         }
     </style>
 </head>
 <body>
-    <section class="hero">
-        <div class="hero-content">
-            <h1>SEAN REID</h1>
-        </div>
-        <div class="scroll-hint">↓</div>
-    </section>
+    <div class="container">
+        <header>
+            <h1>Sean Reid</h1>
+            <p class="tagline">just another carbon based lifeform</p>
+        </header>
 
-    <div class="grid">
-        <div class="card" onclick="window.open('https://github.com/sean-reid', '_blank')">
-            <div class="icon-grid">
-                <div class="icon-cell">🔬</div>
-                <div class="icon-cell">⚡</div>
-                <div class="icon-cell">🎯</div>
-                <div class="icon-cell">🔮</div>
-                <div class="icon-cell">📊</div>
-                <div class="icon-cell">🌐</div>
-                <div class="icon-cell">🔧</div>
-                <div class="icon-cell">💻</div>
-                <div class="icon-cell">☁️</div>
-                <div class="icon-cell">🤖</div>
-                <div class="icon-cell">🔐</div>
-                <div class="icon-cell">🎨</div>
-                <div class="icon-cell">∞</div>
-                <div class="icon-cell">λ</div>
-                <div class="icon-cell">Σ</div>
-                <div class="icon-cell">π</div>
-            </div>
-            <div class="overlay">
-                <div class="card-title">Code</div>
-                <div class="card-meta">33 repositories · github</div>
-            </div>
-        </div>
-
-        <div class="card" onclick="window.open('https://www.lle.rochester.edu/', '_blank')">
-            <svg class="card-bg" viewBox="0 0 400 400" style="background: #0a0a0a;">
-                <circle cx="200" cy="200" r="150" fill="none" stroke="#1a1a1a" stroke-width="40"/>
-                <circle cx="200" cy="200" r="100" fill="none" stroke="#2a2a2a" stroke-width="30"/>
-                <circle cx="200" cy="200" r="60" fill="none" stroke="#3a3a3a" stroke-width="20"/>
-                <line x1="200" y1="50" x2="200" y2="140" stroke="#444" stroke-width="2"/>
-                <line x1="200" y1="260" x2="200" y2="350" stroke="#444" stroke-width="2"/>
-                <line x1="50" y1="200" x2="140" y2="200" stroke="#444" stroke-width="2"/>
-                <line x1="260" y1="200" x2="350" y2="200" stroke="#444" stroke-width="2"/>
-                <text x="200" y="210" font-size="24" fill="#555" text-anchor="middle" font-weight="bold">OMEGA</text>
-            </svg>
-            <div class="overlay">
-                <div class="card-title">Plasma Physics</div>
-                <div class="card-meta">LLE · University of Rochester</div>
-            </div>
-        </div>
-
-        <div class="card" onclick="window.open('https://www.apple.com', '_blank')">
-            <svg class="card-bg" viewBox="0 0 400 400" style="background: linear-gradient(135deg, #0a0a0a, #1a1a1a);">
-                <g opacity="0.4">
-                    <!-- Focused laser beam showing beam waist -->
-                    <path d="M 80 160 L 200 200 L 80 240" stroke="#ff3030" stroke-width="2" fill="none" opacity="0.6"/>
-                    <path d="M 320 160 L 200 200 L 320 240" stroke="#ff3030" stroke-width="2" fill="none" opacity="0.6"/>
-                    <circle cx="200" cy="200" r="4" fill="#ff3030" opacity="0.8"/>
-                </g>
-            </svg>
-            <div class="overlay">
-                <div class="card-title">Lasers & Optics</div>
-                <div class="card-meta">iPhone X · Apple</div>
-            </div>
-        </div>
-
-        <div class="card" onclick="window.open('https://www.nuro.ai', '_blank')">
-            <svg class="card-bg" viewBox="0 0 400 400" style="background: #0a0a0a;">
-                <!-- Simple vehicle outline -->
-                <rect x="120" y="160" width="160" height="80" rx="10" fill="none" stroke="#444" stroke-width="3"/>
-                <circle cx="160" cy="240" r="20" fill="none" stroke="#444" stroke-width="3"/>
-                <circle cx="240" cy="240" r="20" fill="none" stroke="#444" stroke-width="3"/>
-            </svg>
-            <div class="overlay">
-                <div class="card-title">Robotics & Cloud</div>
-                <div class="card-meta">Radar · SRE · Nuro</div>
-            </div>
-        </div>
-
-        <div class="card" onclick="window.open('https://seanmreid.bandcamp.com', '_blank')">
-            <div style="position: absolute; inset: 0; background: linear-gradient(135deg, #0f0f0f, #1a1a1a);">
-                <div class="waveform">
-                    <div class="bar"></div>
-                    <div class="bar"></div>
-                    <div class="bar"></div>
-                    <div class="bar"></div>
-                    <div class="bar"></div>
-                    <div class="bar"></div>
+        <section class="experience">
+            <h2>Experience</h2>
+            <div class="exp-grid">
+                <div class="exp-item">
+                    <div class="exp-company">Nuro</div>
+                    <div class="exp-role">Radar & Cloud Infrastructure</div>
+                </div>
+                <div class="exp-item">
+                    <div class="exp-company">Apple</div>
+                    <div class="exp-role">Laser Optics / Face ID</div>
+                </div>
+                <div class="exp-item">
+                    <div class="exp-company">Laboratory for Laser Energetics</div>
+                    <div class="exp-role">Plasma Physics Research</div>
                 </div>
             </div>
-            <div class="overlay">
-                <div class="card-title">Music</div>
-                <div class="card-meta">50 releases · 1 per month</div>
-            </div>
-        </div>
+        </section>
 
-        <div class="card" onclick="window.open('https://sean-reid.github.io/lasers/', '_blank')">
-            <svg class="card-bg" viewBox="0 0 400 400" style="background: #0a0a0a;">
-                <defs>
-                    <linearGradient id="laserGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" style="stop-color:#ff0040;stop-opacity:0" />
-                        <stop offset="50%" style="stop-color:#ff0040;stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:#ff0040;stop-opacity:0" />
-                    </linearGradient>
-                </defs>
-                <line x1="100" y1="100" x2="100" y2="220" stroke="url(#laserGrad)" stroke-width="4" opacity="0.8"/>
-                <line x1="250" y1="180" x2="250" y2="300" stroke="url(#laserGrad)" stroke-width="4" opacity="0.8"/>
-                <rect x="80" y="230" width="40" height="8" rx="2" fill="#333" stroke="#555" stroke-width="1" transform="rotate(45 100 234)"/>
-                <rect x="230" y="310" width="40" height="8" rx="2" fill="#333" stroke="#555" stroke-width="1" transform="rotate(-45 250 314)"/>
-                <circle cx="320" cy="200" r="30" fill="none" stroke="#ff0040" stroke-width="3" opacity="0.6"/>
-                <circle cx="320" cy="200" r="20" fill="none" stroke="#ff0040" stroke-width="2" opacity="0.8"/>
-            </svg>
-            <div class="overlay">
-                <div class="card-title">Laser Puzzle</div>
-                <div class="card-meta">Mirrors · Optics · Game</div>
-            </div>
-        </div>
+        <section class="projects">
+            <h2>Projects</h2>
+            <div class="project-grid">
+                <div class="project">
+                    <div class="project-name">anagram</div>
+                    <p class="project-desc">An anagram solver that finds all valid word combinations from a set of scrambled letters</p>
+                    <a href="https://sean-reid.github.io/anagram/" class="project-link">View Project →</a>
+                </div>
 
-        <div class="card" onclick="window.open('https://sean-reid.github.io/anagram/', '_blank')">
-            <div class="scrambled-letters">
-                <div class="letter">A</div>
-                <div class="letter">N</div>
-                <div class="letter">A</div>
-                <div class="letter">G</div>
-                <div class="letter">R</div>
-                <div class="letter">A</div>
-                <div class="letter">M</div>
-            </div>
-            <div class="overlay">
-                <div class="card-title">Anagram Solver</div>
-                <div class="card-meta">Words · Combinations</div>
-            </div>
-        </div>
+                <div class="project">
+                    <div class="project-name">lasers</div>
+                    <p class="project-desc">An interactive logic puzzle where you place and rotate mirrors to direct lasers to their goals, with shareable puzzle links</p>
+                    <a href="https://sean-reid.github.io/lasers/" class="project-link">View Project →</a>
+                </div>
 
-        <div class="card" onclick="window.open('https://sean-reid.github.io/wikipedia-unscrambler/', '_blank')">
-            <div style="position: absolute; inset: 0; background: #0a0a0a;">
-                <div class="wikipedia-icon">W</div>
-                <div class="scrambled-letters" style="opacity: 0.6;">
-                    <div class="letter" style="width: 40px; height: 40px; font-size: 1.5rem;">I</div>
-                    <div class="letter" style="width: 40px; height: 40px; font-size: 1.5rem;">K</div>
-                    <div class="letter" style="width: 40px; height: 40px; font-size: 1.5rem;">P</div>
-                    <div class="letter" style="width: 40px; height: 40px; font-size: 1.5rem;">E</div>
-                    <div class="letter" style="width: 40px; height: 40px; font-size: 1.5rem;">D</div>
-                    <div class="letter" style="width: 40px; height: 40px; font-size: 1.5rem;">I</div>
-                    <div class="letter" style="width: 40px; height: 40px; font-size: 1.5rem;">A</div>
+                <div class="project">
+                    <div class="project-name">entropy-bus</div>
+                    <p class="project-desc">A speed game that visualizes entropy through varied keypress inputs, racing a bus to the finish line</p>
+                    <a href="https://sean-reid.github.io/entropy-bus/" class="project-link">View Project →</a>
+                </div>
+
+                <div class="project">
+                    <div class="project-name">wikipedia-unscrambler</div>
+                    <p class="project-desc">A word puzzle game where you unscramble letters to reveal Wikipedia article titles</p>
+                    <a href="https://sean-reid.github.io/wikipedia-unscrambler/" class="project-link">View Project →</a>
+                </div>
+
+                <div class="project">
+                    <div class="project-name">the-count-of-monte-carlo</div>
+                    <p class="project-desc">A Monte Carlo simulation that uses repeated random sampling to converge upon the text of Dumas' classic novel</p>
+                    <a href="https://sean-reid.github.io/the-count-of-monte-carlo/" class="project-link">View Project →</a>
+                </div>
+
+                <div class="project">
+                    <div class="project-name">what-are-you</div>
+                    <p class="project-desc">A personality quiz app with multiple categories and Wikipedia integration</p>
+                    <a href="https://sean-reid.github.io/what-are-you/" class="project-link">View Project →</a>
                 </div>
             </div>
-            <div class="overlay">
-                <div class="card-title">Wikipedia Unscrambler</div>
-                <div class="card-meta">Encyclopedia · Puzzle</div>
-            </div>
-        </div>
+        </section>
 
-        <div class="card" onclick="window.open('https://github.com/sean-reid/nyt-crosswords', '_blank')">
-            <svg class="card-bg" viewBox="0 0 400 400" style="background: #0a0a0a;">
-                <rect x="50" y="50" width="300" height="300" fill="#111" stroke="#222" stroke-width="2"/>
-                <g fill="none" stroke="#222" stroke-width="1">
-                    <line x1="110" y1="50" x2="110" y2="350"/>
-                    <line x1="170" y1="50" x2="170" y2="350"/>
-                    <line x1="230" y1="50" x2="230" y2="350"/>
-                    <line x1="290" y1="50" x2="290" y2="350"/>
-                    <line x1="50" y1="110" x2="350" y2="110"/>
-                    <line x1="50" y1="170" x2="350" y2="170"/>
-                    <line x1="50" y1="230" x2="350" y2="230"/>
-                    <line x1="50" y1="290" x2="350" y2="290"/>
-                </g>
-                <rect x="50" y="110" width="60" height="60" fill="#000"/>
-                <rect x="230" y="170" width="60" height="60" fill="#000"/>
-                <text x="140" y="95" font-size="36" fill="#444" font-family="monospace">C</text>
-                <text x="260" y="155" font-size="36" fill="#444" font-family="monospace">O</text>
-                <text x="80" y="215" font-size="36" fill="#444" font-family="monospace">D</text>
-                <text x="200" y="275" font-size="36" fill="#444" font-family="monospace">E</text>
-            </svg>
-            <div class="overlay">
-                <div class="card-title">NYT Crosswords</div>
-                <div class="card-meta">Puzzles · Archive</div>
+        <footer>
+            <div class="links">
+                <a href="https://github.com/sean-reid">GitHub</a>
+                <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
+                <a href="https://seanreid.bandcamp.com">Bandcamp</a>
+                <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
             </div>
-        </div>
+        </footer>
     </div>
-
-    <footer>
-        <div class="tagline" style="opacity: 1; animation: none; margin-bottom: 1rem;">
-            🧠 thinking, probably
-        </div>
-        <div class="contact-links">
-            <a href="https://github.com/sean-reid" target="_blank">GITHUB</a>
-            <a href="https://seanmreid.bandcamp.com" target="_blank">BANDCAMP</a>
-            <a href="https://mathstodon.xyz/@seanreid" target="_blank">MASTODON</a>
-            <a href="https://www.buymeacoffee.com/seanreid" target="_blank">COFFEE</a>
-        </div>
-    </footer>
-
-    <script>
-        document.querySelector('.hero').addEventListener('click', () => {
-            document.querySelector('.grid').scrollIntoView({ behavior: 'smooth' });
-        });
-    </script>
 </body>
 </html>
