@@ -40,43 +40,12 @@
         .tagline {
             font-size: 1.1rem;
             color: #666;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
 
         .experience {
-            margin-bottom: 3rem;
-        }
-
-        .experience h2 {
-            font-size: 1.3rem;
-            font-weight: 500;
-            margin-bottom: 1.5rem;
-            color: #333;
-        }
-
-        .exp-grid {
-            display: grid;
-            gap: 1rem;
-        }
-
-        .exp-item {
-            padding: 1rem 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .exp-item:last-child {
-            border-bottom: none;
-        }
-
-        .exp-company {
-            font-weight: 600;
-            color: #1a1a1a;
-            margin-bottom: 0.25rem;
-        }
-
-        .exp-role {
-            color: #666;
             font-size: 0.95rem;
+            color: #555;
         }
 
         .projects {
@@ -90,9 +59,11 @@
             color: #333;
         }
 
-        .project-grid {
+        .featured-grid {
             display: grid;
-            gap: 2rem;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 3rem;
         }
 
         .project {
@@ -100,24 +71,23 @@
             background: white;
             border: 1px solid #e0e0e0;
             border-radius: 8px;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: box-shadow 0.2s;
         }
 
         .project:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
 
         .project-name {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             font-weight: 600;
             color: #1a1a1a;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
         }
 
         .project-desc {
             color: #555;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             line-height: 1.5;
         }
 
@@ -126,12 +96,60 @@
             margin-top: 0.75rem;
             color: #0366d6;
             text-decoration: none;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             transition: color 0.2s;
         }
 
         .project-link:hover {
             color: #0256c7;
+        }
+
+        .more-projects {
+            margin-bottom: 3rem;
+        }
+
+        .more-projects h2 {
+            font-size: 1.3rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .project-list {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0;
+        }
+
+        .project-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .project-list li:nth-child(odd) {
+            padding-right: 1.5rem;
+        }
+
+        .project-list li:nth-child(even) {
+            padding-left: 1.5rem;
+        }
+
+        .project-list a {
+            color: #1a1a1a;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .project-list a:hover {
+            color: #0366d6;
+        }
+
+        .project-list .list-desc {
+            color: #888;
+            font-size: 0.8rem;
+            margin-left: 0.25rem;
         }
 
         footer {
@@ -176,8 +194,21 @@
                 margin-bottom: 3rem;
             }
 
+            .featured-grid {
+                grid-template-columns: 1fr;
+            }
+
             .project {
                 padding: 1.25rem;
+            }
+
+            .project-list {
+                grid-template-columns: 1fr;
+            }
+
+            .project-list li {
+                padding-left: 0;
+                padding-right: 0;
             }
 
             .links {
@@ -191,96 +222,77 @@
         <header>
             <h1>Sean Reid</h1>
             <p class="tagline">just another carbon based lifeform</p>
+            <p class="experience">software engineering · laser optics · autonomous vehicles · plasma physics · mathematics · music · poetry</p>
         </header>
 
-        <section class="experience">
-            <h2>Experience</h2>
-            <div class="exp-grid">
-                <div class="exp-item">
-                    <div class="exp-company">Nuro</div>
-                    <div class="exp-role">Radar & Cloud Infrastructure</div>
-                </div>
-                <div class="exp-item">
-                    <div class="exp-company">Apple</div>
-                    <div class="exp-role">Laser Optics / Face ID</div>
-                </div>
-                <div class="exp-item">
-                    <div class="exp-company">Laboratory for Laser Energetics</div>
-                    <div class="exp-role">Plasma Physics Research</div>
-                </div>
-            </div>
-        </section>
-
         <section class="projects">
-            <h2>Projects</h2>
-            <div class="project-grid">
-                
+            <h2>Featured</h2>
+            <div class="featured-grid">
                 <div class="project">
                     <div class="project-name">crossword generator</div>
-                    <p class="project-desc">SAT-based puzzle generation with high-density optimization</p>
+                    <p class="project-desc">SAT solver generates valid crossword puzzles in the browser via Rust/WASM, with a CLI for publishing print-ready puzzle books</p>
                     <a href="https://sean-reid.github.io/crossword-generator/" class="project-link">View Project →</a>
                 </div>
-                
-                <div class="project">
-                    <div class="project-name">papermaker</div>
-                    <p class="project-desc">Generate fake computer science papers using SCIGen's context-free grammar</p>
-                    <a href="https://sean-reid.github.io/papermaker/" class="project-link">View Project →</a>
-                </div>
-                
-                <div class="project">
-                    <div class="project-name">anagram</div>
-                    <p class="project-desc">An anagram solver that finds all valid word combinations from a set of scrambled letters</p>
-                    <a href="https://sean-reid.github.io/anagram/" class="project-link">View Project →</a>
-                </div>
 
                 <div class="project">
-                    <div class="project-name">sprouts</div>
-                    <p class="project-desc">Browser-based Sprouts game with AI opponent using morphological skeleton pathfinding</p>
-                    <a href="https://sean-reid.github.io/sprouts/" class="project-link">View Project →</a>
+                    <div class="project-name">gravity</div>
+                    <p class="project-desc">Top-down combat game where Schwarzschild time dilation is the core mechanic — weapons strengthen as you dive deeper into a gravity well</p>
+                    <a href="https://sean-reid.github.io/gravity/" class="project-link">View Project →</a>
                 </div>
 
-                <div class="project">
-                    <div class="project-name">lasers</div>
-                    <p class="project-desc">An interactive logic puzzle where you place and rotate mirrors to direct lasers to their goals, with shareable puzzle links</p>
-                    <a href="https://sean-reid.github.io/lasers/" class="project-link">View Project →</a>
-                </div>
-                
                 <div class="project">
                     <div class="project-name">flow</div>
-                    <p class="project-desc">A speed reader tool to help you read up to 2x faster than normal</p>
+                    <p class="project-desc">Speed reader using rapid serial visual presentation with a cubic ease-in ramp and optical pivot highlighting</p>
                     <a href="https://sean-reid.github.io/flow/" class="project-link">View Project →</a>
                 </div>
 
                 <div class="project">
-                    <div class="project-name">entropy bus</div>
-                    <p class="project-desc">A speed game that visualizes entropy through varied keypress inputs, racing a bus to the finish line</p>
-                    <a href="https://sean-reid.github.io/entropy-bus/" class="project-link">View Project →</a>
+                    <div class="project-name">papermaker</div>
+                    <p class="project-desc">Generates fake CS research papers in the browser using SCIGen's context-free grammar, compiled to PDF via Rust/WASM and remote LaTeX</p>
+                    <a href="https://sean-reid.github.io/papermaker/" class="project-link">View Project →</a>
                 </div>
 
                 <div class="project">
-                    <div class="project-name">wikipedia unscrambler</div>
-                    <p class="project-desc">A word puzzle game where you unscramble letters to reveal Wikipedia article titles</p>
-                    <a href="https://sean-reid.github.io/wikipedia-unscrambler/" class="project-link">View Project →</a>
+                    <div class="project-name">lacuna</div>
+                    <p class="project-desc">Two-player online strategy game of planar construction — draw non-crossing curves to enclose regions, scored by a real-time topology engine</p>
+                    <a href="https://sean-reid.github.io/lacuna/" class="project-link">View Project →</a>
                 </div>
 
                 <div class="project">
-                    <div class="project-name">the count of monte carlo</div>
-                    <p class="project-desc">A Monte Carlo simulation that uses repeated random sampling to converge upon the text of Dumas' classic novel</p>
-                    <a href="https://sean-reid.github.io/the-count-of-monte-carlo/" class="project-link">View Project →</a>
-                </div>
-
-                <div class="project">
-                    <div class="project-name">points</div>
-                    <p class="project-desc">Find an expression that intersects all points</p>
-                    <a href="https://sean-reid.github.io/points/" class="project-link">View Project →</a>
-                </div>
-
-                <div class="project">
-                    <div class="project-name">creature garden</div>
-                    <p class="project-desc">A chill sandbox where glowing creatures roam, eat your placed food, grow, and boost your score</p>
-                    <a href="https://sean-reid.github.io/creature-garden/" class="project-link">View Project →</a>
+                    <div class="project-name">anagram</div>
+                    <p class="project-desc">Finds all valid word combinations from a phrase using recursive search in Rust/WASM, ranked by a quality heuristic</p>
+                    <a href="https://sean-reid.github.io/anagram/" class="project-link">View Project →</a>
                 </div>
             </div>
+        </section>
+
+        <section class="more-projects">
+            <h2>More Projects</h2>
+            <ul class="project-list">
+                <li><a href="https://sean-reid.github.io/sprouts/">sprouts</a> <span class="list-desc">— pen-and-paper game with minimax AI</span></li>
+                <li><a href="https://sean-reid.github.io/lasers/">lasers</a> <span class="list-desc">— guide beams to targets with mirrors</span></li>
+                <li><a href="https://sean-reid.github.io/meta-tictactoe/">meta-tictactoe</a> <span class="list-desc">— ultimate tic-tac-toe vs minimax AI</span></li>
+                <li><a href="https://sean-reid.github.io/tron/">tron</a> <span class="list-desc">— lightcycle game vs Voronoi AI</span></li>
+                <li><a href="https://sean-reid.github.io/points/">points</a> <span class="list-desc">— find expressions that hit all points</span></li>
+                <li><a href="https://sean-reid.github.io/the-count-of-monte-carlo/">the count of monte carlo</a> <span class="list-desc">— random sampling converges on Dumas</span></li>
+                <li><a href="https://sean-reid.github.io/creature-garden/">creature garden</a> <span class="list-desc">— ecosystem sandbox with procedural creatures</span></li>
+                <li><a href="https://sean-reid.github.io/entropy-bus/">entropy bus</a> <span class="list-desc">— race a bus by generating keyboard entropy</span></li>
+                <li><a href="https://sean-reid.github.io/wikipedia-unscrambler/">wikipedia unscrambler</a> <span class="list-desc">— unscramble words from trending articles</span></li>
+                <li><a href="https://sean-reid.github.io/antibook/">antibook</a> <span class="list-desc">— books with every word replaced by its antonym</span></li>
+                <li><a href="https://sean-reid.github.io/perfect-hindsight/">perfect hindsight</a> <span class="list-desc">— max S&P 500 return with perfect foresight</span></li>
+                <li><a href="https://sean-reid.github.io/tongue-simulator/">tongue simulator</a> <span class="list-desc">— vocal tract animation synced to speech</span></li>
+                <li><a href="https://sean-reid.github.io/frankenpeanuts/">frankenpeanuts</a> <span class="list-desc">— random Peanuts panels stitched into new strips</span></li>
+                <li><a href="https://sean-reid.github.io/crochet-pattern-generator/">crochet pattern generator</a> <span class="list-desc">— draw a profile, get row-by-row patterns</span></li>
+                <li><a href="https://sean-reid.github.io/how-will-i-die/">how will i die</a> <span class="list-desc">— top causes of death by location, age, and sex</span></li>
+                <li><a href="https://sean-reid.github.io/dependencies/">dependencies</a> <span class="list-desc">— dependency solver algorithm comparison</span></li>
+                <li><a href="https://sean-reid.github.io/haiku/">haiku</a> <span class="list-desc">— ambient haiku generator with syllable counting</span></li>
+                <li><a href="https://sean-reid.github.io/licenseplategame/">license plate game</a> <span class="list-desc">— find words containing 3 letters in order</span></li>
+                <li><a href="https://sean-reid.github.io/what-are-you/">what are you</a> <span class="list-desc">— personality quiz generator for any category</span></li>
+                <li><a href="https://sean-reid.github.io/brainrotter/">brainrotter</a> <span class="list-desc">— generates paragraphs of brainrot prose</span></li>
+                <li><a href="https://sean-reid.github.io/nyt-crosswords/">nyt crosswords</a> <span class="list-desc">— ad-free player for NYT puzzles, 1976–2017</span></li>
+                <li><a href="https://sean-reid.github.io/random-game/">random game</a> <span class="list-desc">— optimal strategy for number-guessing games</span></li>
+                <li><a href="https://sean-reid.github.io/unusionable.com/">unusionable</a> <span class="list-desc">— podcast with Sean and Hannah</span></li>
+            </ul>
         </section>
 
         <footer>
