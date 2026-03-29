@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sprouts — Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/blog/" class="back">&larr; Blog</a>
+            <h1>Sprouts</h1>
+            <p class="meta">Browser-based Sprouts with an AI opponent</p>
+            <p class="links-row">
+                <a href="https://sean-reid.github.io/sprouts/">Live Demo</a>
+                <a href="https://github.com/sean-reid/sprouts">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <p>Sprouts is a pen-and-paper game that <a href="https://en.wikipedia.org/wiki/Sprouts_(game)">John Conway and Michael Paterson</a> invented in 1967. You start with a few dots on a page. Players take turns drawing a curve between two dots (or from a dot back to itself), then placing a new dot somewhere along the curve they just drew. Each dot can have at most three lines touching it, and lines are not allowed to cross. The last player who can make a legal move wins.</p>
+
+            <p>The rules fit on an index card but the game is surprisingly deep. For small numbers of starting dots, determining the winner is a solved problem in <a href="https://en.wikipedia.org/wiki/Combinatorial_game_theory">combinatorial game theory</a>, but the proofs are non-trivial and the general case is still open. I wanted to play it against a computer, and building that computer opponent turned out to be harder than the game itself.</p>
+
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Sprouts_game.svg/400px-Sprouts_game.svg.png" alt="A game of Sprouts in progress" loading="lazy">
+                <figcaption>A game of Sprouts. Each dot can have at most three connections, and lines cannot cross. <a href="https://commons.wikimedia.org/wiki/File:Sprouts_game.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <h2>The problem with continuous moves</h2>
+
+            <p>In most board games, a move is something discrete: pick up a piece, put it down on a square. The game engine can enumerate all legal moves and check them against a list. Sprouts doesn't work this way. A move is a freeform curve drawn in the plane, and its legality depends on whether that curve intersects any existing geometry. There's no grid. The move space is continuous.</p>
+
+            <p>My first approach to checking move legality was to sample the curve at many points and test each sample for collisions with existing lines. This was slow and unreliable. Curves that passed close to existing lines but didn't cross them would sometimes register as collisions depending on sampling density, and actual crossings could slip through gaps between samples. I needed a different approach.</p>
+
+            <h2>Morphological skeletons</h2>
+
+            <p>The solution came from image processing. Think of the game board as a binary image: existing lines and dots are obstacles, and everything else is free space. If you apply <a href="https://github.com/sean-reid/sprouts/blob/main/src/morphology.rs">morphological thinning</a> to the free space, you get a <a href="https://en.wikipedia.org/wiki/Medial_axis">medial axis</a>, a one-pixel-wide <a href="https://en.wikipedia.org/wiki/Topological_skeleton">skeleton</a> that runs through the center of every open corridor on the board. This skeleton is a map of where valid moves can exist.</p>
+
+            <p>The thinning uses the <a href="https://en.wikipedia.org/wiki/Zhang%E2%80%93Suen_thinning_algorithm">Zhang-Suen algorithm</a>, which iterates over the image removing boundary pixels that satisfy certain connectivity conditions. After thinning, what remains is the skeleton: a graph of corridors through free space.</p>
+
+            <p>Before thinning, there's an adaptive dilation step. Wide open areas get heavy dilation, which forces the skeleton toward the center of those areas. Narrow passages get light dilation so they don't collapse entirely. The dilation amount is determined by a local <a href="https://en.wikipedia.org/wiki/Distance_transform">distance transform</a> that estimates corridor width at each point. This adaptive approach matters a lot in the endgame, when the board is crowded and remaining free space is a collection of thin, winding channels. Without adaptive dilation, the skeleton would either miss narrow passages or produce a skeleton so far from the center of wide areas that it suggests moves too close to existing lines.</p>
+
+            <p>When the skeleton approach fails (and in very tight endgame positions it does), a fallback <a href="https://en.wikipedia.org/wiki/A*_search_algorithm">A* pathfinder</a> operates in the raw free space with relaxed constraints. The fallback is slower but can find paths that the skeleton misses.</p>
+
+            <h2>The AI</h2>
+
+            <p><a href="https://github.com/sean-reid/sprouts/blob/main/src/ai.rs">Move generation</a> works by pathfinding along the skeleton between every pair of nodes that could legally be connected (accounting for the three-connection limit). For each pair, the AI attempts to find a skeleton path first, then tries the relaxed pathfinder if that fails. Each successful path becomes a candidate move. The AI also considers self-connections (curves from a node back to itself) for nodes with two or fewer existing connections.</p>
+
+            <p>The search uses <a href="https://en.wikipedia.org/wiki/Minimax">minimax</a> with <a href="https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning">alpha-beta pruning</a> at two plies of depth. The tricky part is that the search tree operates on abstract graph representations of the game state, but the actual moves need to be concrete pixel-level curves. The AI generates concrete curves, abstracts them into graph operations for the minimax evaluation, then returns the concrete curve of the best move for rendering.</p>
+
+            <p>There's an opening book for the first few moves. Early-game strong plays in Sprouts are well-studied and don't need to be recomputed every time.</p>
+
+            <p>When the AI draws a curve, it also needs to decide where on that curve to place the new dot. The heuristic samples the middle 80% of the curve (avoiding the endpoints, which are close to existing nodes) and picks the point with the greatest minimum distance to any existing obstacle. The idea is to preserve as much open space as possible for future moves, preventing the AI from accidentally walling itself off.</p>
+
+            <h2>Putting it together</h2>
+
+            <p>The game logic and AI are written in Rust, compiled to <a href="https://webassembly.org/">WebAssembly</a>. The WASM module runs in a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API">Web Worker</a> so that the AI's computation (which can take a few seconds on larger boards) doesn't block the UI thread. The frontend uses HTML5 Canvas for rendering and handles both mouse and touch input, since Sprouts is the kind of game you might play on a phone.</p>
+
+            <p>Difficulty is controlled by the number of starting nodes: 4, 5, or 6. More starting nodes means a longer game with a larger and more complex move space. At 6 nodes the AI takes noticeably longer to think, because the number of candidate moves grows quickly and the skeleton computation is more expensive on a crowded board.</p>
+
+            <p>The visual design is dark and minimal: near-black background, white lines, green accent for victories and red for losses. The board itself is the interesting visual, and a busy UI would compete with it.</p>
+        </article>
+
+        <footer>
+            <a href="/blog/">&larr; Back to Blog</a>
+            <a href="/">Home</a>
+        </footer>
+    </div>
+</body>
+</html>

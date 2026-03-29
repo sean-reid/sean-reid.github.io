@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tron — Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/blog/" class="back">&larr; Blog</a>
+            <h1>Tron</h1>
+            <p class="meta">Lightcycle game with Voronoi AI</p>
+            <p class="links-row">
+                <a href="https://sean-reid.github.io/tron/">Live Demo</a>
+                <a href="https://github.com/sean-reid/tron">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <p>Two lightcycles race across a grid. Each leaves a wall behind it. Hit any wall and you die. The game is from the 1982 <a href="https://en.wikipedia.org/wiki/Tron">Tron film</a>, and it's been reimplemented countless times, but I wanted to build one with a competent AI opponent and a speed mechanic that rewards risky play.</p>
+
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Euclidean_Voronoi_diagram.svg/400px-Euclidean_Voronoi_diagram.svg.png" alt="Voronoi diagram" loading="lazy">
+                <figcaption>A Voronoi diagram. The AI bots use Voronoi territory evaluation to maximize claimable space. <a href="https://commons.wikimedia.org/wiki/File:Euclidean_Voronoi_diagram.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <h2>Wall riding</h2>
+
+            <p>The speed boost is the most important design decision. When your cycle is close to a wall, it accelerates. The closer you ride, the faster you go. This creates a risk-reward loop: safe play in open space is slow, while threading the needle along existing walls lets you cover ground faster and claim more territory. The cycle pulses visually when boosted so you can feel the speed without checking a number.</p>
+
+            <p>The boost applies to the AI too. It uses the same physics. When the bot rides its own walls or yours, it speeds up. This means the AI can sometimes outrun you in tight corridors, which keeps matches tense even when you think you have a spatial advantage.</p>
+
+            <h2>Voronoi territory</h2>
+
+            <p>The AI decides where to go by computing a <a href="https://en.wikipedia.org/wiki/Voronoi_diagram">Voronoi partition</a> of the remaining open space. Conceptually, it asks: "if both players expanded outward from their current positions as fast as possible, how much space would each one claim?" The player who can reach more cells owns more territory. The bot evaluates each possible direction by simulating one step in that direction and computing the resulting territory split. It picks whichever direction maximizes its own reachable area.</p>
+
+            <p>This is a well-known heuristic in lightcycle AI. It works because the game is fundamentally about space control. A player who gets trapped in a smaller region than their opponent will eventually run out of room. The Voronoi approach approximates an optimal partition without needing to search deep into the game tree. It runs in time proportional to the board area, which is fast enough to compute every frame without any perceptible lag.</p>
+
+            <p>The bot doesn't look ahead multiple turns. It's purely reactive, one step of lookahead with the Voronoi heuristic. Despite this, it plays well. It rarely traps itself, it chases you into corners when it has the advantage, and it knows when to sacrifice a corridor to secure a larger region.</p>
+
+            <h2>Persistence and respawning</h2>
+
+            <p>When the bot dies, its trail walls stay on the board for two seconds before fading. Then it respawns. This means the arena accumulates debris over time. Old walls from dead bots become new obstacles, making the playing field progressively more constrained. Your score accumulates across games based on survival time, so there's an incentive to keep going even after a loss.</p>
+
+            <h2>Implementation</h2>
+
+            <p>The game is written in <a href="https://www.typescriptlang.org/">TypeScript</a> and built with <a href="https://vitejs.dev/">Vite</a>. The codebase is organized into modules for the engine, entities, rendering, and game systems. There's a proper test suite using <a href="https://vitest.dev/">Vitest</a>. Audio (both sound effects and music) uses the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API">Web Audio API</a>, with toggle buttons in the corner for people who prefer silence.</p>
+
+            <p>The visual style leans into the neon-on-black aesthetic of the source material. Cyan glows against a near-black background. The HUD uses monospace type with text-shadow for a CRT feel. Points, best time, and game count sit in the top-left corner. Controls are WASD or arrow keys on desktop, swipe on mobile. The whole thing runs on <a href="https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API">Canvas 2D</a> at a smooth framerate.</p>
+        </article>
+
+        <footer>
+            <a href="/blog/">&larr; Back to Blog</a>
+            <a href="/">Home</a>
+        </footer>
+    </div>
+</body>
+</html>

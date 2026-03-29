@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Points — Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/blog/" class="back">&larr; Blog</a>
+            <h1>Points</h1>
+            <p class="meta">Find mathematical expressions that pass through a set of points</p>
+            <p class="links-row">
+                <a href="https://sean-reid.github.io/points/">Live Demo</a>
+                <a href="https://github.com/sean-reid/points">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <p>Given a handful of (x, y) coordinate pairs, can you find a mathematical expression that passes through all of them? Not a polynomial fit. Not a regression. An exact symbolic expression, built from single-digit constants and the five basic arithmetic operators, that evaluates to the correct y value at every given x. This is closer to <a href="https://en.wikipedia.org/wiki/Symbolic_regression">symbolic regression</a> than curve fitting, and the search space is enormous.</p>
+
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Linear_regression.svg/400px-Linear_regression.svg.png" alt="Curve fitting through data points" loading="lazy">
+                <figcaption>Fitting a curve through data points. Points searches for algebraic expressions rather than statistical fits. <a href="https://commons.wikimedia.org/wiki/File:Regression_analysis.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <h2>Building expressions from atoms</h2>
+
+            <p>The algorithm works bottom-up. It starts with atomic expressions: the variable x and the constants 0 through 9. Each of these has a "size" of 1. It then combines pairs of smaller expressions using addition, subtraction, multiplication, division, and exponentiation to produce larger expressions. Two size-1 expressions combined with an operator produce a size-3 expression (left operand + operator + right operand). Two size-3 expressions combine into size-7. And so on.</p>
+
+            <p>An <code>ExprInterner</code> deduplicates structurally identical expressions during construction. Without this, the combinatorial explosion at larger sizes would consume all available memory. The interner keeps a single canonical copy of each unique expression tree and hands out lightweight references.</p>
+
+            <h2>Searching for equivalences</h2>
+
+            <p>The solver isn't looking for a single expression that matches the points. It's looking for two expressions, f and g, that produce identical output vectors when evaluated across all given x values. The equation f = g is then the answer. This formulation is more general than searching for a single expression, because it allows the solver to find relationships like <code>x * x + 1 = x + x * x - x + 1</code> where each side individually is a simple expression.</p>
+
+            <p>For each candidate expression, the solver evaluates it at every input point and normalizes the results into an integer vector. If two different expressions produce the same normalized vector, they agree on all points, and their equivalence is a valid solution. The search progresses through increasing total expression sizes: first checking if any pair of size-1 expressions match, then size-2, and so on up to the user-specified maximum.</p>
+
+            <p>When a candidate match is found, the solver runs a verification step. It tries to expand both expressions into <a href="https://en.wikipedia.org/wiki/Canonical_form">canonical polynomial form</a> and compare them structurally. If canonicalization fails (which happens for expressions involving division or exponentiation that can't be reduced to polynomials), it falls back to evaluating both expressions at a larger set of test points to confirm the equivalence isn't a coincidence.</p>
+
+            <h2>Handling edge cases</h2>
+
+            <p>Division by zero is a constant threat when generating expressions combinatorially. The evaluator returns <code>None</code> for any division where the denominator is close to zero. Exponentiation has similar guards: exponents with magnitude above 20 or results that exceed 1e10 are discarded. These bounds keep the search from wasting time on expressions that produce astronomical or undefined values at even one input point.</p>
+
+            <h2>Running in the browser</h2>
+
+            <p>The search runs in a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API">Web Worker</a> so the UI stays responsive while the algorithm grinds through expression combinations. The core is <a href="https://www.rust-lang.org/">Rust</a> compiled to <a href="https://webassembly.org/">WebAssembly</a>. You enter your points as space-separated coordinates, set a maximum expression length, and hit search. Results show the discovered equation along with the error at each point, formatted in scientific notation. For small point sets and short maximum lengths, results come back in under a second. For larger searches the worker can run for a while, and the UI updates the status as it progresses through size thresholds.</p>
+        </article>
+
+        <footer>
+            <a href="/blog/">&larr; Back to Blog</a>
+            <a href="/">Home</a>
+        </footer>
+    </div>
+</body>
+</html>

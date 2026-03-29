@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NYT Crosswords — Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/blog/" class="back">&larr; Blog</a>
+            <h1>NYT Crosswords</h1>
+            <p class="meta">Ad-free browser player for New York Times crossword puzzles, 1976 to 2017</p>
+            <p class="links-row">
+                <a href="https://sean-reid.github.io/nyt-crosswords/">Live Demo</a>
+                <a href="https://github.com/sean-reid/nyt-crosswords">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <p>The <a href="https://en.wikipedia.org/wiki/The_New_York_Times_crossword_puzzle">New York Times crossword</a> is behind a paywall and the official app is full of ads even for subscribers. I like doing old crosswords, the ones from the 70s and 80s where the clues reference things that no longer exist. There's a publicly available dataset of scraped NYT crossword data in JSON format covering puzzles from January 1976 through December 2017, with some gaps. I built a browser-based player that serves these puzzles through a clean interface with no ads and no account required.</p>
+
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/CrosswordUSA.svg/400px-CrosswordUSA.svg.png" alt="A crossword puzzle grid" loading="lazy">
+                <figcaption>NYT Crosswords provides access to 41 years of New York Times puzzles in a clean, free interface. <a href="https://commons.wikimedia.org/wiki/File:Crossword-Fun.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <h2>Data pipeline</h2>
+
+            <p>The raw crossword data comes from a <a href="https://github.com/doshea/nyt_crosswords">community repository</a> that scraped the puzzles into JSON files. The format of that data didn't match what I needed for the frontend component, so I wrote a Python script to convert each puzzle into the structure expected by <a href="https://www.npmjs.com/package/@jaredreisinger/react-crossword">react-crossword</a>, an open-source <a href="https://react.dev/">React</a> component that handles the grid rendering, clue display, and input management. The converted data is hosted in a separate GitHub repository (<a href="https://github.com/sean-reid/nyt-crosswords-data">nyt-crosswords-data</a>) and fetched on demand when a user selects a date.</p>
+
+            <p>The conversion wasn't just a format change. The raw data has inconsistencies: missing clue numbers, clues that reference grid positions differently, puzzles where the grid dimensions are wrong. The script handles these edge cases and produces clean output or skips puzzles that can't be reliably converted. That's why there are gaps in the date range.</p>
+
+            <h2>The player</h2>
+
+            <p>A <a href="https://www.npmjs.com/package/react-date-picker">date picker</a> at the top lets you jump to any date between January 1, 1976 and December 1, 2017. The grid renders below with across and down clues listed alongside it. You click a cell, type a letter, and the cursor advances. Clicking a clue highlights the corresponding cells in the grid.</p>
+
+            <p>When you complete a word correctly, the clue gets a green checkmark and a strikethrough. There's a "Reveal" button that fills in all answers if you get stuck, and a "Reset" button that clears the board. These are the only controls. No timer, no scoring, no streak tracking. I wanted something that felt like doing a crossword on paper, not a gamified experience trying to drive engagement metrics.</p>
+
+            <h2>Technical stack</h2>
+
+            <p>The app is built with React and bundled with the standard <a href="https://create-react-app.dev/">Create React App</a> toolchain. The production build goes into a <code>/docs</code> folder for GitHub Pages deployment. <a href="https://yarnpkg.com/">Yarn</a> manages dependencies. The entire codebase is about 85% JavaScript, 12% HTML, and 3% CSS, with most of the heavy lifting done by the react-crossword component.</p>
+
+            <p>I considered building the crossword grid from scratch but react-crossword already handled keyboard navigation, cell highlighting, clue-to-grid synchronization, and answer validation. Writing all of that from zero would have taken weeks and the result would have been worse. The interesting part of this project was the data conversion, not the grid component.</p>
+        </article>
+
+        <footer>
+            <a href="/blog/">&larr; Back to Blog</a>
+            <a href="/">Home</a>
+        </footer>
+    </div>
+</body>
+</html>

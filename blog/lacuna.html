@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lacuna — Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/blog/" class="back">&larr; Blog</a>
+            <h1>Lacuna</h1>
+            <p class="meta">Two-player online strategy game of planar construction and enclosure</p>
+            <p class="links-row">
+                <a href="https://sean-reid.github.io/lacuna/">Live Demo</a>
+                <a href="https://github.com/sean-reid/lacuna">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <p>Lacuna is a two-player strategy game where the board is constructed during play. Instead of starting with a grid or hex map, players start with an empty circle. Over the course of 30 to 60 minutes, they draw colored strands inside the circle, building up a <a href="https://en.wikipedia.org/wiki/Planar_graph">planar graph</a> whose topology determines the score. When a region becomes completely enclosed by strands of a single player's color, it becomes a "Lacuna" and scores for that player.</p>
+
+            <p>I designed the game and its rules from scratch. The physical version would be playable with colored pens and a printed circle, but the topology tracking and scoring would be tedious to do by hand. The digital implementation handles all of that automatically.</p>
+
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/6n-graf.svg/400px-6n-graf.svg.png" alt="A planar graph" loading="lazy">
+                <figcaption>A planar graph. Lacuna's strands and boundary form a similar structure, and the topology engine enumerates its faces to detect enclosed regions. <a href="https://commons.wikimedia.org/wiki/File:6n-graf.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <h2>How a turn works</h2>
+
+            <p>At the start of each turn, the active player draws a tension token, choosing one of two options. The tension value determines how many strands the player can place that turn. They then position a node inside a region and trace paths from that node to vertices on the circular boundary, using intermediate waypoints to route around existing strands. Strands cannot cross. As the game progresses, the available space fills up and routing becomes increasingly constrained. The early game feels open and strategic; the late game feels like threading a needle.</p>
+
+            <p>The game ends when no legal moves remain or when the tension token supply runs out.</p>
+
+            <h2>Detecting enclosed regions</h2>
+
+            <p>The core technical problem is determining, after each strand is placed, which regions of the circle have been enclosed and what colors their boundaries are. The strands and the circle boundary together form a planar graph. The <a href="https://en.wikipedia.org/wiki/Planar_graph#Euler's_formula">faces of that graph</a> (the regions between strands) need to be enumerated, and each face's boundary needs to be traced to check whether all edges belong to a single player.</p>
+
+            <p>The face enumeration algorithm walks the planar graph, following edges and tracking which side of each edge it's traversing. When it returns to the starting edge having traced a complete boundary, it has identified one face. The algorithm runs after every move, because any new strand potentially splits an existing face into two or seals a face that was previously open.</p>
+
+            <p>This computation has to be fast. Players expect to see immediately whether their move created a Lacuna. The tricky cases involve strands that share vertices, strands that touch the boundary at multiple points, and degenerate face configurations where a very small region is created between closely spaced strands. Getting the edge-traversal logic correct for all these cases took significant testing.</p>
+
+            <h2>Rendering with SVG</h2>
+
+            <p>The board is rendered in <a href="https://developer.mozilla.org/en-US/docs/Web/SVG">SVG</a> rather than Canvas. The primary reason is hit-testing: in SVG, each strand is a DOM element with native event handling. Selecting a strand, highlighting it on hover, or detecting which region the user clicked in all come from the DOM for free. In Canvas, all of this would need to be reimplemented with manual coordinate math and spatial indexing.</p>
+
+            <p>Strands are drawn through waypoints using <a href="https://en.wikipedia.org/wiki/Chaikin%27s_algorithm">Chaikin's corner-cutting algorithm</a>. Chaikin smoothing iteratively replaces sharp corners with smooth curves by subdividing each segment and cutting corners at 25%/75% positions. After a few iterations, the result is a smooth curve that passes near (but not exactly through) the original waypoints. This gives the strands an organic quality, like thread stretched between pins, rather than the angular look of straight line segments between points.</p>
+
+            <h2>Multiplayer</h2>
+
+            <p>Lacuna is played online between two players. The game state is synchronized in real time through <a href="https://firebase.google.com/docs/database">Firebase Realtime Database</a>. One player creates a game and receives a shareable link. The other player opens the link and joins. <a href="https://firebase.google.com/docs/auth/web/anonymous-auth">Firebase Anonymous Authentication</a> assigns each player an identity without requiring account creation.</p>
+
+            <p>Because Lacuna is strictly turn-based (only one player can act at a time), there are no concurrency issues to resolve. The game state is a single Firebase document containing all nodes, strands, scores, and turn information. Each move is an atomic write that both clients observe in real time.</p>
+
+            <h2>The rulebook and visual output</h2>
+
+            <p>The repository includes a formal <a href="https://github.com/sean-reid/lacuna/blob/main/lacuna-rulebook.pdf">rulebook</a>, written in <a href="https://www.latex-project.org/">LaTeX</a> and compiled to PDF. Writing unambiguous game rules is a different kind of challenge from writing code. Every edge case needs to be addressed in a way that a player can understand without a computer to adjudicate.</p>
+
+            <p>One thing I like about Lacuna is that the finished boards are visually interesting. Every game produces a different pattern of colored curves partitioning the circle into regions. The results tend to look like stained glass or river deltas. There's an aesthetic payoff to a game where the artifact you build during play is the board itself.</p>
+        </article>
+
+        <footer>
+            <a href="/blog/">&larr; Back to Blog</a>
+            <a href="/">Home</a>
+        </footer>
+    </div>
+</body>
+</html>

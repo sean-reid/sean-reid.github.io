@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gravity Well Arena — Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/blog/" class="back">&larr; Blog</a>
+            <h1>Gravity Well Arena</h1>
+            <p class="meta">Top-down combat where Schwarzschild time dilation is the core mechanic</p>
+            <p class="links-row">
+                <a href="https://sean-reid.github.io/gravity/">Live Demo</a>
+                <a href="https://github.com/sean-reid/gravity">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <p>I wanted to build a game where the physics weren't decorative. A lot of space games put a black hole in the background and give it a slight pull on the player's ship, but it doesn't actually change how you think about the game. The idea behind Gravity Well Arena was to take <a href="https://en.wikipedia.org/wiki/Schwarzschild_metric">Schwarzschild</a> <a href="https://en.wikipedia.org/wiki/Gravitational_time_dilation">time dilation</a>, the real thing from <a href="https://en.wikipedia.org/wiki/General_relativity">general relativity</a>, and make it the mechanic that every other system depends on.</p>
+
+            <figure>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/BH_LMC.png/800px-BH_LMC.png" alt="Simulated gravitational lensing by a black hole" loading="lazy">
+                <figcaption>Simulated gravitational lensing by a black hole in front of the Large Magellanic Cloud. <a href="https://commons.wikimedia.org/wiki/File:BH_LMC.png">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <p>You pilot a ship around black holes. When you dive closer to a gravity well, the simulation dilates: the external universe speeds up relative to you. Enemies move faster, projectiles close in quicker, everything outside your local frame accelerates. But your own controls stay at normal speed, because the game runs on the player's <a href="https://en.wikipedia.org/wiki/Proper_time">proper time</a>. This creates a situation where going deeper into a well gives you a tactical edge (from your perspective, the world is in slow motion and you have more time to aim) but simultaneously makes the environment more dangerous (from the world's perspective, you're reacting in slow motion). Balancing these two effects is the entire game.</p>
+
+            <h2>How the physics work</h2>
+
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Orbit_times.svg/400px-Orbit_times.svg.png" alt="Gravitational time dilation diagram" loading="lazy">
+                <figcaption>Gravitational time dilation near a massive object. <a href="https://commons.wikimedia.org/wiki/File:Gravitational_time_dilation.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <p>Orbital mechanics use <a href="https://en.wikipedia.org/wiki/Verlet_integration">Verlet integration</a>. The time dilation factor is computed from the <a href="https://en.wikipedia.org/wiki/Schwarzschild_metric">Schwarzschild metric</a> directly, not from a hand-tuned curve. At the Rim (the outermost zone), dilation is minimal. In the Belt, it becomes noticeable. In the Furnace, the universe is moving fast enough that you have to plan moves carefully. In the Abyss, close to the event horizon, the effect is extreme.</p>
+
+            <p>Some levels have two black holes orbiting each other. Binary systems create chaotic dynamics where the dilation fields overlap and interfere. You can slingshot between the two wells, picking up speed from one and using the other's dilation to create a timing advantage, but the trajectories become very difficult to predict. I spent a lot of time playtesting these levels because the emergent behavior kept surprising me.</p>
+
+            <h2>Weapons</h2>
+
+            <p>There are six weapons, each designed to interact with gravity wells differently. The railgun fires a fast kinetic projectile that curves in gravitational fields. The mass driver is slower but heavier. The photon lance fires along <a href="https://en.wikipedia.org/wiki/Geodesics_in_general_relativity">null geodesics</a>, which means it follows the curvature of spacetime. In practice, you can shoot it around a black hole and hit a target on the other side, which took some iteration to balance. The gravity bomb drops a temporary point mass that distorts nearby trajectories. The impulse rocket is a guided missile. The tidal mine sits at a position and waits.</p>
+
+            <p>The weapon balance ended up being shaped by the dilation mechanic in ways I didn't fully anticipate. Weapons that are slow in flat space become threatening in dilated space because the target is experiencing compressed time. This meant that the "weak" weapons (mines, gravity bombs) become the most dangerous in the deep zones where dilation is strongest.</p>
+
+            <h2>Bot archetypes</h2>
+
+            <p>I built six AI personalities that each try to exploit the time dilation mechanic from a different angle. The Skirmisher stays mobile and avoids committing to deep orbits. The Diver rushes into the Furnace or Abyss for burst damage. The Vulture hangs at medium depth and waits for targets to be weakened before engaging. The Anchor camps the Rim with long-range weapons. The Swarm uses multiple small ships. The Commander coordinates other bots.</p>
+
+            <p>The Diver was the hardest to tune. Its strategy requires going deep, which means high dilation, which means everything outside is fast. If the Diver's aggression threshold is too high, it suicides into the Abyss and can't react to incoming fire. If it's too low, it never commits and plays like a worse Skirmisher. Getting the balance took many iterations of adjusting how the bot evaluates the risk of its current depth against the potential damage output.</p>
+
+            <h2>Procedural audio</h2>
+
+            <p>There are zero audio files in the repository. Every sound, engine hum, weapon discharge, explosion, ambient tone, is synthesized at runtime. I initially planned to add audio files later and used procedural synthesis as a placeholder, but the procedural sounds ended up sounding better than anything I found in free asset libraries. The engine hum pitch-shifts with dilation, which gives you an audio cue for how deep you are without looking at the HUD. That was accidental but it works.</p>
+
+            <h2>Everything else</h2>
+
+            <p>Rendering uses <a href="https://wgpu.rs/">wgpu</a> with custom <a href="https://www.w3.org/TR/WGSL/">WGSL</a> shaders for gravitational lensing (background stars distort near wells), bloom, and accretion disk effects. Levels are procedurally generated from deterministic seeds. There's a four-act narrative delivered through mission briefings and radio chatter, which was an interesting constraint to work within given the procedural structure.</p>
+
+            <p>Global leaderboards run on a <a href="https://workers.cloudflare.com/">Cloudflare Worker</a> backed by <a href="https://developers.cloudflare.com/d1/">D1</a> SQLite. Server-side validation checks score plausibility (is this score achievable on this seed?) rather than replaying the entire game. The leaderboard is offline-first: scores save locally and sync to the cloud when connectivity is available. Player identity is UUID-based, no login required.</p>
+
+            <p>The game compiles to native binaries for Windows, macOS, and Linux, and also to <a href="https://webassembly.org/">WebAssembly</a> for the browser version.</p>
+        </article>
+
+        <footer>
+            <a href="/blog/">&larr; Back to Blog</a>
+            <a href="/">Home</a>
+        </footer>
+    </div>
+</body>
+</html>

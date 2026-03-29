@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Game — Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/blog/" class="back">&larr; Blog</a>
+            <h1>Random Game</h1>
+            <p class="meta">Optimal strategy calculator for number-guessing games</p>
+            <p class="links-row">
+                <a href="https://sean-reid.github.io/random-game/">Live Demo</a>
+                <a href="https://github.com/sean-reid/random-game">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <p>There's a common party game or icebreaker where someone picks a random number in a range, say 1 to 100, and everyone guesses. Closest guess wins. If you're the only player it's just <a href="https://en.wikipedia.org/wiki/Binary_search">binary search</a>: guess the midpoint, adjust based on feedback. But when other people are guessing too, the optimal strategy changes. You don't want to guess the midpoint of the full range. You want to guess the midpoint of the largest unclaimed region, because that's where you have the highest probability of being the closest.</p>
+
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Binary_Search_Depiction.svg/400px-Binary_Search_Depiction.svg.png" alt="Binary search visualized on a sorted array" loading="lazy">
+                <figcaption>Binary search narrows a range by half with each step. The same strategy applies to number-guessing games. <a href="https://commons.wikimedia.org/wiki/File:Binary_search_into_array.png">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <h2>The algorithm</h2>
+
+            <p>You enter a minimum and maximum to define the range. As guesses are made (yours and other players'), you enter each one. The app collects all known numbers: the bounds and every guess so far. It sorts them, computes the gap between each consecutive pair, finds the largest gap, and recommends guessing the midpoint of that gap.</p>
+
+            <p>This is a greedy approach. Each guess maximally reduces the largest interval of uncertainty. If the range is 1-100 and someone guesses 30, the two regions are 1-30 and 30-100. The second region is larger, so the optimal next guess is 65 (the midpoint of 30 and 100). If another player then guesses 80, the regions become 1-30, 30-80, and 80-100. The largest is 30-80, so you guess 55.</p>
+
+            <p>It's the same logic as <a href="https://en.wikipedia.org/wiki/Binary_search">binary search</a> when you're alone, but it adapts to other players' guesses by treating them as additional partition points. The strategy maximizes your expected coverage of the number line.</p>
+
+            <h2>When this actually matters</h2>
+
+            <p>In practice, most people guess round numbers. They cluster around multiples of 10 and especially around 50. If you've ever played this game in a group, you've seen three people all guess numbers in the 40-60 range while the extremes go uncovered. The solver exploits this by always targeting the largest open gap, which tends to be far from the popular guesses.</p>
+
+            <p>I originally built this for a specific situation: a recurring office game where the prize was picking the lunch restaurant. I kept losing because I was guessing "intuitively" and competing with other people's intuitions for the same part of the number line. After switching to this strategy I won noticeably more often. The tool paid for itself in burrito selections.</p>
+
+            <h2>Implementation</h2>
+
+            <p>The UI has three input fields (min, max, latest guess) and a "GO" button. The recommended guess displays below. It's vanilla JavaScript and HTML, no dependencies. The entire logic is about 20 lines of code. Sometimes the right answer to a problem really is that short.</p>
+        </article>
+
+        <footer>
+            <a href="/blog/">&larr; Back to Blog</a>
+            <a href="/">Home</a>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrainRotter — Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/blog/" class="back">&larr; Blog</a>
+            <h1>BrainRotter</h1>
+            <p class="meta">Procedural generator for grammatically correct brainrot prose</p>
+            <p class="links-row">
+                <a href="https://sean-reid.github.io/brainrotter/">Live Demo</a>
+                <a href="https://github.com/sean-reid/brainrotter">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <p>The internet has developed its own dialect. Words like "skibidi," "rizz," "sigma," and "sus" have their own grammar and usage patterns that are completely opaque to anyone over 25. I wanted to see what would happen if you took that vocabulary and ran it through proper English sentence structures. The result is BrainRotter: you press a button and it fills a page with paragraphs of grammatically correct nonsense assembled from <a href="https://en.wikipedia.org/wiki/Brain_rot">brainrot</a> slang.</p>
+
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Chomsky_hierarchy.svg/400px-Chomsky_hierarchy.svg.png" alt="Chomsky hierarchy of formal grammars" loading="lazy">
+                <figcaption>The Chomsky hierarchy of formal grammars. Brainrotter uses context-free sentence templates filled with internet slang. <a href="https://commons.wikimedia.org/wiki/File:Chomsky_hierarchy.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <h2>Sentence generation</h2>
+
+            <p>The generator builds six types of sentences. Simple sentences follow subject-verb-object order. Compound sentences join two simple clauses with a conjunction. Complex sentences attach a dependent clause using a relative conjunction. Compound-complex sentences do both. There are also questions (inversion of subject and verb, preceded by a question word) and imperatives (verb-first, no subject). The type is chosen randomly with equal probability for each generation.</p>
+
+            <p>Each slot in the template is filled from a word bank. There are two word banks: a brainrot set and a normal set. The brainrot set contains internet slang subjects ("the sigma," "Skibidi Toilet"), verbs ("is rizzing up," "is mewing"), adjectives ("goated," "sus"), and objects ("the drip," "the fanum tax"). The normal set has conventional English words. On each word selection, there's a 20% chance the generator picks from the normal bank and an 80% chance it picks brainrot. The occasional normal word makes the output funnier because it creates contrast. A sentence that's 100% slang reads like a glossary, but "the cat is goated with the drip" is a sentence that makes you pause.</p>
+
+            <h2>The fill algorithm</h2>
+
+            <p>The output container has a fixed height. When you press "ROT MY BRAIN," the generator doesn't produce a set number of sentences. Instead, it generates one sentence at a time and measures the rendered height using a hidden <code>div</code>. It copies the accumulated text into this offscreen element, checks <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollHeight">scrollHeight</a> against the container height, and stops when adding another sentence would cause overflow. The result is a block of text that fills the visible area exactly, regardless of screen size or font rendering differences.</p>
+
+            <p>This approach means the output looks correct on a phone and on a widescreen monitor without any responsive layout changes to the text generation itself. The container adapts, and the generator fills whatever space is available.</p>
+
+            <h2>Packaging</h2>
+
+            <p>The project includes a full set of <a href="https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps">PWA</a> assets: multiple favicon sizes, an Apple touch icon, a <code>site.webmanifest</code>, a <code>browserconfig.xml</code> for Windows tiles, and a Safari pinned tab SVG. This was partly a joke (treating a brainrot generator with the same care as a production app) and partly practical, because people were actually adding it to their home screens.</p>
+
+            <p>The UI is minimal. A red button at the top, a white text area below it. Click the button, read the output, laugh or cringe, click again. No settings, no configuration, no state to manage.</p>
+        </article>
+
+        <footer>
+            <a href="/blog/">&larr; Back to Blog</a>
+            <a href="/">Home</a>
+        </footer>
+    </div>
+</body>
+</html>

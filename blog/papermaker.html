@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Papermaker — Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/blog/" class="back">&larr; Blog</a>
+            <h1>Papermaker</h1>
+            <p class="meta">Generate random CS research papers using SCIGen</p>
+            <p class="links-row">
+                <a href="https://sean-reid.github.io/papermaker/">Live Demo</a>
+                <a href="https://github.com/sean-reid/papermaker">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <p>In 2005, three <a href="https://www.csail.mit.edu/">MIT</a> grad students built <a href="https://pdos.csail.mit.edu/archive/scigen/">SCIGen</a>, a program that generated fake computer science papers using a <a href="https://en.wikipedia.org/wiki/Context-free_grammar">context-free grammar</a>. They submitted one of the generated papers to the <a href="https://en.wikipedia.org/wiki/SCIgen#Use">World Multiconference on Systemics, Cybernetics and Informatics</a>, and it was accepted for presentation. The paper was titled "<a href="https://pdos.csail.mit.edu/archive/scigen/rooter.pdf">Rooter: A Methodology for the Typical Unification of Access Points and Redundancy</a>" and it meant nothing at all.</p>
+
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Simple_Parse_Tree_1.svg/400px-Simple_Parse_Tree_1.svg.png" alt="A context-free grammar parse tree" loading="lazy">
+                <figcaption>A context-free grammar parse tree. SCIGen uses thousands of grammar rules to recursively expand symbols into realistic-looking academic prose. <a href="https://commons.wikimedia.org/wiki/File:Cgisf-tgg.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <p>Papermaker brings SCIGen to the browser. You click a button and get a complete, properly typeset CS research paper as a PDF. Title page, abstract, introduction, related work, methodology, results with figures, conclusion, references. The papers look real. They have the right structure, the right density of jargon, the right visual presentation. They just don't say anything.</p>
+
+            <h2>Context-free grammars</h2>
+
+            <p>A context-free grammar is a set of rules that expand symbols into other symbols or into actual text. You start with a root symbol like <code>PAPER</code>. One rule might expand <code>PAPER</code> into <code>TITLE ABSTRACT BODY REFERENCES</code>. Another might expand <code>TITLE</code> into <code>VERB_PHRASE NOUN_PHRASE in NOUN_PHRASE</code>. The rules keep firing until every symbol has been replaced by terminal strings: real words, <a href="https://www.latex-project.org/">LaTeX</a> commands, punctuation.</p>
+
+            <p>SCIGen's grammar is very large. It has thousands of production rules, many with multiple alternatives that are chosen randomly at generation time. The grammar captures the structure of academic CS writing at a granular level. It knows that a results section should reference figures, that figures should have axes and legends, that the related work section should cite prior publications with author names and venue titles. Each generated paper is different because the random choices at each expansion point produce unique combinations.</p>
+
+            <p>What makes SCIGen effective (and disturbing) is that it captures the form of academic writing without any of the content. The generated sentences are grammatically correct and use domain-appropriate vocabulary. They reference each other internally. The figures are consistent with the text that describes them. If you skim the paper the way a busy reviewer might, it passes.</p>
+
+            <h2>From Perl to JavaScript</h2>
+
+            <p>The original SCIGen was written in Perl and output LaTeX source files to disk. Porting the grammar evaluation to JavaScript meant making it work entirely in the browser. The grammar rules are loaded as a data structure, and the recursive expansion runs in JavaScript. The grammar files are large, but the computation itself is fast because each individual expansion step is a simple random selection from a list of alternatives.</p>
+
+            <p>The harder part is the LaTeX compilation. A generated paper isn't useful as raw LaTeX source. It needs to be compiled into a PDF with proper two-column layout, typeset mathematics, embedded figures, and consistent formatting. The browser generates the LaTeX source, sends it to a remote compilation service, and gets back a PDF.</p>
+
+            <p>Making the grammar produce compilable LaTeX was the most time-consuming part of the project. LaTeX is sensitive to syntax errors, and a context-free grammar that generates LaTeX has to ensure that every <code>\begin</code> has a matching <code>\end</code>, every <code>{</code> has a matching <code>}</code>, every <code>\ref</code> points to a <code>\label</code> that exists, and every citation key in the text corresponds to an entry in the bibliography. Many of the grammar rules had to be adjusted to maintain these invariants.</p>
+
+            <h2>The figures</h2>
+
+            <p>The generated figures are my favorite part of the output. Each paper includes charts with labeled axes, data series, error bars, and legends. The figures show things like the throughput of a fictional system compared to three fictional baselines, plotted over varying input sizes. The data is random but the presentation is perfect. If you look at the figure in isolation, without reading the paper, it looks like a real experimental result.</p>
+
+            <p>The grammar generates the <a href="https://tikz.dev/">TikZ</a> or gnuplot code that produces these figures, and the LaTeX compilation renders them. Getting the figure code to compile reliably required a lot of testing, because the random generation occasionally produced degenerate cases (empty data series, axis ranges of zero) that caused LaTeX errors.</p>
+        </article>
+
+        <footer>
+            <a href="/blog/">&larr; Back to Blog</a>
+            <a href="/">Home</a>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What Are You? — Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/blog/" class="back">&larr; Blog</a>
+            <h1>What ____ Are You?</h1>
+            <p class="meta">Personality quiz generator for any category, powered by the Wikipedia API</p>
+            <p class="links-row">
+                <a href="https://sean-reid.github.io/what-are-you/">Live Demo</a>
+                <a href="https://github.com/sean-reid/what-are-you">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <p>Those "What kind of X are you?" quizzes are everywhere online. What sandwich are you. What 90s sitcom character are you. They're dumb and people love them, myself included. The thing I noticed is that they always have the same structure: a fixed set of multiple-choice questions, a mapping from answers to results, and a big reveal at the end. The questions are generic personality questions that could map to anything. The category doesn't actually matter.</p>
+
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Camponotus_flavomarginatus_ant.jpg/400px-Camponotus_flavomarginatus_ant.jpg" alt="A Camponotus flavomarginatus ant" loading="lazy">
+                <figcaption>You might be this ant. Answer 10 absurd questions and a Wikipedia article is chosen from your selected category. <a href="https://commons.wikimedia.org/wiki/File:Camponotus_flavomarginatus_ant.jpg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <p>So I built a version where the category is a parameter. You pick a topic from a dropdown and the quiz generates itself. Animals, countries, foods, sports, musical instruments, whatever. The questions are the same regardless. What changes is the result, which gets pulled live from <a href="https://en.wikipedia.org/wiki/Wikipedia:About">Wikipedia</a>.</p>
+
+            <h2>How the result is determined</h2>
+
+            <p>The quiz presents 10 questions drawn randomly from a pool of about 500. Each question has four multiple-choice answers. The questions are intentionally absurd ("How many bees could you fit in your mouth?") because the goal is entertainment, not psychometric accuracy.</p>
+
+            <p>When you finish, your answers are fed into a <a href="https://en.wikipedia.org/wiki/Hash_function">hash function</a>. Each answer's numeric value is multiplied by its question position (1-indexed), and the products are summed. The total is then taken modulo the number of available results. This produces a deterministic mapping: the same answers always give the same result, which makes it feel like the quiz "knows" something about you even though it's just arithmetic.</p>
+
+            <h2>Wikipedia integration</h2>
+
+            <p>The 25 available categories (Animals, Countries, Foods, etc.) each correspond to a <a href="https://www.mediawiki.org/wiki/API:Categorymembers">Wikipedia category</a>. When you select one, the app queries the <a href="https://www.mediawiki.org/wiki/API:Main_page">MediaWiki API</a> for up to 100 category members. It filters out disambiguation pages, list articles, redirects, and subsection entries so the results are all real, concrete things.</p>
+
+            <p>Once the hash picks a result, a second API call fetches that article's summary text and thumbnail image. The reveal screen shows the image, a paragraph of Wikipedia description, and a link to the full article. This means the result set updates whenever Wikipedia does. If someone adds a new animal to the Animals category, it becomes a possible quiz result without any change to the code.</p>
+
+            <h2>The Jeopardy theme</h2>
+
+            <p>There's an audio file bundled with the project: the <a href="https://en.wikipedia.org/wiki/Jeopardy!">Jeopardy!</a> think music. It starts playing on the first user interaction (browsers require a gesture before autoplaying audio) and gradually speeds up as you progress through the questions. By question 8 or 9 the music is noticeably fast. This was added purely for comedic effect but it turned out to be the feature people mention most when they share the link.</p>
+
+            <h2>Design</h2>
+
+            <p>The UI is dark-themed with blue accent buttons. A progress bar fills as you answer questions. The transitions between the title screen, quiz, and results use CSS fade animations. The whole app is a single HTML file with inline JavaScript and CSS. No framework, no build step. The only external dependency is the Wikipedia API.</p>
+        </article>
+
+        <footer>
+            <a href="/blog/">&larr; Back to Blog</a>
+            <a href="/">Home</a>
+        </footer>
+    </div>
+</body>
+</html>

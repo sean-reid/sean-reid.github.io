@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crossword Generator — Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/blog/" class="back">&larr; Blog</a>
+            <h1>Crossword Generator</h1>
+            <p class="meta">SAT-based puzzle generation for automated crossword book publishing</p>
+            <p class="links-row">
+                <a href="https://sean-reid.github.io/crossword-generator/">Live Demo</a>
+                <a href="https://github.com/sean-reid/crossword-generator">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <p>This project started because I noticed crossword puzzle books selling well on <a href="https://kdp.amazon.com/">Amazon KDP</a> and thought the whole process could be automated. Not just the puzzle generation, but the entire pipeline: valid high-density grids, clue extraction, page layout, front matter, covers, spine width calculation, print-ready PDF output. One command, one book.</p>
+
+            <p>The <a href="https://sean-reid.github.io/crossword-generator/">browser demo</a> on GitHub Pages came later and is really a side effect. The primary output is a CLI tool that produces KDP-ready <a href="https://www.latex-project.org/">LaTeX</a> books.</p>
+
+            <h2>Why SAT solving</h2>
+
+            <figure>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/CrosswordUSA.svg/400px-CrosswordUSA.svg.png" alt="A crossword puzzle grid" loading="lazy">
+                <figcaption>Crossword puzzle grid. <a href="https://commons.wikimedia.org/wiki/File:Crossword-Fun.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <p>I looked at existing open-source crossword generators before writing my own. Most of them use <a href="https://en.wikipedia.org/wiki/Backtracking">backtracking search</a>: pick a word, place it, pick another, check if it fits, undo and retry when it doesn't. These generators work for small grids but they tend to get stuck in local optima, producing puzzles that are sparse and uneven. The grids have dead zones where no words interlock, and the word choices feel like afterthoughts jammed into remaining gaps.</p>
+
+            <p>Crossword construction is a <a href="https://en.wikipedia.org/wiki/Constraint_satisfaction_problem">constraint satisfaction problem</a>. Every cell in the grid is a variable, every word placement creates a set of letter-equality constraints between intersecting slots, and the requirement that all words come from a valid dictionary constrains the domain of each variable. This maps naturally to <a href="https://en.wikipedia.org/wiki/Boolean_satisfiability_problem">Boolean satisfiability</a>.</p>
+
+            <p>The <a href="https://github.com/sean-reid/crossword-generator/blob/main/wasm/src/encoder.rs">encoder</a> translates the grid dimensions, target density, and dictionary into a SAT formula. <a href="https://github.com/jix/varisat">Varisat</a> (a Rust SAT solver) processes the formula and either produces a valid assignment or reports unsatisfiability. When the density target is too aggressive for the available word list, the solver tells you instead of running forever, which is useful for parameter tuning. When it succeeds, the solution is guaranteed to satisfy all constraints simultaneously, so you never get partially valid grids.</p>
+
+            <h2>The book pipeline</h2>
+
+            <p>The CLI generates complete LaTeX source for a KDP-ready puzzle book. Each puzzle is laid out on a spread: the grid appears on the left page, the clues on the right, with correct gutters and margins for print binding. Before the puzzles, the tool generates a title page with customizable author name, publisher, and description; a copyright page with ISBN and edition fields; and a table of contents.</p>
+
+            <p>Cover generation handles the most tedious part of KDP publishing. The tool calculates spine width from the page count and paper stock (color interior uses thicker paper, so the spine is wider for the same page count), renders an SVG template at the <a href="https://kdp.amazon.com/en_US/help/topic/G201834180">required trim dimensions</a>, and outputs a print-ready cover. Supported trim sizes range from 5x8 to 8x10, covering the most common KDP paperback formats.</p>
+
+            <p><a href="https://docs.rs/rayon/latest/rayon/">Rayon</a> parallelizes the puzzle generation across all available CPU cores. On a modern machine, 100 puzzles at the default 16x16 grid size and 50% density takes about 5 to 10 minutes. Each puzzle uses a deterministic seed, so any individual result can be reproduced exactly. The <code>--compile</code> flag runs pdflatex automatically after LaTeX generation, producing the final PDF in one step.</p>
+
+            <p>The full set of CLI flags covers everything you need to go from nothing to a publishable book: <code>-c</code> for puzzle count, <code>-s</code> for grid size, <code>--density</code> for fill percentage, <code>-t/-a/-p</code> for title/author/publisher, <code>--isbn</code> and <code>--copyright</code> for legal fields, <code>-j</code> for thread count, <code>--seed</code> for reproducibility, and <code>-o</code> for output path.</p>
+
+            <h2>Dictionary curation</h2>
+
+            <p>I underestimated how much the word list matters. Early versions used an unfiltered dictionary, and the resulting puzzles contained medical abbreviations, archaic terms nobody would recognize, and occasionally offensive entries. A crossword is only as good as its vocabulary. The project now ships a curated allowlist derived from the <a href="https://github.com/wordset/wordset-dictionary">WordSet project</a>, filtered for common English words that a typical solver would know. The CLI also accepts custom allowlists, which is useful for themed books (animals, geography, sports) or for targeting a specific difficulty level by restricting vocabulary size.</p>
+
+            <h2>One codebase, two targets</h2>
+
+            <p>The core Rust library compiles to <a href="https://webassembly.org/">WebAssembly</a> for the browser or to a native binary for the CLI, selected by a <code>--features wasm</code> flag during compilation. The <a href="https://github.com/sean-reid/crossword-generator/tree/main/wasm/src">encoder, solver integration, dictionary management, and solution representation</a> are shared. The WASM target wraps the library for browser invocation; the native target adds the LaTeX generation, parallel processing, cover rendering, and pdflatex integration. <a href="https://doc.rust-lang.org/reference/conditional-compilation.html">Conditional compilation</a> keeps the separation clean without duplicating logic.</p>
+        </article>
+
+        <footer>
+            <a href="/blog/">&larr; Back to Blog</a>
+            <a href="/">Home</a>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tongue Simulator — Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/blog/" class="back">&larr; Blog</a>
+            <h1>Tongue Simulator</h1>
+            <p class="meta">Real-time vocal tract animation synced to speech, with physics-based tongue simulation in Rust/WASM</p>
+            <p class="links-row">
+                <a href="https://sean-reid.github.io/tongue-simulator/">Live Demo</a>
+                <a href="https://github.com/sean-reid/tongue-simulator">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <p>When you speak, your tongue is doing something incredibly complex. It's a muscular hydrostat with no skeleton, deforming continuously through a sequence of target shapes that correspond to the sounds you're producing. Linguists have studied these shapes for over a century using X-ray imaging, MRI, and electromagnetic articulography. But most of us have never actually seen what's happening inside our mouths during speech. This project makes it visible.</p>
+
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Head_lateral_mouth_anatomy.jpg/400px-Head_lateral_mouth_anatomy.jpg" alt="Lateral cross-section of the human vocal tract" loading="lazy">
+                <figcaption>Lateral cross-section of the human head showing the vocal tract. Tongue Simulator animates these structures in real time. <a href="https://commons.wikimedia.org/wiki/File:Head_lateral_mouth_anatomy.jpg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <p>Type some text, hit play, and the browser speaks the text aloud while rendering a <a href="https://en.wikipedia.org/wiki/Midsagittal_plane">midsagittal</a> cross-section of the vocal tract. The tongue, jaw, velum, and lips all animate through their articulation targets in sync with the audio. The tongue doesn't just jump between positions. It deforms physically, simulated as a soft body using <a href="https://en.wikipedia.org/wiki/Position-based_dynamics">position-based dynamics</a>.</p>
+
+            <h2>The pipeline</h2>
+
+            <p>The system has four stages. First, the input text goes through <a href="https://en.wikipedia.org/wiki/Grapheme-to-phoneme">grapheme-to-phoneme conversion</a>, producing a sequence of <a href="https://en.wikipedia.org/wiki/ARPABET">ARPAbet</a> phoneme codes. Second, a gestural phonology model generates smooth articulatory target trajectories for each phoneme. This is where the mapping from abstract sound categories to physical tongue positions happens. Third, a PBD simulation computes the actual tongue mesh deformation across the entire phoneme sequence. And fourth, the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API">Web Speech API</a> synthesizes the audio while a canvas renderer draws the synchronized animation frame by frame.</p>
+
+            <p>The key insight is that the simulation is pre-computed, not real-time. When you hit play, the Rust code runs the full PBD simulation for every frame in the utterance, stores the results, and then the JavaScript playback loop just reads from the pre-computed buffer while the speech plays. This means the physics can be as expensive as needed without causing frame drops during playback.</p>
+
+            <h2>Why position-based dynamics</h2>
+
+            <p><a href="https://matthias-research.github.io/pages/publications/posBasedDyn.pdf">PBD</a> is a simulation technique originally developed for real-time cloth and soft body animation in games. Unlike traditional finite element methods that solve force equations, PBD works by directly manipulating particle positions to satisfy constraints. You define a mesh of particles connected by distance constraints and volume-preservation constraints, then iteratively project the particles toward valid configurations. It's unconditionally stable (no exploding simulations) and fast enough to run in WASM without making the user wait.</p>
+
+            <p>The tongue mesh is a 2D cross-section of particles connected in a triangular lattice. Each articulation target defines desired positions for a subset of control particles, and the rest of the mesh follows through the constraint solver. The velum and jaw are simpler rigid or semi-rigid bodies that interpolate between target poses. Lips are modeled as a pair of points that open, close, round, and spread.</p>
+
+            <h2>Rust and WASM</h2>
+
+            <p>The physics code is written in Rust and compiled to <a href="https://webassembly.org/">WebAssembly</a> using <a href="https://rustwasm.github.io/docs/wasm-bindgen/">wasm-bindgen</a>. The codebase is about 60% Rust and 40% TypeScript. The frontend uses <a href="https://react.dev/">React</a> for the UI and HTML5 Canvas for rendering. A Makefile handles the build: compiling Rust to WASM, then bundling the frontend with npm. <a href="https://github.com/features/actions">GitHub Actions</a> deploys to Pages on every push to main.</p>
+
+            <p>Keeping the simulation in Rust matters for performance. The PBD solver runs hundreds of constraint iterations per frame across the full utterance. In JavaScript this would be noticeably slow on longer inputs. In compiled WASM, it finishes in a fraction of a second for typical sentences.</p>
+        </article>
+
+        <footer>
+            <a href="/blog/">&larr; Back to Blog</a>
+            <a href="/">Home</a>
+        </footer>
+    </div>
+</body>
+</html>

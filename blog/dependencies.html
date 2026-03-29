@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dependencies — Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/blog/" class="back">&larr; Blog</a>
+            <h1>Dependencies</h1>
+            <p class="meta">Animated comparison of two algorithms for finding which dependencies a build actually needs</p>
+            <p class="links-row">
+                <a href="https://sean-reid.github.io/dependencies/">Live Demo</a>
+                <a href="https://github.com/sean-reid/dependencies">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <p>Imagine you're building a project and it has 100 declared dependencies, but only a handful are actually required. The rest are leftovers from features that got removed, or transitive dependencies that something else already pulls in. You want to find the minimal set. The only test you can perform is: "does the build succeed with this subset of dependencies?" Each test takes time. How do you minimize the number of tests?</p>
+
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Binary_search_tree.svg/400px-Binary_search_tree.svg.png" alt="Binary search tree diagram" loading="lazy">
+                <figcaption>A binary search tree. The Dependencies visualizer compares greedy and binary search approaches to finding required dependencies. <a href="https://commons.wikimedia.org/wiki/File:Binary_search_tree.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <p>This tool lets you set up that exact scenario and watch two different algorithms race to find the answer. You configure the total number of dependencies, how many are truly required, and the animation speed. Then you hit run and watch both algorithms work through the problem side by side, step by step.</p>
+
+            <h2>Greedy elimination</h2>
+
+            <p>The first algorithm is the obvious one. Start with all dependencies included. Remove one. Try the build. If it succeeds, that dependency wasn't needed, so leave it out permanently. If it fails, put it back. Move on to the next one. This always takes exactly M tests, where M is the total number of dependencies. It doesn't matter how many are required. You test every single one.</p>
+
+            <p>The visualization shows this as a grid of colored squares. Required dependencies are red, unnecessary ones are gray. As the algorithm progresses, it dims the dependency currently being tested, tries the build, and either removes it (gray stays gray) or keeps it (red stays red). It's methodical and predictable. You know exactly how long it will take before it starts.</p>
+
+            <h2>Binary search</h2>
+
+            <p>The second algorithm is smarter. It starts with an empty set and uses a divide-and-conquer approach. For the pool of unknown dependencies, it splits them in half. It tests whether the build succeeds without the left half. If it does, none of those dependencies are required and the entire left half is eliminated in one test. If it fails, at least one required dependency lives in that half, so it recurses into the left half to find it. The same logic applies to the right half.</p>
+
+            <p>This approach needs O(N log M) tests, where N is the number of required dependencies and M is the total. When N is small relative to M (which is the common case with bloated dependency lists), binary search crushes greedy elimination. With 100 total dependencies and 5 required ones, greedy needs exactly 100 tests. Binary search might need 30.</p>
+
+            <h2>The visualization</h2>
+
+            <p>Both algorithms run simultaneously on identical grids. Dependencies being tested get a golden glow. Dependencies that have been classified as required turn red, unnecessary ones turn gray, and untested ones stay dim. Below each grid, a counter shows how many tests have been performed and how many required dependencies have been found so far.</p>
+
+            <p>The speed slider controls how fast the animation runs, measured in milliseconds per test. Slow it down and you can follow the logic of each step. Speed it up and you can run dozens of configurations quickly to get an intuitive sense of when binary search wins by a lot versus only a little. (Spoiler: binary search wins by a lot when N is small. When N approaches M, the advantage shrinks because there aren't many dependencies to skip.)</p>
+
+            <p>When both algorithms finish, a results panel highlights the winner in green and shows the final test counts. The whole thing is a single HTML file with no dependencies of its own, which felt appropriate for a project about dependencies.</p>
+        </article>
+
+        <footer>
+            <a href="/blog/">&larr; Back to Blog</a>
+            <a href="/">Home</a>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crochet Pattern Generator — Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/blog/" class="back">&larr; Blog</a>
+            <h1>Crochet Pattern Generator</h1>
+            <p class="meta">Draw a silhouette, get row-by-row crochet instructions for amigurumi</p>
+            <p class="links-row">
+                <a href="https://sean-reid.github.io/crochet-pattern-generator/">Live Demo</a>
+                <a href="https://github.com/sean-reid/crochet-pattern-generator">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <p><a href="https://en.wikipedia.org/wiki/Amigurumi">Amigurumi</a> are small stuffed figures made by crocheting in the round. You start with a magic ring at the bottom, increase stitches each row to widen the shape, then decrease back down to close it off. The pattern for any given shape is just a list of stitch counts per row. If you know the profile you want (say, a sphere, or a pear, or a mushroom), the math to get those stitch counts is mechanical. So why not draw the profile and let the computer figure out the pattern?</p>
+
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Table-cloth_2008-1.jpg/400px-Table-cloth_2008-1.jpg" alt="Hands crocheting with a hook and yarn" loading="lazy">
+                <figcaption>Crocheting. The pattern generator converts 2D profile drawings into row-by-row stitch instructions. <a href="https://commons.wikimedia.org/wiki/File:Crocheting.jpg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <p>That's what this tool does. You draw one side of your desired shape on a canvas. The app treats that drawing as a <a href="https://en.wikipedia.org/wiki/Surface_of_revolution">surface of revolution</a>, rotating it around the vertical axis to produce a 3D solid. Then it samples the radius at each row height and converts those radii into stitch counts, respecting the physical constraints of crochet.</p>
+
+            <h2>From drawing to stitches</h2>
+
+            <p>The drawn profile gets smoothed into a <a href="https://en.wikipedia.org/wiki/B-spline">B-spline</a> curve so that minor hand tremors don't produce jagged radius changes between rows. The algorithm samples the curve at fixed height intervals, one per row. At each sample point, it computes the circumference of the corresponding circle and divides by the stitch gauge (which is configurable based on your yarn and hook size) to get the number of stitches for that row.</p>
+
+            <p>The tricky part is enforcing crochet constraints. In real life, you can at most double the stitch count from one row to the next (by doing an increase in every stitch). You can at most halve it (by doing a decrease in every stitch). If the drawn profile demands a faster radius change than these limits allow, the algorithm clamps the stitch count and the actual shape will deviate slightly from the drawing. This is honest: the pattern won't promise a shape the yarn can't deliver.</p>
+
+            <p>Within each row, increases and decreases need to be distributed evenly around the circle to avoid lumps. If row 5 has 12 stitches and row 6 needs 18, that's 6 increases spread across 12 positions. The algorithm spaces them as uniformly as possible so the fabric grows evenly.</p>
+
+            <h2>The output</h2>
+
+            <p>The generated pattern uses standard crochet notation. Each row specifies the stitch type (single crochet, increase, decrease) and the repeat count. The pattern starts with a <a href="https://en.wikipedia.org/wiki/Crochet#Magic_ring">magic ring</a> of 6 single crochet stitches, because that's the conventional starting point for amigurumi worked in the round. It ends by closing down to somewhere between 6 and 15 stitches, at which point you stuff the figure and sew the opening shut.</p>
+
+            <p>A 3D preview shows the rotated shape as you draw, so you can see what the finished amigurumi will look like before generating the pattern. The pattern is exportable as plain text or JSON.</p>
+
+            <h2>Implementation</h2>
+
+            <p>The pattern generation runs in Rust compiled to <a href="https://webassembly.org/">WebAssembly</a>. Three Rust crates handle the pipeline: type definitions, the core algorithm (B-spline interpolation, sampling, constraint enforcement, stitch distribution), and WASM bindings via <a href="https://rustwasm.github.io/docs/wasm-pack/">wasm-pack</a>. The frontend is <a href="https://react.dev/">React</a> with TypeScript, using Canvas for the drawing interface and the 3D preview. WASM computation runs in a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API">Web Worker</a> so the UI stays responsive while the pattern is being generated. <a href="https://vite.dev/">Vite</a> handles the dev server and build.</p>
+        </article>
+
+        <footer>
+            <a href="/blog/">&larr; Back to Blog</a>
+            <a href="/">Home</a>
+        </footer>
+    </div>
+</body>
+</html>

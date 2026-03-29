@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Count of Monte Carlo — Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/blog/" class="back">&larr; Blog</a>
+            <h1>The Count of Monte Carlo</h1>
+            <p class="meta">Monte Carlo simulation converging random text into Dumas</p>
+            <p class="links-row">
+                <a href="https://sean-reid.github.io/the-count-of-monte-carlo/">Live Demo</a>
+                <a href="https://github.com/sean-reid/the-count-of-monte-carlo">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <p>The name is a bad pun and I'm not sorry about it. <a href="https://en.wikipedia.org/wiki/The_Count_of_Monte_Cristo"><em>The Count of Monte Cristo</em></a> by Alexandre Dumas is a long novel. A <a href="https://en.wikipedia.org/wiki/Monte_Carlo_method">Monte Carlo simulation</a> is a process that uses randomness to converge toward a target. Put them together and you get a simulation that starts with gibberish and gradually, character by character, converges into the text of the novel.</p>
+
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Alexander_Dumas_p%C3%A8re_par_Nadar_-_Google_Art_Project.jpg/400px-Alexander_Dumas_p%C3%A8re_par_Nadar_-_Google_Art_Project.jpg" alt="Alexandre Dumas, photographed by Nadar in 1855" loading="lazy">
+                <figcaption>Alexandre Dumas, photographed by Nadar, 1855. <a href="https://commons.wikimedia.org/wiki/File:Dumas_by_Nadar,_1855.jpg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <h2>How it works</h2>
+
+            <p>The simulation fetches the full text of the novel from <a href="https://www.gutenberg.org/">Project Gutenberg</a> (the file <code>1184-0.txt</code> included in the repo). It splits the text into passages of roughly 100 words each. For each passage, the display starts as random characters: every letter replaced by a random letter, every digit by a random digit. Spaces and newlines are preserved from the start so the text maintains its visual shape even when the content is scrambled.</p>
+
+            <p>Each animation frame, every incorrect character has a 3% chance of snapping to its correct value. The algorithm doesn't march left to right. It randomizes which characters get checked on each frame, so the text resolves in a scattered, organic pattern. Some characters get lucky early. Others hold out as the last few stubborn wrong letters in an otherwise correct paragraph. The convergence percentage ticks upward in the stats display until the passage hits 100% and the status flips to "Complete."</p>
+
+            <h2>The pun as a design constraint</h2>
+
+            <p>I could have used any text. A Monte Carlo convergence demo works with lorem ipsum, with Shakespeare, with the United States tax code. But the whole point was the name. The project only exists because the pun exists. That meant committing to the full novel, which is over 450,000 words. Splitting it into passages and letting the user navigate between them with Previous/Next buttons was the obvious solution. There's also a "Skip to End" button for anyone who wants to see a completed passage without waiting.</p>
+
+            <h2>Visual design</h2>
+
+            <p>The interface leans into the literary theme. The background is dark brown. The text displays on a cream-colored panel with inset shadows that suggest aged paper. Typography uses <a href="https://en.wikipedia.org/wiki/Georgia_(typeface)">Georgia</a> and Garamond, both serif faces associated with book typesetting. A gradient progress bar tracks convergence percentage, and the stats box shows the current passage number and iteration count.</p>
+
+            <p>Watching the text resolve is the whole experience. The scrambled characters create a visual texture that's almost pleasant on its own, and then individual words start emerging from the noise. You'll recognize a character name before the sentence around it has finished converging. It's a small, idle thing, but it has a hypnotic quality that makes you want to watch at least a few passages all the way through.</p>
+
+            <h2>Implementation</h2>
+
+            <p>The entire project is a single HTML file plus the text file. No build step, no dependencies. The animation loop uses <a href="https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame">requestAnimationFrame</a> and the convergence logic is a few dozen lines of JavaScript. The heaviest thing the browser does is the initial fetch of the novel text, which is a few megabytes. After that, everything is string manipulation and DOM updates.</p>
+        </article>
+
+        <footer>
+            <a href="/blog/">&larr; Back to Blog</a>
+            <a href="/">Home</a>
+        </footer>
+    </div>
+</body>
+</html>

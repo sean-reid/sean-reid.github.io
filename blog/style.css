@@ -1,0 +1,221 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica', 'Arial', sans-serif;
+    line-height: 1.7;
+    color: #1a1a1a;
+    background: #fafafa;
+    padding: 2rem 1rem;
+}
+
+.container {
+    max-width: 680px;
+    margin: 0 auto;
+}
+
+header {
+    margin-bottom: 3rem;
+}
+
+header h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    letter-spacing: -0.02em;
+}
+
+.back {
+    display: inline-block;
+    color: #666;
+    text-decoration: none;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    transition: color 0.2s;
+}
+
+.back:hover {
+    color: #0366d6;
+}
+
+.meta {
+    color: #666;
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+}
+
+.links-row {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.links-row a {
+    color: #0366d6;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.links-row a:hover {
+    text-decoration: underline;
+}
+
+article {
+    margin-bottom: 3rem;
+}
+
+article p {
+    margin-bottom: 1.25rem;
+    font-size: 1rem;
+}
+
+article h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem;
+    color: #333;
+}
+
+article code {
+    background: #f0f0f0;
+    padding: 0.15em 0.4em;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+
+article ul, article ol {
+    margin-bottom: 1.25rem;
+    padding-left: 1.5rem;
+}
+
+article li {
+    margin-bottom: 0.4rem;
+}
+
+article blockquote {
+    border-left: 3px solid #ddd;
+    padding-left: 1rem;
+    color: #555;
+    margin-bottom: 1.25rem;
+    font-style: italic;
+}
+
+article figure {
+    margin: 2rem 0;
+}
+
+article figure img {
+    width: 100%;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+}
+
+article figure.small img {
+    width: 60%;
+    display: block;
+    margin: 0 auto;
+}
+
+article figcaption {
+    font-size: 0.82rem;
+    color: #888;
+    margin-top: 0.5rem;
+    line-height: 1.4;
+}
+
+article figcaption a {
+    color: #888;
+    text-decoration: underline;
+}
+
+footer {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+}
+
+footer a {
+    color: #333;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+}
+
+footer a:hover {
+    color: #0366d6;
+}
+
+/* Blog index styles */
+.blog-list {
+    list-style: none;
+}
+
+.blog-list li {
+    padding: 1rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.blog-list a {
+    color: #1a1a1a;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1.05rem;
+    transition: color 0.2s;
+}
+
+.blog-list a:hover {
+    color: #0366d6;
+}
+
+.blog-list .desc {
+    color: #666;
+    font-size: 0.9rem;
+    margin-top: 0.2rem;
+}
+
+.section-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #999;
+    margin-top: 2.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.index-footer {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e0e0e0;
+    text-align: center;
+}
+
+.index-footer a {
+    color: #333;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+}
+
+.index-footer a:hover {
+    color: #0366d6;
+}
+
+@media (max-width: 600px) {
+    body {
+        padding: 1.5rem 1rem;
+    }
+
+    header h1 {
+        font-size: 1.6rem;
+    }
+
+    article p {
+        font-size: 0.95rem;
+    }
+}

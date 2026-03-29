@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anagram Solver — Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/blog/" class="back">&larr; Blog</a>
+            <h1>Anagram Solver</h1>
+            <p class="meta">Find every valid word combination hiding inside a phrase</p>
+            <p class="links-row">
+                <a href="https://sean-reid.github.io/anagram/">Live Demo</a>
+                <a href="https://github.com/sean-reid/anagram">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <p>There are websites that find anagrams, but most of them return one result. Maybe two. The interesting question isn't "what's an anagram of this phrase" but "what are <em>all</em> the anagrams of this phrase, and which ones are actually good?" That's a harder problem, and it's the one I wanted to solve.</p>
+
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Anagram_Listen_%3D_Silent.svg/400px-Anagram_Listen_%3D_Silent.svg.png" alt="Listen equals Silent anagram" loading="lazy">
+                <figcaption>A classic anagram: LISTEN = SILENT. <a href="https://commons.wikimedia.org/wiki/File:Anagram_Listen_%3D_Silent.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <p>The solver takes any input phrase, tears it down to its constituent letters, and rebuilds every possible combination of real English words that uses those same letters exactly. Not just one answer. All of them, ranked by quality.</p>
+
+            <h2>Letter frequency arrays</h2>
+
+            <p>The core data structure is simple: a 26-element array of bytes, one slot per letter of the alphabet. Every word in the dictionary gets converted to this representation at startup. The input phrase gets the same treatment. Checking whether a word can be formed from a set of remaining letters is just a comparison of 26 integers. Subtracting a word from the remaining pool is 26 subtractions. This makes the inner loop of the search very fast, which matters when you're exploring millions of combinations.</p>
+
+            <p>The dictionary is embedded into the <a href="https://webassembly.org/">WebAssembly</a> binary at compile time using Rust's <code>include_str!</code> macro. At initialization, the solver filters the full dictionary down to only words that could possibly be formed from the input phrase's letters. It then sorts those candidates by length, longest first. This ordering biases the search toward solutions with longer words early, which tend to be the interesting ones.</p>
+
+            <h2>Recursive search with pruning</h2>
+
+            <p>The search is a depth-first <a href="https://en.wikipedia.org/wiki/Recursion_(computer_science)">recursion</a>. At each level, the algorithm iterates through candidate words, checks whether each can be built from the remaining letter pool, and if so, subtracts those letters and recurses. A <code>start_idx</code> parameter prevents the search from reconsidering words it already passed, which eliminates duplicate permutations. Without this, "star wars" and "wars star" would both appear as separate results.</p>
+
+            <p>There's a second layer of deduplication on top of that. The solver tracks "signatures" for each partial result, built from the set of longer words (four letters or more) found so far. If a branch would produce a signature that's already been seen, it gets pruned. This catches cases where different orderings of the search arrive at the same meaningful combination through different paths.</p>
+
+            <h2>Quality heuristic</h2>
+
+            <p>Finding all valid anagrams is only half the problem. A phrase like "William Shakespeare" produces thousands of results, and most of them are garbage: strings of two-letter words that technically use all the right letters but aren't interesting to anyone. The solver ranks results using a scoring function that penalizes word count heavily (1000 points per word), rewards longer average word length (100 points per character), and penalizes variance in word lengths (5 points per unit). The effect is that a two-word anagram with balanced lengths scores much higher than a seven-word anagram full of "is" and "at" and "me".</p>
+
+            <p>Results come back sorted by this score. The top results are almost always the ones you'd actually want to see.</p>
+
+            <h2>Running in the browser</h2>
+
+            <p>The solver is written in <a href="https://www.rust-lang.org/">Rust</a> and compiled to WebAssembly with <a href="https://github.com/nickel-org/rust-wasm-pack">wasm-pack</a>. Everything runs client-side. There's no server processing the request, no API call, no latency beyond what your own CPU needs to chew through the search tree. For short phrases the results appear instantly. For longer phrases with many candidate words, it can take a few seconds, during which a spinner replaces the search button so you know it's working.</p>
+
+            <p>The UI is minimal on purpose. A text field, a button, a list of results. The interesting part is the algorithm, not the interface.</p>
+        </article>
+
+        <footer>
+            <a href="/blog/">&larr; Back to Blog</a>
+            <a href="/">Home</a>
+        </footer>
+    </div>
+</body>
+</html>

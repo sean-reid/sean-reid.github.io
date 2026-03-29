@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Will I Die — Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/blog/" class="back">&larr; Blog</a>
+            <h1>How Will I Die</h1>
+            <p class="meta">Your top causes of death by location, age, and sex, based on global mortality data</p>
+            <p class="links-row">
+                <a href="https://sean-reid.github.io/how-will-i-die/">Live Demo</a>
+                <a href="https://github.com/sean-reid/how-will-i-die">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <p>Mortality statistics are public, detailed, and kind of fascinating once you start digging into them. The <a href="https://www.healthdata.org/">Institute for Health Metrics and Evaluation</a> publishes the <a href="https://vizhub.healthdata.org/gbd-compare/">Global Burden of Disease</a> dataset, which breaks down causes of death by country, age group, sex, and year. This project makes that data queryable from a browser. Pick your location, enter your age, select your sex, and it tells you the ten things most likely to kill you, ranked by probability.</p>
+
+            <figure>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Social_determinants_of_health_-_Whitehead_and_Dahlgren.png/600px-Social_determinants_of_health_-_Whitehead_and_Dahlgren.png" alt="Social determinants of health diagram" loading="lazy">
+                <figcaption>Social determinants of health (Whitehead and Dahlgren model). Mortality varies dramatically by location, age, and sex. <a href="https://commons.wikimedia.org/wiki/File:Social_determinants_of_health_-_Whitehead_and_Dahlgren.png">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <p>The results are sometimes surprising. Young men in the United States have a wildly different risk profile than older women in Japan. Car accidents and violence dominate in some demographics. Heart disease dominates in others. A few causes show up for almost everyone regardless of demographics (ischemic heart disease is hard to escape), while others are sharply concentrated in specific groups.</p>
+
+            <h2>Data and computation</h2>
+
+            <p>The IHME dataset is large. Rather than querying a server on every request, the relevant mortality tables are pre-processed and compiled into a <a href="https://webassembly.org/">WebAssembly</a> module written in Rust. When you load the page, the WASM module initializes and exposes a prediction function to JavaScript. The location list is cached in <a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage">localStorage</a> after the first load so subsequent visits don't need to re-fetch it.</p>
+
+            <p>Using WASM for this is partly about performance and partly about packaging. The mortality data and the lookup logic ship as a single binary blob that the browser can execute directly. No API server, no database, no backend infrastructure. The whole thing runs on GitHub Pages as a static site.</p>
+
+            <h2>What the numbers mean</h2>
+
+            <p>The output is a ranked list of causes, not a probability distribution. It doesn't tell you there's a 23% chance you'll die of heart disease. It tells you that heart disease is your number one risk, followed by stroke, followed by lung cancer, and so on down the list. The ranking comes from the GBD's disability-adjusted life year and mortality rate data for your specific demographic cell.</p>
+
+            <p>The interface is deliberately minimal. Three inputs, one button, one list. There's no attempt to soften the presentation or add disclaimers about how "everyone is unique." The data is what the data is. If you're a 35-year-old man in Brazil, the tool tells you what 35-year-old men in Brazil tend to die of, ranked by frequency. What you do with that information is your business.</p>
+
+            <h2>Implementation</h2>
+
+            <p>The codebase splits roughly 54% JavaScript, 25% HTML, and 21% Rust. The Rust code handles the data storage, indexing, and lookup. It's compiled to WASM with standard <a href="https://rustwasm.github.io/docs/wasm-bindgen/">wasm-bindgen</a> tooling. The JavaScript side manages the form, calls into the WASM module on submit, and renders the results as a simple ordered list. No charting library, no D3, no fancy visualization. Just a numbered list of causes of death. Sometimes the most effective data visualization is plain text.</p>
+        </article>
+
+        <footer>
+            <a href="/blog/">&larr; Back to Blog</a>
+            <a href="/">Home</a>
+        </footer>
+    </div>
+</body>
+</html>

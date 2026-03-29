@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antibook — Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/blog/" class="back">&larr; Blog</a>
+            <h1>Antibook</h1>
+            <p class="meta">Classic literature with every word replaced by its antonym, sourced from Project Gutenberg</p>
+            <p class="links-row">
+                <a href="https://sean-reid.github.io/antibook/">Live Demo</a>
+                <a href="https://github.com/sean-reid/antibook">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <p>The opening of <em>A Tale of Two Cities</em> is one of the most quoted passages in English literature. "It was the best of times, it was the worst of times." Run it through Antibook and you get something like: "It wasn't the worst of places, it wasn't the best of places." The sentence structure survives. The meaning inverts. The result is absurd in a way that's surprisingly readable.</p>
+
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Gutenberg_Bible%2C_Lenox_Copy%2C_New_York_Public_Library%2C_2009._Pic_01.jpg/400px-Gutenberg_Bible%2C_Lenox_Copy%2C_New_York_Public_Library%2C_2009._Pic_01.jpg" alt="A page from the Gutenberg Bible" loading="lazy">
+                <figcaption>A page from the Gutenberg Bible. Antibook draws its source texts from Project Gutenberg's digital catalog and inverts every word. <a href="https://commons.wikimedia.org/wiki/File:Gutenberg_Bible,_Lenox_Copy,_New_York_Public_Library,_2009._Pic_01.jpg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <p>Antibook takes books from the <a href="https://www.gutenberg.org/">Project Gutenberg</a> catalog and replaces every word it can with an antonym. You can search the catalog, pick a book, and read the inverted version in the browser. A compare mode lets you see the original and the antibook side by side.</p>
+
+            <h2>The antonym problem</h2>
+
+            <p>Finding the opposite of a word sounds simple until you try to do it at scale. "Hot" maps to "cold" easily enough. But what's the opposite of "Tuesday"? Or "the"? Or "Ebeneezer"? There is no universal antonym for most of the words in a typical sentence. The system needs to handle this gracefully: invert what can be inverted, leave the rest alone, and produce text that still feels like it has a rhythm.</p>
+
+            <p>Antibook uses a five-tier antonym lookup. The first tier is a hand-curated dictionary of about 900 word pairs. These are the obvious ones: good/bad, up/down, love/hate, yes/no. Because high-frequency words dominate natural language, this small list covers 60 to 70 percent of the tokens in a typical book by frequency. The second tier pulls from <a href="https://wordnet.princeton.edu/">Princeton WordNet</a> via <a href="https://www.nltk.org/">NLTK</a>, adding another 15 to 20 percent. The third tier uses the <a href="https://en.wikipedia.org/wiki/Moby_Project">Moby Thesaurus</a> with transitive closure to find indirect antonym relationships. An optional fourth tier uses <a href="https://nlp.stanford.edu/projects/glove/">GloVe</a> word embeddings to find semantic opposites by vector inversion. Everything that falls through all four tiers gets left unchanged: proper nouns, articles, prepositions, and other words that have no meaningful opposite.</p>
+
+            <h2>The pipeline</h2>
+
+            <p>Processing a book is a multi-stage pipeline written in Python. First, the raw text is downloaded from Project Gutenberg and the boilerplate headers and footers are stripped. Then each word is run through the tiered antonym lookup. The transformed text gets chunked into JSON fragments small enough for efficient delivery over GitHub Pages. Finally, an index is built using <a href="https://www.fusejs.io/">Fuse.js</a> so users can search the catalog by title or author.</p>
+
+            <p>The whole thing runs on free infrastructure. Building the antonym map takes about 10 minutes. Processing 500 books takes roughly 30 minutes in a weekly <a href="https://github.com/features/actions">GitHub Actions</a> run. The output is a static site under 1 GB, served by GitHub Pages with <a href="https://www.cloudflare.com/">Cloudflare</a> in front.</p>
+
+            <h2>What makes it funny</h2>
+
+            <p>The humor comes from the tension between preserved structure and inverted meaning. Dialogue tags still say "he said" because "said" has no antonym. Character names persist. Sentence structure is identical to the original. But within that familiar skeleton, every adjective, verb, and adverb has been flipped. Characters who were brave are now cowardly. Scenes set in daylight happen at night. Love stories become hate stories. The effect is less like a parody and more like reading a book from a mirror universe.</p>
+
+            <p>Some books work better than others. Dickens is great because his prose is so emotionally loaded that the inversions are obvious and funny. Technical writing is less interesting because flipping clinical language produces more clinical language. The best antibooks are the ones where the original is famous enough that you recognize what's been changed.</p>
+        </article>
+
+        <footer>
+            <a href="/blog/">&larr; Back to Blog</a>
+            <a href="/">Home</a>
+        </footer>
+    </div>
+</body>
+</html>
