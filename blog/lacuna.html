@@ -46,7 +46,7 @@
 
             <p>The board is rendered in <a href="https://developer.mozilla.org/en-US/docs/Web/SVG">SVG</a> rather than Canvas. The primary reason is hit-testing: in SVG, each strand is a DOM element with native event handling. Selecting a strand, highlighting it on hover, or detecting which region the user clicked in all come from the DOM for free. In Canvas, all of this would need to be reimplemented with manual coordinate math and spatial indexing.</p>
 
-            <p>Strands are drawn through waypoints using <a href="https://en.wikipedia.org/wiki/Chaikin%27s_algorithm">Chaikin's corner-cutting algorithm</a>. Chaikin smoothing iteratively replaces sharp corners with smooth curves by subdividing each segment and cutting corners at 25%/75% positions. After a few iterations, the result is a smooth curve that passes near (but not exactly through) the original waypoints. This gives the strands an organic quality, like thread stretched between pins, rather than the angular look of straight line segments between points.</p>
+            <p>Strands are drawn through waypoints using <a href="https://en.wikipedia.org/wiki/Subdivision_surface">Chaikin's corner-cutting algorithm</a>. Chaikin smoothing iteratively replaces sharp corners with smooth curves by subdividing each segment and cutting corners at 25%/75% positions. After a few iterations, the result is a smooth curve that passes near (but not exactly through) the original waypoints. This gives the strands an organic quality, like thread stretched between pins, rather than the angular look of straight line segments between points.</p>
 
             <h2>Multiplayer</h2>
 
