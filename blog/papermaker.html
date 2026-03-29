@@ -36,9 +36,9 @@
 
             <p>What makes SCIGen effective (and disturbing) is that it captures the form of academic writing without any of the content. The generated sentences are grammatically correct and use domain-appropriate vocabulary. They reference each other internally. The figures are consistent with the text that describes them. If you skim the paper the way a busy reviewer might, it passes.</p>
 
-            <h2>From Perl to JavaScript</h2>
+            <h2>From Perl to Rust/WASM</h2>
 
-            <p>The original SCIGen was written in Perl and output LaTeX source files to disk. Porting the grammar evaluation to JavaScript meant making it work entirely in the browser. The grammar rules are loaded as a data structure, and the recursive expansion runs in JavaScript. The grammar files are large, but the computation itself is fast because each individual expansion step is a simple random selection from a list of alternatives.</p>
+            <p>The original SCIGen was written in Perl and output LaTeX source files to disk. Rather than porting the grammar engine to JavaScript, I rewrote it in <a href="https://www.rust-lang.org/">Rust</a> and compiled it to <a href="https://webassembly.org/">WebAssembly</a> via <a href="https://rustwasm.github.io/docs/wasm-pack/">wasm-pack</a>. The <code>ScigenGenerator</code> struct holds the grammar rules as a hash map, a seeded RNG for reproducible output, and counters for numbered cross-references (so that <code>\ref{fig3}</code> actually points to figure 3). The recursive expansion runs in a Web Worker so the UI stays responsive while the grammar is being evaluated. Rust handles the deep call stacks and string manipulation involved in expanding thousands of nested rules better than JavaScript would.</p>
 
             <p>The harder part is the LaTeX compilation. A generated paper isn't useful as raw LaTeX source. It needs to be compiled into a PDF with proper two-column layout, typeset mathematics, embedded figures, and consistent formatting. The browser generates the LaTeX source, sends it to a remote compilation service, and gets back a PDF.</p>
 
