@@ -30,7 +30,7 @@
 
             <h2>How the result is determined</h2>
 
-            <p>The quiz presents 10 questions drawn randomly from a pool of about 500. Each question has four multiple-choice answers. The questions are intentionally absurd ("How many bees could you fit in your mouth?") because the goal is entertainment, not psychometric accuracy.</p>
+            <p>The quiz presents 10 questions drawn randomly from a pool of about 500. Each question has four multiple-choice answers. The questions are intentionally absurd ("How many bees could you fit in your mouth?").</p>
 
             <p>When you finish, your answers are fed into a <a href="https://en.wikipedia.org/wiki/Hash_function">hash function</a>. Each answer's numeric value is multiplied by its question position (1-indexed), and the products are summed. The total is then taken modulo the number of available results. This produces a deterministic mapping: the same answers always give the same result, which makes it feel like the quiz "knows" something about you even though it's just arithmetic.</p>
 
