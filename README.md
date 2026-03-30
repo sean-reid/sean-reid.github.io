@@ -1,20 +1,20 @@
 # sean-reid.github.io
 
-Personal website and project blog. Built with plain HTML and CSS, hosted on GitHub Pages.
+Personal website and project portfolio. Built with plain HTML and CSS, hosted on GitHub Pages.
 
-- **[Homepage](https://sean-reid.github.io/)** — project showcase
-- **[Blog](https://sean-reid.github.io/blog/)** — writeups for each project
+**[sean-reid.github.io](https://sean-reid.github.io/)**
 
 ## Structure
 
 ```
-index.html          Landing page with featured and listed projects
+index.html          Landing page — links to project writeups
 blog/
-  index.html        Blog index
-  style.css         Shared blog stylesheet
+  style.css         Shared stylesheet for writeups
+  img/              Project screenshots
   *.html            Individual project writeups
 ```
 
-## Adding a blog post
+## Adding a project
 
-Create a new HTML file in `blog/` using any existing post as a template, then add an entry to `blog/index.html`.
+1. Create a new HTML file in `blog/` using any existing writeup as a template
+2. Add an entry to `index.html` (featured grid or project list)
