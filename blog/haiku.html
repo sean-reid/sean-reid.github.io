@@ -11,7 +11,7 @@
         <header>
             <a href="/blog/" class="back">&larr; Blog</a>
             <h1>Haiku</h1>
-            <p class="meta">Ambient haiku generator with backtracking syllable construction</p>
+            <p class="meta">Ambient haiku generator with a thematic context-free grammar</p>
             <p class="links-row">
                 <a href="https://sean-reid.github.io/haiku/">Live Demo</a>
                 <a href="https://github.com/sean-reid/haiku">Source</a>
@@ -26,25 +26,29 @@
                 <figcaption>Matsuo Basho, the most famous haiku poet, painted by Morikawa Kyoriku. <a href="https://commons.wikimedia.org/wiki/File:Basho_by_Morikawa_Kyoriku_(1656-1715).jpg">Wikimedia Commons</a></figcaption>
             </figure>
 
-            <p>The core problem with generating haiku is the syllable constraint. A haiku is three lines of 5, 7, and 5 syllables. If you just pick random words and try to add them up, you almost never land on exactly the right count. The last word needs to have precisely the right number of syllables to finish the line, and if no word fits, you have to throw out the whole attempt and start over. Brute-force retry works but it's slow and produces a lot of grammatical garbage.</p>
+            <p>The core problem with generating haiku is the syllable constraint: three lines of 5, 7, and 5 syllables. If you just pick random words and try to add them up, you almost never land on exactly the right count. And even when you do, the result reads like a word salad. The generator needed two things: a way to enforce syllable budgets exactly, and a way to produce output that reads like a poem rather than a random selection of words.</p>
 
-            <h2>The word data</h2>
+            <h2>Context-free grammar</h2>
 
-            <p>Instead of counting syllables at runtime, I pre-organized the vocabulary into a JSON file where words are grouped first by part of speech (adjective, noun, verb) and then by syllable count. So when the generator needs a noun with exactly two syllables, it can look that up directly without scanning the whole dictionary. This makes the constraint-solving fast enough to run many times per second.</p>
+            <p>The generator uses a <a href="https://en.wikipedia.org/wiki/Context-free_grammar">context-free grammar</a> with role-specific production rules for each line. Line 1 expands scene-setting noun phrases. Line 2 requires a verb phrase to carry the action or observation across 7 syllables. Line 3 resolves with closing imagery. Phrase-level rules (<code>scene_np</code>, <code>verb_phrase</code>, <code>close_phrase</code>) give the grammar structural variety so that poems don't all follow the same adjective-noun, noun-verb-adjective, verb-noun skeleton.</p>
 
-            <h2>Backtracking construction</h2>
+            <p>The word bank is a JSON file containing 600+ words classified by grammatical role and syllable count. When the grammar needs a two-syllable noun, it indexes directly into that bucket rather than scanning the whole vocabulary. This makes the syllable constraint cheap to enforce during expansion.</p>
 
-            <p>Each line follows a grammatical template. Line one is adjective + noun (5 syllables). Line two is noun + verb + adjective (7 syllables). Line three is verb + noun (5 syllables). The templates give the output a sentence-like quality rather than a word salad feel.</p>
+            <h2>Thematic coherence</h2>
 
-            <p>The generator fills each position in the template using a <a href="https://en.wikipedia.org/wiki/Backtracking">backtracking algorithm</a>. It picks a random word for the first slot, calculates how many syllables remain, then picks a word for the next slot that doesn't exceed the remaining budget. If it reaches a dead end where no word in the dictionary has the exact syllable count needed for the final position, it backs up one step and tries a different word. The recursion continues until all positions are filled and the syllable count is exactly zero.</p>
+            <p>Early versions picked words from a single undifferentiated pool. The poems were grammatically correct and metrically valid but felt random. A haiku about snow would suddenly mention the ocean in line 2 and a forest in line 3.</p>
 
-            <p>There's a subtlety in how the budget is managed. When filling position N, the algorithm reserves a minimum of one syllable per remaining position. A three-syllable word can't go in the first slot of a 5-syllable line that has two positions, because that would leave only two syllables for the second word and none for the third. This pruning keeps the search space small.</p>
+            <p>The fix was to organize the vocabulary into eight nature themes: winter, spring, summer, autumn, ocean, mountain, night sky, and forest. Each theme has its own pool of preferred words organized by part of speech. The generator picks one theme per poem and draws exclusively from that theme's vocabulary, falling back to a general pool (words of 3 syllables or fewer that work across themes) only when the theme pool can't satisfy the remaining syllable budget. The result is that all three lines share a consistent atmosphere.</p>
+
+            <h2>Deduplication</h2>
+
+            <p>Repetition kills the illusion. If the same noun appears in lines 1 and 3, or the same determiner opens every line, the output feels mechanical. The generator tracks used words across all three lines and rejects duplicates during expansion. This includes stem-level conflicts: if "drift" appeared in line 1, "drifting" is blocked in line 3. Determiners are deduplicated separately to avoid patterns like "the X / the Y / the Z." A/an agreement is enforced automatically based on the following word's initial sound.</p>
 
             <h2>The ambient part</h2>
 
-            <p>The background is an animated CSS gradient that cycles through purple, blue, and teal over 30 seconds. The haiku text sits in a frosted-glass card using <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/backdrop-filter">backdrop-filter: blur</a>. When a new haiku is ready, it fades in over two seconds while the old one fades out. The timing is slow on purpose. This is something you put on a second monitor or a tablet on your desk. It's not an app you interact with.</p>
+            <p>A new haiku generates every 10 seconds, or immediately when you click "New." An "Auto" toggle pauses or resumes the cycle. Transitions use staggered per-line animations: the old poem blurs out, the new one reveals downward line by line. The background is an animated CSS gradient cycling through purple, blue, and teal. The haiku text sits in a frosted-glass card using <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/backdrop-filter">backdrop-filter: blur</a>.</p>
 
-            <p>The whole thing is two files: one HTML page with inline CSS and JavaScript, and one JSON file containing the word data. No build step, no dependencies, no framework.</p>
+            <p>Two files: one HTML page and one JSON word bank. No build step, no dependencies, no framework.</p>
         </article>
 
         <footer>
