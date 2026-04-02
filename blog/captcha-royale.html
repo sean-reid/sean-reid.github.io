@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Captcha Royale — Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/" class="back">&larr; Home</a>
+            <h1>Captcha Royale</h1>
+            <p class="meta">Competitive multiplayer battle royale where the weapon is procedurally generated CAPTCHAs</p>
+            <p class="links-row">
+                <a href="https://sean-reid.github.io/captcha-royale/">Live Demo</a>
+                <a href="https://github.com/sean-reid/captcha-royale">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <figure>
+                <img src="img/captcha-royale.png" alt="Screenshot of Captcha Royale" loading="lazy">
+                <figcaption>Captcha Royale's landing page.</figcaption>
+            </figure>
+
+            <p>The premise is simple: up to 16 players enter a room, CAPTCHAs appear on screen, and if you answer wrong or run out of time, you're eliminated. Last player standing wins. The idea came from noticing that CAPTCHAs are one of the few interactions where humans routinely fail at a task designed to be easy for humans. That failure rate felt like it could be the basis for a competitive game, not just a gate on a login form.</p>
+
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Captcha_early.JPG/400px-Captcha_early.JPG" alt="An early CAPTCHA example from 1998" loading="lazy">
+                <figcaption>An early CAPTCHA from 1998. The term is a backronym for "Completely Automated Public Turing test to tell Computers and Humans Apart." <a href="https://commons.wikimedia.org/wiki/File:Captcha_early.JPG">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <p>CAPTCHAs have an interesting history. The concept traces back to work by <a href="https://en.wikipedia.org/wiki/Luis_von_Ahn">Luis von Ahn</a> and others at Carnegie Mellon, who formalized the idea of a <a href="https://en.wikipedia.org/wiki/CAPTCHA">reverse Turing test</a> where the judge is a machine rather than a human. Traditional CAPTCHAs present distorted text, noisy images, or perceptual puzzles that are trivial for biological vision systems but difficult for automated ones. The irony is that modern machine learning has largely closed that gap, which is why services like <a href="https://en.wikipedia.org/wiki/ReCAPTCHA">reCAPTCHA</a> have moved to behavioral analysis instead. In Captcha Royale, the CAPTCHAs don't need to stop bots. They just need to be hard enough to make humans sweat.</p>
+
+            <h2>Deterministic CAPTCHA generation</h2>
+
+            <p>The CAPTCHA engine is written in <a href="https://www.rust-lang.org/">Rust</a> and compiled to <a href="https://webassembly.org/">WebAssembly</a>. Both the client and the server run the same WASM module. When a round starts, the server sends a seed and a set of difficulty parameters. The client's WASM module uses those inputs to generate the CAPTCHA locally, and the server's copy generates the same CAPTCHA independently to validate the answer. Because the generation is deterministic (seeded with <a href="https://en.wikipedia.org/wiki/HMAC">HMAC-SHA256</a> and driven by <a href="https://en.wikipedia.org/wiki/Salsa20#ChaCha_variant">ChaCha8</a>), both sides produce identical output without ever transmitting the CAPTCHA image or solution over the network.</p>
+
+            <p>This architecture eliminates an entire class of cheating. There's no image to intercept and feed to an OCR service, because the image is rendered locally from a seed. There's no solution in the network traffic, because the solution is computed server-side from the same seed. The only way to solve the CAPTCHA is to look at it and type the answer.</p>
+
+            <h2>CAPTCHA types</h2>
+
+            <p>There are six CAPTCHA types across two difficulty tiers. Tier 1 includes distorted text (warped characters with bezier noise and overlapping strokes), simple math (arithmetic with visual disruption and decoy digits), and image grids (select all cells containing a target shape). These are always available and form the baseline.</p>
+
+            <p>Tier 2 unlocks as the game progresses and introduces perceptual challenges: rotated objects (find the correctly oriented item among rotated variants), color perception (<a href="https://en.wikipedia.org/wiki/Ishihara_test">Ishihara</a>-inspired grids where you identify a differently shaded tile), and sequence completion (identify the next item in a visual pattern). The tier system creates natural pacing. Early rounds are fast and filter out inattentive players. Late rounds require genuine perceptual effort.</p>
+
+            <p>Each generator has its own difficulty curve controlled by parameters like character count, warp intensity, noise density, time limit, and grid size. As rounds advance, these parameters tighten. A round-one text CAPTCHA might give you six characters with mild distortion and twelve seconds. A round-fifteen text CAPTCHA might give you nine characters with heavy warping, overlapping decoys, and five seconds.</p>
+
+            <h2>Game modes</h2>
+
+            <p>There are three modes. Endless is solo: CAPTCHAs keep coming until you fail, and your score is tracked locally. Battle Royale is the main multiplayer mode, supporting 4 to 16 players with single-elimination on wrong answers or timeouts. Sprint is a race format for 2 to 8 players where everyone solves the same 10 CAPTCHAs and the fastest total time wins, with no elimination.</p>
+
+            <p>Battle Royale was the original design and the other modes came from playtesting. Endless mode exists because people wanted to practice without the pressure of elimination. Sprint exists because some players found the battle royale format too punishing for a single mistake, and wanted a mode where consistency mattered more than perfection.</p>
+
+            <h2>Multiplayer infrastructure</h2>
+
+            <p>The backend runs on <a href="https://workers.cloudflare.com/">Cloudflare Workers</a> with <a href="https://developers.cloudflare.com/durable-objects/">Durable Objects</a> managing game state. Each match room is a Durable Object instance that owns the authoritative game loop: it generates seeds, tracks the timer, validates answers, and broadcasts eliminations. The matchmaker is a separate Durable Object that maintains the queue and pairs players by skill bracket.</p>
+
+            <p>Using Durable Objects for the match rooms turned out to be a good fit. Each room is a single-threaded actor with strongly consistent state, which means there are no race conditions around simultaneous answer submissions. When two players submit at the same instant, the Durable Object processes them sequentially. This matters in a game where milliseconds determine who gets eliminated.</p>
+
+            <p>Player data lives in <a href="https://developers.cloudflare.com/d1/">Cloudflare D1</a>, which is SQLite at the edge. Authentication is <a href="https://en.wikipedia.org/wiki/OAuth">OAuth2</a> through Google, with Discord and GitHub connectors ready but not yet enabled. The frontend is a <a href="https://react.dev/">React</a> SPA deployed to <a href="https://pages.github.com/">GitHub Pages</a>, communicating with the Workers backend over WebSocket for real-time match data and REST for everything else.</p>
+
+            <h2>ELO and matchmaking</h2>
+
+            <p>Players start at 1000 <a href="https://en.wikipedia.org/wiki/Elo_rating_system">ELO</a> and are sorted into five brackets: Bronze (below 800), Silver (800 to 1000), Gold (1000 to 1200), Platinum (1200 to 1500), and Diamond (above 1500). The matchmaker initially tries to fill a room from the player's own bracket. After 30 seconds it expands to adjacent brackets, and after 60 seconds it opens to two brackets in either direction.</p>
+
+            <p>The K-factor scales with experience: 40 for players with fewer than 30 matches, 24 for 30 to 100, and 16 beyond that. New players move quickly through the brackets until the system has enough data to place them accurately, then the swings dampen. In a battle royale with more than two players, the ELO adjustment is calculated pairwise against every other participant and averaged. This means a Bronze player who survives deep into a lobby full of Gold players will gain significantly more rating than one who merely beats other Bronze players.</p>
+
+            <h2>The monorepo</h2>
+
+            <p>The project is structured as a <a href="https://turbo.build/">Turborepo</a> monorepo with <a href="https://pnpm.io/">pnpm</a> workspaces. The Rust CAPTCHA engine lives in <code>packages/captcha-engine</code> and compiles to a roughly 230KB WASM binary. The React frontend is in <code>apps/web</code> and the Cloudflare Worker is in <code>apps/worker</code>. The WASM module is a shared dependency: the frontend loads it in the browser for rendering, and the Worker loads it in the edge runtime for validation. Having a single source of truth for CAPTCHA generation, written in Rust, tested with <code>cargo test</code>, and deployed to two very different runtimes, is one of those cases where WebAssembly's portability promise actually delivers.</p>
+        </article>
+
+        <footer>
+            <a href="/">&larr; Home</a>
+        </footer>
+    </div>
+</body>
+</html>
