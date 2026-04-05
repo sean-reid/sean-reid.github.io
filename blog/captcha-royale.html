@@ -41,9 +41,9 @@
 
             <h2>CAPTCHA types</h2>
 
-            <p>There are six CAPTCHA types across two difficulty tiers. Tier 1 includes distorted text (warped characters with bezier noise and overlapping strokes), simple math (arithmetic with visual disruption and decoy digits), and image grids (select all cells containing a target shape). These are always available and form the baseline.</p>
+            <p>There are over 45 CAPTCHA types across four difficulty tiers. Tier 1 covers the fundamentals: distorted text (warped characters with bezier noise and overlapping strokes), simple math (arithmetic with visual disruption and decoy digits), image grids (select all cells containing a target shape), dot counting, clock reading, fraction comparison, and graph reading. These are always available and form the baseline.</p>
 
-            <p>Tier 2 unlocks as the game progresses and introduces perceptual challenges: rotated objects (find the correctly oriented item among rotated variants), color perception (<a href="https://en.wikipedia.org/wiki/Ishihara_test">Ishihara</a>-inspired grids where you identify a differently shaded tile), and sequence completion (identify the next item in a visual pattern). The tier system creates natural pacing. Early rounds are fast and filter out inattentive players. Late rounds require genuine perceptual effort.</p>
+            <p>Tier 2 unlocks at round 4 and introduces perceptual challenges: rotated objects (find the correctly oriented item among rotated variants), color perception (<a href="https://en.wikipedia.org/wiki/Ishihara_test">Ishihara</a>-inspired grids where you identify a differently shaded tile), sequence completion, mirror matching, balance scales, word unscrambling, gradient ordering, overlap counting, rotation prediction, and partial occlusion. Tier 3 opens at round 7 with cognitive tasks like spatial reasoning, multi-step verification, boolean logic, path tracing, and adversarial images. Tier 4 is the nightmare tier: metamorphic CAPTCHAs, combined modality puzzles, adversarial typography, procedural novel types, time pressure cascades, and jigsaw fitting.</p>
 
             <p>Each generator has its own difficulty curve controlled by parameters like character count, warp intensity, noise density, time limit, and grid size. As rounds advance, these parameters tighten. A round-one text CAPTCHA might give you six characters with mild distortion and twelve seconds. A round-fifteen text CAPTCHA might give you nine characters with heavy warping, overlapping decoys, and five seconds.</p>
 
@@ -63,7 +63,7 @@
 
             <h2>ELO and matchmaking</h2>
 
-            <p>Players start at 1000 <a href="https://en.wikipedia.org/wiki/Elo_rating_system">ELO</a> and are sorted into five brackets: Bronze (below 800), Silver (800 to 1000), Gold (1000 to 1200), Platinum (1200 to 1500), and Diamond (above 1500). The matchmaker initially tries to fill a room from the player's own bracket. After 30 seconds it expands to adjacent brackets, and after 60 seconds it opens to two brackets in either direction.</p>
+            <p>Players start at 1000 <a href="https://en.wikipedia.org/wiki/Elo_rating_system">ELO</a> and are sorted into six brackets: Bronze (below 800), Silver (800 to 1000), Gold (1000 to 1200), Platinum (1200 to 1500), Diamond (1500 to 2000), and Master (above 2000). The matchmaker initially tries to fill a room from the player's own bracket. After 30 seconds it expands to adjacent brackets, and after 60 seconds it opens to two brackets in either direction.</p>
 
             <p>The K-factor scales with experience: 40 for players with fewer than 30 matches, 24 for 30 to 100, and 16 beyond that. New players move quickly through the brackets until the system has enough data to place them accurately, then the swings dampen. In a battle royale with more than two players, the ELO adjustment is calculated pairwise against every other participant and averaged. This means a Bronze player who survives deep into a lobby full of Gold players will gain significantly more rating than one who merely beats other Bronze players.</p>
 
