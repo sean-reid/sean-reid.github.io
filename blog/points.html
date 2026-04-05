@@ -11,7 +11,7 @@
         <header>
             <a href="/" class="back">&larr; Home</a>
             <h1>Points</h1>
-            <p class="meta">Find mathematical expressions that pass through a set of points</p>
+            <p class="meta">Find the simplest algebraic curve through a set of points</p>
             <p class="links-row">
                 <a href="https://sean-reid.github.io/points/">Live Demo</a>
                 <a href="https://github.com/sean-reid/points">Source</a>
@@ -21,37 +21,33 @@
         <article>
             <figure>
                 <img src="img/points.png" alt="Screenshot of Points" loading="lazy">
-                <figcaption>The Points expression finder.</figcaption>
+                <figcaption>Points finding an ellipse through clicked coordinates.</figcaption>
             </figure>
 
-            <p>Given a handful of (x, y) coordinate pairs, can you find a mathematical expression that passes through all of them? Not a polynomial fit. Not a regression. An exact symbolic expression, built from single-digit constants and the five basic arithmetic operators, that evaluates to the correct y value at every given x. This is closer to <a href="https://en.wikipedia.org/wiki/Symbolic_regression">symbolic regression</a> than curve fitting, and the search space is enormous.</p>
+            <p>Click a few points on a grid and instantly see the simplest algebraic curve that passes through all of them. Not a polynomial fit or a regression — an exact implicit equation with small integer coefficients, like <code>x&sup2; + y&sup2; = 25</code> or <code>x &middot; y = 6</code>. The solver finds lines, conics, cubics, and quartics in under a millisecond.</p>
 
             <figure class="small">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Linear_regression.svg/330px-Linear_regression.svg.png" alt="Curve fitting through data points" loading="lazy">
-                <figcaption>Fitting a curve through data points. Points searches for algebraic expressions rather than statistical fits. <a href="https://commons.wikimedia.org/wiki/File:Linear_regression.svg">Wikimedia Commons</a></figcaption>
+                <figcaption>Statistical curve fitting finds an approximate best fit. Points instead finds exact implicit equations with integer coefficients. <a href="https://commons.wikimedia.org/wiki/File:Linear_regression.svg">Wikimedia Commons</a></figcaption>
             </figure>
 
-            <h2>Building expressions from atoms</h2>
+            <h2>Null spaces and Vandermonde matrices</h2>
 
-            <p>The algorithm works bottom-up. It starts with atomic expressions: the variable x and the constants 0 through 9. Each of these has a "size" of 1. It then combines pairs of smaller expressions using addition, subtraction, multiplication, division, and exponentiation to produce larger expressions. Two size-1 expressions combined with an operator produce a size-3 expression (left operand + operator + right operand). Two size-3 expressions combine into size-7. And so on.</p>
+            <p>The algorithm treats curve-finding as a linear algebra problem. For a given degree d, there is a finite set of monomial terms — degree 2, for example, has six: 1, x, y, x&sup2;, xy, y&sup2;. Any implicit curve of that degree is a linear combination of these monomials set equal to zero. The solver builds a <a href="https://en.wikipedia.org/wiki/Vandermonde_matrix">Vandermonde matrix</a> where each row is a clicked point and each column is a monomial evaluated at that point, then looks for a <a href="https://en.wikipedia.org/wiki/Kernel_(linear_algebra)">null vector</a> — a set of coefficients that makes every row vanish. That null vector is the equation of the curve.</p>
 
-            <p>An <code>ExprInterner</code> deduplicates structurally identical expressions during construction. Without this, the combinatorial explosion at larger sizes would consume all available memory. The interner keeps a single canonical copy of each unique expression tree and hands out lightweight references.</p>
+            <p>To favor simple results, the solver searches sparse subsets first. For each degree (1 through 4), it tries all k-subsets of monomial columns starting from k = 2 and working upward. The first non-trivial null vector found this way uses the fewest terms possible, which tends to produce the most elegant equation. When multiple solutions exist at the same sparsity, a scoring function picks the one with the smallest coefficients and the most symmetric use of x and y — preferring <code>x&sup2; + y&sup2; = 25</code> over an equivalent but lopsided form.</p>
 
-            <h2>Searching for equivalences</h2>
+            <h2>From floats to exact integers</h2>
 
-            <p>The solver isn't looking for a single expression that matches the points. It's looking for two expressions, f and g, that produce identical output vectors when evaluated across all given x values. The equation f = g is then the answer. This formulation is more general than searching for a single expression, because it allows the solver to find relationships like <code>x * x + 1 = x + x * x - x + 1</code> where each side individually is a simple expression.</p>
+            <p>Gaussian elimination with partial pivoting produces floating-point null vectors. These need to be converted to exact integer coefficients to display a clean equation. The solver uses <a href="https://en.wikipedia.org/wiki/Continued_fraction">continued fraction</a> expansion to rationalize each coefficient, caps denominators at 1000, then multiplies through by the LCM of all denominators and reduces by the GCD. The result is verified using <code>i128</code> integer arithmetic — no floating-point at all — to confirm that the equation evaluates to exactly zero at every input point. If verification fails, the candidate is discarded and the search continues.</p>
 
-            <p>For each candidate expression, the solver evaluates it at every input point and normalizes the results into an integer vector. If two different expressions produce the same normalized vector, they agree on all points, and their equivalence is a valid solution. The search progresses through increasing total expression sizes: first checking if any pair of size-1 expressions match, then size-2, and so on up to the user-specified maximum.</p>
+            <h2>Rendering the curve</h2>
 
-            <p>When a candidate match is found, the solver runs a verification step. It tries to expand both expressions into <a href="https://en.wikipedia.org/wiki/Canonical_form">canonical polynomial form</a> and compare them structurally. If canonicalization fails (which happens for expressions involving division or exponentiation that can't be reduced to polynomials), it falls back to evaluating both expressions at a larger set of test points to confirm the equivalence isn't a coincidence.</p>
-
-            <h2>Handling edge cases</h2>
-
-            <p>Division by zero is a constant threat when generating expressions combinatorially. The evaluator returns <code>None</code> for any division where the denominator is close to zero. Exponentiation has similar guards: exponents with magnitude above 20 or results that exceed 1e10 are discarded. These bounds keep the search from wasting time on expressions that produce astronomical or undefined values at even one input point.</p>
+            <p>Once an equation is found, the grid draws the full curve as an overlay using a <a href="https://en.wikipedia.org/wiki/Marching_squares">marching squares</a> algorithm. It evaluates the implicit function at the corners of a fine grid of cells, detects sign changes that indicate the curve crosses through a cell, and interpolates the crossing points along each edge. The result is a smooth contour that updates instantly as you add or remove points. The canvas handles hi-DPI displays and points snap to a half-unit grid for cleaner placement.</p>
 
             <h2>Running in the browser</h2>
 
-            <p>The search runs in a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API">Web Worker</a> so the UI stays responsive while the algorithm grinds through expression combinations. The core is <a href="https://www.rust-lang.org/">Rust</a> compiled to <a href="https://webassembly.org/">WebAssembly</a>. You enter your points as space-separated coordinates, set a maximum expression length, and hit search. Results show the discovered equation along with the error at each point, formatted in scientific notation. For small point sets and short maximum lengths, results come back in under a second. For larger searches the worker can run for a while, and the UI updates the status as it progresses through size thresholds.</p>
+            <p>The solver is <a href="https://www.rust-lang.org/">Rust</a> compiled to <a href="https://webassembly.org/">WebAssembly</a>, called from a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API">Web Worker</a> with 30ms debouncing so the UI stays responsive. Click anywhere on the grid to place a point; click an existing point to remove it. The equation and its curve overlay appear in real time. The entire solver is around 500 lines of Rust with no dependencies beyond <code>wasm-bindgen</code>.</p>
         </article>
 
         <footer>

@@ -33,9 +33,9 @@
 
             <h2>The grammar</h2>
 
-            <p>The engine is a weighted CFG modeled after <a href="https://pdos.csail.mit.edu/archive/scigen/">SCIGen</a>. Production rules expand into sentence structures, and each rule has a weight that controls how often it fires. There are 11 sentence types: simple and compound clauses, complex sentences with subject-relative and object-relative clauses, attributed statements ("according to the sigma"), interjected fragments, compound-complex constructions, and three question forms. The weights are tuned so that simpler structures appear more often and the complex ones show up just frequently enough to keep the output from feeling repetitive.</p>
+            <p>The engine is a weighted CFG modeled after <a href="https://pdos.csail.mit.edu/archive/scigen/">SCIGen</a>. Production rules expand into sentence structures, and each rule has a weight that controls how often it fires. There are 22 sentence types: simple, compound, and complex clauses, nested and compound-complex constructions, conditionals, comparatives, concessives, temporals, three question forms, dialogue, meta-commentary, escalation, negation, academic citations, enumerations, and several narrative-specific types like character introductions, callbacks, and consequences. The weights are tuned so that simpler structures appear more often and the complex ones show up just frequently enough to keep the output from feeling repetitive.</p>
 
-            <p>The lexicon has over 1,000 terms organized into categories: entities (Skibidi Toilet, Kai Cenat, Quandale Dingle), transitive and intransitive verbs ("rizzes up," "is locked in," "is mewing"), adjectives ("goated," "sus," "bussin"), adverbs, prepositional phrases, interjections, attributions, and consequences. The vocabulary spans meme eras from Among Us through Italian internet culture.</p>
+            <p>The lexicon has over 2,100 terms organized into 13 categories: 347 entities (Skibidi Toilet, Bombardiro Crocodilo, Kai Cenat, Quandale Dingle), 195 transitive and 204 intransitive verbs ("rizzes up," "mogs," "is locked in"), 330 adjectives ("goated," "skibidi-coded," "looksmaxxed"), 139 adverbs, 165 prepositional phrases, 196 interjections, 78 question starters, 59 conjunctions, 55 relative clauses, 135 asides, 85 attributions, and 118 consequences. The vocabulary spans meme eras from Among Us through Italian internet culture.</p>
 
             <h2>Morphology</h2>
 
@@ -43,13 +43,17 @@
 
             <p>Article-adjective ordering has its own rules. Comma placement between clauses follows English conventions (comma before a coordinating conjunction joining independent clauses, comma after a leading dependent clause). These details are what make the output read as actual sentences rather than word salad.</p>
 
+            <h2>Narrative coherence</h2>
+
+            <p>The output isn't just random sentences. Before generating, the engine builds a story context: it picks 5–8 cast members from the entity pool and 3 recurring locations. Characters are tracked as they're introduced and used, so the generator can write callbacks ("Meanwhile, Skibidi Toilet was still…") and consequences that reference earlier events. Recent sentence types are also tracked to avoid back-to-back repetition. The result reads more like a short story than a bag of words — paragraphs follow archetypes (opening, narrative, academic, interrogative, dramatic, comparative) that give the text a loose narrative arc.</p>
+
             <h2>The fill algorithm</h2>
 
             <p>The output container has a fixed height. When you press "ROT MY BRAIN," the generator doesn't produce a set number of sentences. Instead, it generates one sentence at a time and measures the rendered height using a hidden <code>div</code>. It copies the accumulated text into this offscreen element, checks <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollHeight">scrollHeight</a> against the container height, and stops when adding another sentence would cause overflow. The result is a block of text that fills the visible area exactly, regardless of screen size or font rendering differences. The text also regenerates on window resize.</p>
 
             <h2>Packaging</h2>
 
-            <p>Single-file vanilla HTML/CSS/JS. No dependencies, no build step. The project includes a full set of <a href="https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps">PWA</a> assets (favicons, manifest, browserconfig), which was partly a joke and partly practical since people were actually adding it to their home screens. The UI is a purple button and a dark text area. Click, read, cringe, click again.</p>
+            <p>Vanilla HTML/CSS/JS using ES modules, no dependencies, no build step. The grammar engine, lexicon (split across five module files), and UI logic are separate modules that the browser loads directly. The project includes a full set of <a href="https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps">PWA</a> assets (favicons, manifest, browserconfig), which was partly a joke and partly practical since people were actually adding it to their home screens. The UI is a purple button and a dark text area. Click, read, cringe, click again.</p>
         </article>
 
         <footer>
