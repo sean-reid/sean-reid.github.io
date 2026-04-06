@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Severed — Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/" class="back">&larr; Home</a>
+            <h1>Severed</h1>
+            <p class="meta">Interactive submarine cable failure simulator on a 3D globe</p>
+            <p class="links-row">
+                <a href="https://sean-reid.github.io/severed/">Live Demo</a>
+                <a href="https://github.com/sean-reid/severed">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <figure>
+                <img src="img/severed.png" alt="Screenshot of Severed showing a Red Sea cable cut scenario" loading="lazy">
+                <figcaption>Severed simulating a Red Sea cable crisis. The impact panel on the right ranks affected metros by bandwidth loss.</figcaption>
+            </figure>
+
+            <p>About 95% of intercontinental data travels through <a href="https://en.wikipedia.org/wiki/Submarine_communications_cable">submarine cables</a>. Not satellites, not microwave relays. Physical cables on the ocean floor, some of them thinner than a garden hose. When one gets cut by a ship anchor, an earthquake, or <a href="https://en.wikipedia.org/wiki/Houthi-led_attacks_on_Red_Sea_shipping">military action</a>, the rerouting happens so fast that most people never notice. But when several cables fail at once in the same chokepoint, entire countries can lose connectivity. I wanted to build something that made this infrastructure visible and let you break it yourself.</p>
+
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Submarine_cable_cross-section_3D_plain.svg/330px-Submarine_cable_cross-section_3D_plain.svg.png" alt="Cross-section of a submarine communications cable" loading="lazy">
+                <figcaption>Cross-section of a modern submarine cable. The fiber optic cores sit at the center, surrounded by layers of steel wire, copper, and polyethylene. The whole thing is about the diameter of a soda can. <a href="https://commons.wikimedia.org/wiki/File:Submarine_cable_cross-section_3D_plain.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <p>Severed is a client-side simulator built on real data. You click a cable on a dark-themed globe and cut it. Or you select a chokepoint scenario and watch what happens when an entire region goes dark. The app computes which of the 910 metro areas in the graph lose bandwidth, by how much, through which cables traffic reroutes, and whether any cities end up completely isolated. Everything runs in the browser. There is no backend.</p>
+
+            <h2>The graph model</h2>
+
+            <p>The network is modeled as a weighted graph where nodes are metro areas (not countries, because a country like the United States has dozens of independent landing points) and edges are either submarine cable segments or terrestrial backbone links. Cable data comes from <a href="https://www.submarinecablemap.com/">TeleGeography's Submarine Cable Map</a>, which tracks 594 operational cables with their GeoJSON routes and landing stations. Each cable is split into segments connecting pairs of metros, and each segment carries a capacity estimate in terabits per second.</p>
+
+            <p>The capacity numbers are the trickiest part of the dataset. Some cables have publicly reported design capacity from FCC filings or press releases. Most don't. For those, the simulator uses an estimation heuristic based on the cable's ready-for-service year and fiber pair count: newer cables carry more data per pair because the underlying optical technology improves roughly 20% annually. Every capacity figure has a confidence tag (<code>verified</code>, <code>estimated</code>, or <code>approximated</code>) so you can see which numbers are solid and which are educated guesses.</p>
+
+            <p>Submarine cables alone don't tell the full story. Traffic between, say, Frankfurt and Paris doesn't go through a submarine cable. It goes overland. So the graph also includes 104 hand-researched <a href="https://en.wikipedia.org/wiki/Backbone_network">terrestrial backbone</a> edges connecting major metros across the same landmass. These are the hardest data to source because terrestrial capacity is rarely published, so each edge cites the operator press releases and industry reports it was derived from.</p>
+
+            <h2>How the simulation works</h2>
+
+            <p>The engine runs <a href="https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm">Dijkstra's algorithm</a> from each of roughly 45 global hub metros (New York, London, Singapore, Tokyo, and so on) to compute a baseline. For every metro in the graph, it calculates the bottleneck bandwidth along the shortest path to each hub, then sums them. This isn't a full <a href="https://en.wikipedia.org/wiki/Maximum_flow_problem">max-flow</a> computation, which would be prohibitively expensive at this scale. It's a deliberate approximation that captures "how much bandwidth can this city realistically reach on the global internet" without solving an all-pairs max-flow problem.</p>
+
+            <p>When you cut a cable, the engine resolves which graph edges are affected. For a chokepoint cut, it checks which cable segments have endpoints or midpoints inside a predefined polygon (the Red Sea polygon, for instance, covers the strait between Yemen and Djibouti). For a point cut, it finds all segments within a configurable radius. The affected edges are removed from the graph, Dijkstra runs again from every hub, and the engine diffs the results against the baseline. Per-metro output includes bandwidth loss percentage, latency change, path diversity, and the top five cables or terrestrial links that now carry rerouted traffic.</p>
+
+            <p>The whole simulation completes in under 200 milliseconds. It runs in a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API">Web Worker</a> so the globe stays interactive while the graph engine churns.</p>
+
+            <h2>Validation against real events</h2>
+
+            <p>A simulation is only useful if it matches reality. The test suite includes eleven scenarios modeled on documented cable failures. The <a href="https://en.wikipedia.org/wiki/2024_Red_Sea_submarine_cable_damages">2024 Red Sea Houthi attacks</a> damaged multiple cables serving the Middle East and East Africa. The simulator correctly shows major bandwidth loss in the WANA region while East Africa remains resilient due to diverse routing around the Cape of Good Hope. The <a href="https://en.wikipedia.org/wiki/2024_Baltic_Sea_cable_sabotage">2024 Baltic Sea sabotage</a> cut two cables, but the region has so much redundancy that the simulated impact is near zero, which matches the real outcome. The 2006 Taiwan earthquake knocked out cables in the <a href="https://en.wikipedia.org/wiki/Luzon_Strait">Luzon Strait</a>, a known chokepoint where most East Asian traffic concentrates. The 2022 Tonga volcanic eruption severed the single cable connecting the island nation, producing total isolation in the model and in reality.</p>
+
+            <p>The most informative test case is the <a href="https://en.wikipedia.org/wiki/2008_submarine_cable_disruption">2008 Mediterranean cable cuts</a>, where multiple failures near Alexandria caused Egypt to lose about 70% of its bandwidth and India about 60%. The simulator's numbers land in the right ballpark. Not exact, because real-world rerouting depends on peering agreements and traffic engineering that the model doesn't capture, but close enough to be directionally useful.</p>
+
+            <h2>What you find when you start cutting</h2>
+
+            <p>The interesting part isn't any individual scenario. It's the patterns that emerge when you spend time clicking around the map. Some findings that surprised me: the Luzon Strait between Taiwan and the Philippines is far more consequential than most people realize. A handful of cables through that corridor carry the majority of traffic between East Asia and the rest of the world. Cut them and Japan, South Korea, and Taiwan all take significant hits. Meanwhile, Western Europe is almost impossible to isolate. The number of cables landing in the UK, France, Spain, and Portugal from different directions creates enough redundancy that you have to cut dozens of cables simultaneously to meaningfully degrade service.</p>
+
+            <p>Small island nations are fragile in ways that are obvious in retrospect but easy to overlook. Tonga, Tuvalu, and several Pacific islands depend on a single cable. One anchor drag and they go dark. West Africa is somewhere in between: there's growing cable diversity, but a cluster of failures at the right chokepoint can cascade because the terrestrial alternatives are limited.</p>
+
+            <figure>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/France_Telecom_Marine_Rene_Descartes_p1150247.jpg/600px-France_Telecom_Marine_Rene_Descartes_p1150247.jpg" alt="The cable ship René Descartes" loading="lazy">
+                <figcaption>The cable ship René Descartes, operated by Orange Marine, used for laying and repairing submarine cables. When a cable breaks, ships like this one are dispatched to the fault location, grapple the cable from the ocean floor, and splice in a repair. <a href="https://commons.wikimedia.org/wiki/File:France_Telecom_Marine_Rene_Descartes_p1150247.jpg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <h2>Rendering the globe</h2>
+
+            <p>The visualization uses <a href="https://deck.gl/">Deck.gl</a> on top of <a href="https://maplibre.org/">MapLibre GL</a> with a <a href="https://carto.com/basemaps">CARTO Dark Matter</a> basemap, which is free and requires no API key. Cables render as arcs with width scaled by capacity, using a <a href="https://en.wikipedia.org/wiki/Viridis_(color_map)">viridis</a> color scale from dark blue (low capacity) to bright yellow (high). Cut cables turn red. Metro nodes change color based on impact: green for unaffected, yellow for degraded, orange for heavy loss, red for isolated. The impact panel on the right ranks affected metros in a scrollable list with per-metro bandwidth bars and latency deltas, built with <a href="https://d3js.org/">D3</a>.</p>
+
+            <p>State management is <a href="https://zustand-demo.pmnd.rs/">Zustand</a>, the UI is <a href="https://react.dev/">React 19</a> with <a href="https://tailwindcss.com/">Tailwind CSS 4</a>, and the build is <a href="https://vite.dev/">Vite</a>. The whole thing deploys as static files to <a href="https://pages.github.com/">GitHub Pages</a>. No accounts, no backend, no API keys.</p>
+        </article>
+
+        <footer>
+            <a href="/">&larr; Home</a>
+        </footer>
+    </div>
+</body>
+</html>
