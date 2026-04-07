@@ -24,7 +24,7 @@
                 <figcaption>Text converging from random characters into Dumas.</figcaption>
             </figure>
 
-            <p>The name is a bad pun and I'm not sorry about it. <a href="https://en.wikipedia.org/wiki/The_Count_of_Monte_Cristo"><em>The Count of Monte Cristo</em></a> by Alexandre Dumas is a long novel. A <a href="https://en.wikipedia.org/wiki/Monte_Carlo_method">Monte Carlo simulation</a> is a process that uses randomness to converge toward a target. Put them together and you get a simulation that starts with gibberish and gradually, character by character, converges into the text of the novel.</p>
+            <p><a href="https://en.wikipedia.org/wiki/The_Count_of_Monte_Cristo"><em>The Count of Monte Cristo</em></a> by Alexandre Dumas is a long novel. A <a href="https://en.wikipedia.org/wiki/Monte_Carlo_method">Monte Carlo simulation</a> is a process that uses randomness to converge toward a target. Put them together and you get a simulation that starts with gibberish and gradually, character by character, converges into the text of the novel.</p>
 
             <figure class="small">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Alexander_Dumas_p%C3%A8re_par_Nadar_-_Google_Art_Project.jpg/330px-Alexander_Dumas_p%C3%A8re_par_Nadar_-_Google_Art_Project.jpg" alt="Alexandre Dumas, photographed by Nadar in 1855" loading="lazy">
@@ -37,9 +37,7 @@
 
             <p>Each animation frame, every incorrect character has a 3% chance of snapping to its correct value. The algorithm doesn't march left to right. It randomizes which characters get checked on each frame, so the text resolves in a scattered, organic pattern. Some characters get lucky early. Others hold out as the last few stubborn wrong letters in an otherwise correct paragraph. The convergence percentage ticks upward in the stats display until the passage hits 100% and the status flips to "Complete."</p>
 
-            <h2>The pun as a design constraint</h2>
-
-            <p>I could have used any text. A Monte Carlo convergence demo works with lorem ipsum, with Shakespeare, with the United States tax code. But the whole point was the name. The project only exists because the pun exists. That meant committing to the full novel, which is over 450,000 words. Splitting it into passages and letting the user navigate between them with Previous/Next buttons was the obvious solution. There's also a "Skip to End" button for anyone who wants to see a completed passage without waiting.</p>
+            <p>The full novel is over 450,000 words, so it's split into passages that the user can navigate with Previous/Next buttons. There's also a "Skip to End" button for anyone who wants to see a completed passage without waiting.</p>
 
             <h2>Visual design</h2>
 
