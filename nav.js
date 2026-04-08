@@ -7,9 +7,11 @@
 
   var activeIndex = -1;
 
-  // Sticky footer only on non-touch devices (avoids iOS keyboard bugs)
+  // Desktop: sticky footer. Mobile: no sticky anything (avoids iOS keyboard bugs).
   var isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-  if (!isTouch && footer) {
+  if (isTouch) {
+    // Header stays sticky (CSS default), footer stays static
+  } else if (footer) {
     document.body.style.minHeight = '100vh';
     document.body.style.display = 'flex';
     document.body.style.flexDirection = 'column';
