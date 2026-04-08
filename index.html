@@ -24,29 +24,6 @@
             margin: 0 auto;
         }
 
-        header {
-            margin-bottom: 4rem;
-            padding-bottom: 2rem;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            letter-spacing: -0.02em;
-        }
-
-        .tagline {
-            font-size: 1.1rem;
-            color: #666;
-            margin-bottom: 1.5rem;
-        }
-
-        .experience {
-            font-size: 0.95rem;
-            color: #555;
-        }
 
         .projects {
             margin-bottom: 3rem;
@@ -92,16 +69,9 @@
         }
 
         .project-link {
-            display: inline-block;
-            margin-top: 0.75rem;
-            color: #0366d6;
+            display: block;
             text-decoration: none;
-            font-size: 0.85rem;
-            transition: color 0.2s;
-        }
-
-        .project-link:hover {
-            color: #0256c7;
+            color: inherit;
         }
 
         .more-projects {
@@ -152,46 +122,10 @@
             margin-left: 0.25rem;
         }
 
-        footer {
-            margin-top: 4rem;
-            padding-top: 2rem;
-            border-top: 1px solid #e0e0e0;
-            text-align: center;
-        }
-
-        .links {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            flex-wrap: wrap;
-        }
-
-        .links a {
-            color: #333;
-            text-decoration: none;
-            font-size: 0.95rem;
-            transition: color 0.2s;
-        }
-
-        .links a:hover {
-            color: #0366d6;
-        }
 
         @media (max-width: 600px) {
             body {
                 padding: 1.5rem 1rem;
-            }
-
-            h1 {
-                font-size: 2rem;
-            }
-
-            .tagline {
-                font-size: 1rem;
-            }
-
-            header {
-                margin-bottom: 3rem;
             }
 
             .featured-grid {
@@ -213,59 +147,44 @@
                 padding-right: 0;
             }
 
-            .links {
-                gap: 0.4rem 0.6rem;
-                font-size: 0.85rem;
-            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>Sean Reid</h1>
-            <p class="tagline">just another carbon based lifeform</p>
-            <p class="experience">software · physics · mathematics · music · poetry</p>
-        </header>
 
         <section class="projects">
             <h2>Featured</h2>
             <div class="featured-grid">
-                <div class="project">
+                <a href="/blog/severed.html" class="project-link"><div class="project">
                     <div class="project-name">severed</div>
                     <p class="project-desc">Interactive submarine cable failure simulator — cut cables on a 3D globe, watch traffic reroute, see which cities lose bandwidth</p>
-                    <a href="/blog/severed.html" class="project-link">Read more →</a>
-                </div>
+                </div></a>
 
-                <div class="project">
+                <a href="/blog/discern.html" class="project-link"><div class="project">
                     <div class="project-name">discern</div>
                     <p class="project-desc">Elo-rated swipe game where you distinguish real photos from AI-generated images, with adaptive difficulty that matches your skill level</p>
-                    <a href="/blog/discern.html" class="project-link">Read more →</a>
-                </div>
+                </div></a>
 
-                <div class="project">
+                <a href="/blog/gravity.html" class="project-link"><div class="project">
                     <div class="project-name">gravity</div>
                     <p class="project-desc">Top-down combat game where Schwarzschild time dilation is the core mechanic — weapons strengthen as you dive deeper into a gravity well</p>
-                    <a href="/blog/gravity.html" class="project-link">Read more →</a>
-                </div>
+                </div></a>
 
-                <div class="project">
+                <a href="/blog/captcha-royale.html" class="project-link"><div class="project">
                     <div class="project-name">captcha royale</div>
                     <p class="project-desc">Competitive multiplayer battle royale where players race to solve procedurally generated CAPTCHAs, powered by a Rust/WASM engine and Cloudflare Durable Objects</p>
-                    <a href="/blog/captcha-royale.html" class="project-link">Read more →</a>
-                </div>
+                </div></a>
 
-                <div class="project">
+                <a href="/blog/crossword-generator.html" class="project-link"><div class="project">
                     <div class="project-name">crossword generator</div>
                     <p class="project-desc">SAT solver generates valid crossword puzzles in the browser via Rust/WASM, with a CLI for publishing print-ready puzzle books</p>
-                    <a href="/blog/crossword-generator.html" class="project-link">Read more →</a>
-                </div>
+                </div></a>
 
-                <div class="project">
+                <a href="/blog/sprouts.html" class="project-link"><div class="project">
                     <div class="project-name">sprouts</div>
                     <p class="project-desc">Browser-based Sprouts game with an AI opponent — the classic pen-and-paper topology game with minimax search</p>
-                    <a href="/blog/sprouts.html" class="project-link">Read more →</a>
-                </div>
+                </div></a>
             </div>
         </section>
 
@@ -302,15 +221,7 @@
             </ul>
         </section>
 
-        <footer>
-            <div class="links">
-                <a href="https://github.com/sean-reid">GitHub</a>
-                <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
-                <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
-                <a href="https://socrates-of-athens.github.io">Poetry</a>
-                <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
-            </div>
-        </footer>
     </div>
+    <script src="/nav.js"></script>
 </body>
 </html>

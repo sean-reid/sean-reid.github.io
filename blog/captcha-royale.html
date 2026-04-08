@@ -9,7 +9,6 @@
 <body>
     <div class="container">
         <header>
-            <a href="/" class="back">&larr; Home</a>
             <h1>Captcha Royale</h1>
             <p class="meta">Competitive multiplayer battle royale powered by procedurally generated CAPTCHAs</p>
             <p class="links-row">
@@ -77,9 +76,7 @@
             <p>The project is structured as a <a href="https://turbo.build/">Turborepo</a> monorepo with <a href="https://pnpm.io/">pnpm</a> workspaces. The Rust CAPTCHA engine lives in <code>packages/captcha-engine</code> and compiles to a roughly 230KB WASM binary. The React frontend is in <code>apps/web</code> and the Cloudflare Worker is in <code>apps/worker</code>. The WASM module is a shared dependency: the frontend loads it in the browser for rendering, and the Worker loads it in the edge runtime for validation. Having a single source of truth for CAPTCHA generation, written in Rust, tested with <code>cargo test</code>, and deployed to two very different runtimes, is one of those cases where WebAssembly's portability promise actually delivers.</p>
         </article>
 
-        <footer>
-            <a href="/">&larr; Home</a>
-        </footer>
     </div>
+<script src="/nav.js"></script>
 </body>
 </html>

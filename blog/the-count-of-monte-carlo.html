@@ -9,7 +9,6 @@
 <body>
     <div class="container">
         <header>
-            <a href="/" class="back">&larr; Home</a>
             <h1>The Count of Monte Carlo</h1>
             <p class="meta">Monte Carlo simulation converging random text into Dumas</p>
             <p class="links-row">
@@ -55,9 +54,7 @@
             <p>The entire project is a single HTML file plus the text file. No build step, no dependencies. The animation loop uses <a href="https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame">requestAnimationFrame</a> and the convergence logic is a few dozen lines of JavaScript. The heaviest thing the browser does is the initial fetch of the novel text, which is a few megabytes. After that, everything is string manipulation and DOM updates.</p>
         </article>
 
-        <footer>
-            <a href="/">&larr; Home</a>
-        </footer>
     </div>
+    <script src="/nav.js"></script>
 </body>
 </html>

@@ -9,7 +9,6 @@
 <body>
     <div class="container">
         <header>
-            <a href="/" class="back">&larr; Home</a>
             <h1>How Will I Die</h1>
             <p class="meta">Your top causes of death by location, age, and sex, based on global mortality data</p>
             <p class="links-row">
@@ -55,9 +54,7 @@
             <p>The codebase splits roughly 54% JavaScript, 25% HTML, and 21% Rust. The Rust code handles the data storage, indexing, and lookup. It's compiled to WASM with standard <a href="https://rustwasm.github.io/docs/wasm-bindgen/">wasm-bindgen</a> tooling. The JavaScript side manages the form, calls into the WASM module on submit, and renders the results as a simple ordered list. No charting library, no D3, no fancy visualization. Just a numbered list of causes of death. Sometimes the most effective data visualization is plain text.</p>
         </article>
 
-        <footer>
-            <a href="/">&larr; Home</a>
-        </footer>
     </div>
+    <script src="/nav.js"></script>
 </body>
 </html>

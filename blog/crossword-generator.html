@@ -9,7 +9,6 @@
 <body>
     <div class="container">
         <header>
-            <a href="/" class="back">&larr; Home</a>
             <h1>Crossword Generator</h1>
             <p class="meta">SAT-based puzzle generation for automated crossword book publishing</p>
             <p class="links-row">
@@ -65,9 +64,7 @@
             <p>The core Rust library compiles to <a href="https://webassembly.org/">WebAssembly</a> for the browser or to a native binary for the CLI, selected by a <code>--features wasm</code> flag during compilation. The <a href="https://github.com/sean-reid/crossword-generator/tree/main/wasm/src">encoder, solver integration, dictionary management, and solution representation</a> are shared. The WASM target wraps the library for browser invocation; the native target adds the LaTeX generation, parallel processing, cover rendering, and pdflatex integration. <a href="https://doc.rust-lang.org/reference/conditional-compilation.html">Conditional compilation</a> keeps the separation clean without duplicating logic.</p>
         </article>
 
-        <footer>
-            <a href="/">&larr; Home</a>
-        </footer>
     </div>
+<script src="/nav.js"></script>
 </body>
 </html>

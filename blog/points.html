@@ -9,7 +9,6 @@
 <body>
     <div class="container">
         <header>
-            <a href="/" class="back">&larr; Home</a>
             <h1>Points</h1>
             <p class="meta">Find the simplest algebraic curve through a set of points</p>
             <p class="links-row">
@@ -55,9 +54,7 @@
             <p>The solver is <a href="https://www.rust-lang.org/">Rust</a> compiled to <a href="https://webassembly.org/">WebAssembly</a>, called from a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API">Web Worker</a> with 30ms debouncing so the UI stays responsive. Click anywhere on the grid to place a point; click an existing point to remove it. The equation and its curve overlay appear in real time. The entire solver is around 500 lines of Rust with no dependencies beyond <code>wasm-bindgen</code>.</p>
         </article>
 
-        <footer>
-            <a href="/">&larr; Home</a>
-        </footer>
     </div>
+    <script src="/nav.js"></script>
 </body>
 </html>

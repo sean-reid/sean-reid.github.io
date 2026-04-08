@@ -9,7 +9,6 @@
 <body>
     <div class="container">
         <header>
-            <a href="/" class="back">&larr; Home</a>
             <h1>Tongue Simulator</h1>
             <p class="meta">Real-time vocal tract animation synced to speech, with physics-based tongue simulation in Rust/WASM</p>
             <p class="links-row">
@@ -57,9 +56,7 @@
             <p>Keeping the simulation in Rust matters for performance. The PBD solver runs hundreds of constraint iterations per frame across the full utterance. In JavaScript this would be noticeably slow on longer inputs. In compiled WASM, it finishes in a fraction of a second for typical sentences.</p>
         </article>
 
-        <footer>
-            <a href="/">&larr; Home</a>
-        </footer>
     </div>
+    <script src="/nav.js"></script>
 </body>
 </html>
