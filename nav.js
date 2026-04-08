@@ -7,6 +7,18 @@
 
   var activeIndex = -1;
 
+  // Sticky footer only on non-touch devices (avoids iOS keyboard bugs)
+  var isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  if (!isTouch && footer) {
+    document.body.style.minHeight = '100vh';
+    document.body.style.display = 'flex';
+    document.body.style.flexDirection = 'column';
+    document.querySelector('.site-content').style.flex = '1';
+    footer.style.position = 'sticky';
+    footer.style.bottom = '0';
+    footer.style.zIndex = '9999';
+  }
+
   // Discover blog posts from page links or fetch homepage
   function getPosts(callback) {
     var links = document.querySelectorAll('a[href^="/blog/"][href$=".html"]');
