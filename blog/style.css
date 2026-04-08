@@ -96,8 +96,14 @@ article figure {
 
 article figure img {
     width: 100%;
+    height: auto;
     border-radius: 6px;
     border: 1px solid #e0e0e0;
+}
+
+article figure:first-of-type img {
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
 }
 
 article figure.small img {
