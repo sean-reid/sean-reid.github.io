@@ -40,7 +40,7 @@
 
   var css = document.createElement('style');
   css.textContent = [
-    '.site-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 9999; background: #fafafa; border-bottom: 1px solid #e0e0e0; padding: 0.75rem 1rem; }',
+    '.site-nav { position: sticky; top: 0; z-index: 9999; background: #fafafa; border-bottom: 1px solid #e0e0e0; padding: 0.75rem 1rem; }',
     '.site-nav-inner { max-width: 900px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }',
     '.site-nav-name { font-size: 1.1rem; font-weight: 600; color: #1a1a1a; text-decoration: none; white-space: nowrap; }',
     '.site-nav-name:hover { color: #0366d6; }',
@@ -66,12 +66,13 @@
     '.search-empty { padding: 0.8rem; font-size: 0.85rem; color: #888; text-align: center; }',
 
     // Footer
-    '.site-footer { position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999; background: #fafafa; border-top: 1px solid #e0e0e0; padding: 0.5rem 1rem calc(0.5rem + env(safe-area-inset-bottom, 0px)); text-align: center; }',
+    '.site-footer { position: sticky; bottom: 0; z-index: 9999; background: #fafafa; border-top: 1px solid #e0e0e0; padding: 0.5rem 1rem calc(0.5rem + env(safe-area-inset-bottom, 0px)); text-align: center; }',
     '.site-footer-links { display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; }',
     '.site-footer-links a { color: #333; text-decoration: none; font-size: 0.95rem; }',
     '.site-footer-links a:hover { color: #0366d6; }',
 
-    'body { padding-top: 4.5rem !important; padding-bottom: calc(3rem + env(safe-area-inset-bottom, 0px)) !important; }',
+    'body { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }',
+    '.site-content-wrap { flex: 1; }',
     '@media (max-width: 600px) {',
     '  .site-nav-search { width: 140px; }',
     '  .site-nav-search-hint { display: none; }',
@@ -93,7 +94,12 @@
         '<div class="search-dropdown"></div>' +
       '</div>' +
     '</div>';
-  document.body.insertBefore(nav, document.body.firstChild);
+  // Wrap existing body children in a flex-growing div so sticky footer works
+  var wrap = document.createElement('div');
+  wrap.className = 'site-content-wrap';
+  while (document.body.firstChild) wrap.appendChild(document.body.firstChild);
+  document.body.appendChild(nav);
+  document.body.appendChild(wrap);
 
   var input = nav.querySelector('.site-nav-search');
   var dropdown = nav.querySelector('.search-dropdown');
