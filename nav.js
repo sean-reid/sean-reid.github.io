@@ -347,6 +347,24 @@
     }
   });
 
+  // Re-anchor sticky elements after pinch-zoom returns to 1x on mobile Safari.
+  if (window.visualViewport) {
+    var wasZoomed = false;
+    window.visualViewport.addEventListener('resize', function () {
+      var zoomed = window.visualViewport.scale > 1.05;
+      if (zoomed) {
+        wasZoomed = true;
+      } else if (wasZoomed) {
+        wasZoomed = false;
+        nav.style.position = 'relative';
+        footer.style.position = 'relative';
+        void nav.offsetHeight;
+        nav.style.position = '';
+        footer.style.position = '';
+      }
+    });
+  }
+
   // If homepage has ?q= param, populate and search
   var isHome = window.location.pathname === '/' || window.location.pathname === '/index.html';
   if (isHome) {
