@@ -23,6 +23,12 @@
     }
   }
 
+  // Ensure viewport-fit=cover for safe area insets on iOS
+  var vp = document.querySelector('meta[name="viewport"]');
+  if (vp && vp.content.indexOf('viewport-fit') === -1) {
+    vp.content += ', viewport-fit=cover';
+  }
+
   var css = document.createElement('style');
   css.textContent = [
     '.site-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 9999; background: #fafafa; border-bottom: 1px solid #e0e0e0; padding: 0.75rem 1rem; }',
@@ -31,7 +37,7 @@
     '.site-nav-name:hover { color: #0366d6; }',
     '.site-nav-controls { display: flex; align-items: center; gap: 0.75rem; position: relative; }',
     '.site-nav-search-wrap { position: relative; }',
-    '.site-nav-search { font-family: inherit; font-size: 0.85rem; padding: 0.35rem 1.8rem 0.35rem 0.6rem; border: 1px solid #e0e0e0; border-radius: 4px; outline: none; width: 220px; background: white; color: #1a1a1a; }',
+    '.site-nav-search { font-family: inherit; font-size: 16px; padding: 0.35rem 1.8rem 0.35rem 0.6rem; border: 1px solid #e0e0e0; border-radius: 4px; outline: none; width: 220px; background: white; color: #1a1a1a; }',
     '.site-nav-search-hint { position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); font-size: 0.7rem; color: #bbb; border: 1px solid #ddd; border-radius: 3px; padding: 0 0.3rem; line-height: 1.4; pointer-events: none; font-family: inherit; }',
     '.site-nav-search:focus { border-color: #0366d6; }',
     '.site-nav-search:focus + .site-nav-search-hint, .site-nav-search:not(:placeholder-shown) + .site-nav-search-hint { display: none; }',
@@ -51,14 +57,15 @@
     '.search-empty { padding: 0.8rem; font-size: 0.85rem; color: #888; text-align: center; }',
 
     // Footer
-    '.site-footer { position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999; background: #fafafa; border-top: 1px solid #e0e0e0; padding: 0.5rem 1rem; text-align: center; }',
+    '.site-footer { position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999; background: #fafafa; border-top: 1px solid #e0e0e0; padding: 0.5rem 1rem calc(0.5rem + env(safe-area-inset-bottom, 0px)); text-align: center; }',
     '.site-footer-links { display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; }',
     '.site-footer-links a { color: #333; text-decoration: none; font-size: 0.95rem; }',
     '.site-footer-links a:hover { color: #0366d6; }',
 
-    'body { padding-top: 4.5rem !important; padding-bottom: 3rem !important; }',
+    'body { padding-top: 4.5rem !important; padding-bottom: calc(3rem + env(safe-area-inset-bottom, 0px)) !important; }',
     '@media (max-width: 600px) {',
     '  .site-nav-search { width: 140px; }',
+    '  .site-nav-search-hint { display: none; }',
     '  .search-dropdown { width: calc(100vw - 2rem); right: -0.5rem; }',
     '  .site-footer-links { gap: 0.4rem 0.6rem; font-size: 0.85rem; }',
     '}'
