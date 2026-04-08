@@ -96,31 +96,54 @@
     '</div>';
   document.body.appendChild(footer);
 
-  // Random (avoids repeats using sessionStorage)
-  function getSeenPosts() {
-    try { return JSON.parse(sessionStorage.getItem('seen') || '[]'); } catch (e) { return []; }
+  // Random: weighted selection where each post has a "staleness" score that
+  // increases every click. Recently seen posts have low weight, old ones have
+  // high weight. The pick is random but biased toward posts you haven't seen
+  // in a while — like a playlist on shuffle that gradually rotates through
+  // everything without hard boundaries.
+  function getHistory() {
+    try { return JSON.parse(sessionStorage.getItem('rh') || '{}'); } catch (e) { return {}; }
   }
-  function markSeen(href) {
-    var seen = getSeenPosts();
-    if (seen.indexOf(href) === -1) seen.push(href);
-    try { sessionStorage.setItem('seen', JSON.stringify(seen)); } catch (e) {}
+  function saveHistory(h) {
+    try { sessionStorage.setItem('rh', JSON.stringify(h)); } catch (e) {}
   }
-  // Mark current page as seen
-  markSeen(window.location.pathname);
 
   nav.querySelector('.site-nav-random').addEventListener('click', function (e) {
     e.preventDefault();
     getPosts(function (posts) {
       if (!posts.length) return;
-      var seen = new Set(getSeenPosts());
-      var unseen = posts.filter(function (p) { return !seen.has(p); });
-      // If seen almost everything, reset and just exclude current page
-      if (unseen.length === 0) {
-        try { sessionStorage.removeItem('seen'); } catch (e) {}
-        unseen = posts.filter(function (p) { return p !== window.location.pathname; });
+      var history = getHistory();
+      var current = window.location.pathname;
+
+      // Age every post by 1 tick
+      var maxAge = 0;
+      posts.forEach(function (p) {
+        if (history[p] === undefined) history[p] = posts.length; // never seen = max staleness
+        else history[p]++;
+        if (history[p] > maxAge) maxAge = history[p];
+      });
+
+      // Weight = staleness squared (strongly favors old posts)
+      // Current page gets weight 0
+      var weights = posts.map(function (p) {
+        if (p === current) return 0;
+        var w = history[p] || 1;
+        return w * w;
+      });
+      var totalWeight = weights.reduce(function (a, b) { return a + b; }, 0);
+      if (totalWeight === 0) { weights = posts.map(function () { return 1; }); totalWeight = posts.length; }
+
+      // Weighted random pick
+      var r = Math.random() * totalWeight;
+      var pick = posts[0];
+      for (var i = 0; i < posts.length; i++) {
+        r -= weights[i];
+        if (r <= 0) { pick = posts[i]; break; }
       }
-      var pick = unseen[Math.floor(Math.random() * unseen.length)];
-      markSeen(pick);
+
+      // Reset picked post's age to 0
+      history[pick] = 0;
+      saveHistory(history);
       window.location.href = pick;
     });
   });
