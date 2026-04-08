@@ -24,7 +24,7 @@
         requestAnimationFrame(function () {
           footer.style.position = '';
           nav.style.position = '';
-          document.body.style.minHeight = '100vh';
+          document.body.style.minHeight = '100dvh';
           document.body.style.display = 'flex';
           document.body.style.flexDirection = 'column';
         });
