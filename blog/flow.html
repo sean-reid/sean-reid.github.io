@@ -50,6 +50,11 @@
 
             <h2>File parsing</h2>
 
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Reading_Fixations_Saccades.jpg/330px-Reading_Fixations_Saccades.jpg" alt="Visualization of eye fixations and saccades during reading" loading="lazy">
+                <figcaption>Eye fixation points and saccadic movements during reading. <a href="https://commons.wikimedia.org/wiki/File:Reading_Fixations_Saccades.jpg">Wikimedia Commons</a></figcaption>
+            </figure>
+
             <p>I wanted Flow to work with actual ebook libraries, not just pasted text. It reads EPUB, MOBI, AZW, AZW3, FB2, PDF, DOCX, RTF, Markdown, HTML, and plain text files. All parsing happens in the browser; no data is uploaded to any server.</p>
 
             <p>EPUB and DOCX files are ZIP archives containing XML. <a href="https://stuk.github.io/jszip/">JSZip</a> opens them and the relevant content files are extracted and parsed. PDFs go through <a href="https://mozilla.github.io/pdf.js/">pdf.js</a> for text extraction. The more involved formats are MOBI and AZW. These Amazon Kindle formats use <a href="https://wiki.mobileread.com/wiki/PalmDOC">PalmDOC compression</a> (a variant of <a href="https://en.wikipedia.org/wiki/LZ77_and_LZ78">LZ77</a>), and I had to write a JavaScript decompression routine to handle them. FB2 is an XML-based format common in Russian ebook distribution; parsing it is just XML extraction.</p>

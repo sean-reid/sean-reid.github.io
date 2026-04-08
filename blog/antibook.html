@@ -39,6 +39,11 @@
 
             <p>Antibook uses a five-tier antonym lookup. The first tier is a hand-curated dictionary of about 900 word pairs. These are the obvious ones: good/bad, up/down, love/hate, yes/no. Because high-frequency words dominate natural language, this small list covers 60 to 70 percent of the tokens in a typical book by frequency. The second tier pulls from <a href="https://wordnet.princeton.edu/">Princeton WordNet</a> via <a href="https://www.nltk.org/">NLTK</a>, adding another 15 to 20 percent. The third tier uses the <a href="https://en.wikipedia.org/wiki/Moby_Project">Moby Thesaurus</a> with transitive closure to find indirect antonym relationships. An optional fourth tier uses <a href="https://nlp.stanford.edu/projects/glove/">GloVe</a> word embeddings to find semantic opposites by vector inversion. Everything that falls through all four tiers gets left unchanged: proper nouns, articles, prepositions, and other words that have no meaningful opposite.</p>
 
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/English-English_dictionaries_and_thesaurus_books.JPG/400px-English-English_dictionaries_and_thesaurus_books.JPG" alt="English dictionaries and thesaurus books" loading="lazy">
+                <figcaption>English dictionaries and thesaurus books. <a href="https://commons.wikimedia.org/wiki/File:English-English_dictionaries_and_thesaurus_books.JPG">Wikimedia Commons</a></figcaption>
+            </figure>
+
             <h2>The pipeline</h2>
 
             <p>Processing a book is a multi-stage pipeline written in Python. First, the raw text is downloaded from Project Gutenberg and the boilerplate headers and footers are stripped. Then each word is run through the tiered antonym lookup. The transformed text gets chunked into JSON fragments small enough for efficient delivery over GitHub Pages. Finally, an index is built using <a href="https://www.fusejs.io/">Fuse.js</a> so users can search the catalog by title or author.</p>

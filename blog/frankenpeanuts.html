@@ -47,6 +47,11 @@
 
             <p>Processing 50 years of daily strips is a lot of images. The script uses concurrent HTTP requests with connection pooling and configurable delays to avoid overwhelming the source server. A <a href="https://github.com/sean-reid/frankenpeanuts/blob/main/.github/workflows/build-manifest.yml">GitHub Actions workflow</a> parallelizes the job across 10 workers, each handling a different date range. After all chunks complete, a merge step combines the partial manifests into a single <code>manifest.json</code> and commits the result back to the repo. The pipeline is resumable: if it gets interrupted, it checks the existing manifest and skips dates that have already been processed.</p>
 
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Comics_third_page.svg/250px-Comics_third_page.svg.png" alt="Schematic layout of a Sunday comic strip third page" loading="lazy">
+                <figcaption>Standard Sunday comic strip third-page panel layout. <a href="https://commons.wikimedia.org/wiki/File:Comics_third_page.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
             <h2>The frontend</h2>
 
             <p>The frontend is a single HTML file. It loads <code>manifest.json</code>, picks four random panels, and displays them in a grid. Because the panels are pre-extracted and hosted alongside the page, there are no cross-origin issues and no waiting for a proxy. Loading is fast and reliable.</p>

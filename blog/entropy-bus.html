@@ -35,6 +35,11 @@
 
             <p>The entropy calculation looks at your keystrokes within a rolling four-second window. It penalizes several kinds of predictability: sequential key presses (like typing "asdf"), alternating patterns (like bouncing between two keys), and repeated <a href="https://en.wikipedia.org/wiki/Bigram">bigrams</a> (like pressing the same two-key sequence multiple times). It rewards even distribution across many different keys and irregular timing between presses.</p>
 
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Backlit_keyboard.jpg/330px-Backlit_keyboard.jpg" alt="Backlit computer keyboard" loading="lazy">
+                <figcaption>A backlit keyboard. Entropy Bus rewards pressing as many different keys as possible with irregular timing. <a href="https://commons.wikimedia.org/wiki/File:Backlit_keyboard.jpg">Wikimedia Commons</a></figcaption>
+            </figure>
+
             <p>The result is a number between 0 and 1. Zero means your input is completely predictable. One means it's maximally random. This entropy value maps to velocity. A bus driven by high entropy can reach 15 meters per second. A bus driven by someone holding down the spacebar barely moves.</p>
 
             <p>The stat display shows your entropy as a color-coded bar that shifts from red (low) through yellow (medium) to green (high). There's also a unique key counter that tracks how many distinct keys you've pressed, capping around 50. Both numbers update in real time so you can see the immediate effect of switching up your input strategy.</p>

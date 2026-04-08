@@ -41,6 +41,11 @@
 
             <p>The <a href="https://github.com/sean-reid/crossword-generator/blob/main/wasm/src/encoder.rs">encoder</a> translates the grid dimensions, target density, and dictionary into a SAT formula. <a href="https://github.com/jix/varisat">Varisat</a> (a Rust SAT solver) processes the formula and either produces a valid assignment or reports unsatisfiability. When the density target is too aggressive for the available word list, the solver tells you instead of running forever, which is useful for parameter tuning. When it succeeds, the solution is guaranteed to satisfy all constraints simultaneously, so you never get partially valid grids.</p>
 
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Implication_graph.svg/330px-Implication_graph.svg.png" alt="An implication graph for a 2-satisfiability problem" loading="lazy">
+                <figcaption>An implication graph for a Boolean satisfiability problem. <a href="https://commons.wikimedia.org/wiki/File:Implication_graph.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
             <h2>The book pipeline</h2>
 
             <p>The CLI generates complete LaTeX source for a KDP-ready puzzle book. Each puzzle is laid out on a spread: the grid appears on the left page, the clues on the right, with correct gutters and margins for print binding. Before the puzzles, the tool generates a title page with customizable author name, publisher, and description; a copyright page with ISBN and edition fields; and a table of contents.</p>

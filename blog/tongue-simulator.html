@@ -39,6 +39,11 @@
 
             <p>The key insight is that the simulation is pre-computed, not real-time. When you hit play, the Rust code runs the full PBD simulation for every frame in the utterance, stores the results, and then the JavaScript playback loop just reads from the pre-computed buffer while the speech plays. This means the physics can be as expensive as needed without causing frame drops during playback.</p>
 
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Cardinal_vowel_tongue_position-front.svg/330px-Cardinal_vowel_tongue_position-front.svg.png" alt="Diagram of tongue positions for front cardinal vowels" loading="lazy">
+                <figcaption>Tongue positions for front cardinal vowels in a midsagittal cross-section. <a href="https://commons.wikimedia.org/wiki/File:Cardinal_vowel_tongue_position-front.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
             <h2>Why position-based dynamics</h2>
 
             <p><a href="https://matthias-research.github.io/pages/publications/posBasedDyn.pdf">PBD</a> is a simulation technique originally developed for real-time cloth and soft body animation in games. Unlike traditional finite element methods that solve force equations, PBD works by directly manipulating particle positions to satisfy constraints. You define a mesh of particles connected by distance constraints and volume-preservation constraints, then iteratively project the particles toward valid configurations. It's unconditionally stable (no exploding simulations) and fast enough to run in WASM without making the user wait.</p>

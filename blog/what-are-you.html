@@ -27,8 +27,8 @@
             <p>Those "What kind of X are you?" quizzes are everywhere online. What sandwich are you. What 90s sitcom character are you. They're hugely popular. The thing I noticed is that they always have the same structure: a fixed set of multiple-choice questions, a mapping from answers to results, and a big reveal at the end. The questions are generic personality questions that could map to anything. The category doesn't actually matter.</p>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Camponotus_flavomarginatus_ant.jpg/330px-Camponotus_flavomarginatus_ant.jpg" alt="A Camponotus flavomarginatus ant" loading="lazy">
-                <figcaption>You might be this ant. Answer 10 absurd questions and a Wikipedia article is chosen from your selected category. <a href="https://commons.wikimedia.org/wiki/File:Camponotus_flavomarginatus_ant.jpg">Wikimedia Commons</a></figcaption>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Online_Survey_Icon_or_logo.svg/330px-Online_Survey_Icon_or_logo.svg.png" alt="Online survey icon" loading="lazy">
+                <figcaption>Answer 10 absurd questions and a Wikipedia article is chosen from your selected category. <a href="https://commons.wikimedia.org/wiki/File:Online_Survey_Icon_or_logo.svg">Wikimedia Commons</a></figcaption>
             </figure>
 
             <p>So I built a version where the category is a parameter. You pick a topic from a dropdown and the quiz generates itself. The questions are the same regardless. What changes is the result, which gets pulled live from <a href="https://en.wikipedia.org/wiki/Wikipedia:About">Wikipedia</a>.</p>
@@ -44,6 +44,11 @@
             <p>When you finish, your answers are fed into a <a href="https://en.wikipedia.org/wiki/Hash_function">hash function</a>. Each answer's numeric value is multiplied by its question position (1-indexed), and the products are summed. The total is taken modulo the number of filtered category members. This produces a deterministic mapping: the same answers always select the same article. A second API call fetches the selected article's summary text and thumbnail image for the reveal screen, with a link to the full article.</p>
 
             <p>The result set updates whenever Wikipedia does. If someone adds a new entry to a category, it becomes a possible quiz result without any change to the code.</p>
+
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/MyersBriggsTypes.svg/330px-MyersBriggsTypes.svg.png" alt="Chart of the 16 Myers-Briggs personality types" loading="lazy">
+                <figcaption>The 16 Myers-Briggs personality types. <a href="https://commons.wikimedia.org/wiki/File:MyersBriggsTypes.svg">Wikimedia Commons</a></figcaption>
+            </figure>
 
             <h2>The Jeopardy theme</h2>
 

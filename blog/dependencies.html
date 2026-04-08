@@ -41,6 +41,11 @@
 
             <h2>Binary search</h2>
 
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/DependencyGraph.svg/250px-DependencyGraph.svg.png" alt="Dependency graph diagram showing directed acyclic relationships between components" loading="lazy">
+                <figcaption>A dependency graph — a directed acyclic graph (DAG) representing relationships between components. <a href="https://commons.wikimedia.org/wiki/File:DependencyGraph.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
             <p>The second algorithm is smarter. It starts with an empty set and uses a divide-and-conquer approach. For the pool of unknown dependencies, it splits them in half. It tests whether the build succeeds without the left half. If it does, none of those dependencies are required and the entire left half is eliminated in one test. If it fails, at least one required dependency lives in that half, so it recurses into the left half to find it. The same logic applies to the right half.</p>
 
             <p>This approach needs O(N log M) tests, where N is the number of required dependencies and M is the total. When N is small relative to M (which is the common case with bloated dependency lists), binary search crushes greedy elimination. With 100 total dependencies and 5 required ones, greedy needs exactly 100 tests. Binary search might need 30.</p>

@@ -49,6 +49,11 @@
 
             <p>When the skeleton approach fails (and in very tight endgame positions it does), a fallback <a href="https://en.wikipedia.org/wiki/A*_search_algorithm">A* pathfinder</a> operates in the raw free space with relaxed constraints. The fallback is slower but can find paths that the skeleton misses.</p>
 
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/John_H_Conway_2005_%28cropped%29_%282%29.jpg/330px-John_H_Conway_2005_%28cropped%29_%282%29.jpg" alt="John Horton Conway in 2005" loading="lazy">
+                <figcaption>John Horton Conway, co-inventor of Sprouts, photographed in 2005. <a href="https://commons.wikimedia.org/wiki/File:John_H_Conway_2005_(cropped)_(2).jpg">Wikimedia Commons</a></figcaption>
+            </figure>
+
             <h2>The AI</h2>
 
             <p><a href="https://github.com/sean-reid/sprouts/blob/main/src/ai.rs">Move generation</a> works by pathfinding along the skeleton between every pair of nodes that could legally be connected (accounting for the three-connection limit). For each pair, the AI attempts to find a skeleton path first, then tries the relaxed pathfinder if that fails. Each successful path becomes a candidate move. The AI also considers self-connections (curves from a node back to itself) for nodes with two or fewer existing connections.</p>

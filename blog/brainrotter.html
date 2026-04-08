@@ -37,6 +37,11 @@
 
             <p>The lexicon has over 2,100 terms organized into 13 categories: 347 entities (Skibidi Toilet, Bombardiro Crocodilo, Kai Cenat, Quandale Dingle), 195 transitive and 204 intransitive verbs ("rizzes up," "mogs," "is locked in"), 330 adjectives ("goated," "skibidi-coded," "looksmaxxed"), 139 adverbs, 165 prepositional phrases, 196 interjections, 78 question starters, 59 conjunctions, 55 relative clauses, 135 asides, 85 attributions, and 118 consequences. The vocabulary spans meme eras from Among Us through Italian internet culture.</p>
 
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/ParseTree.svg/400px-ParseTree.svg.png" alt="A parse tree for the sentence 'John hit the ball'" loading="lazy">
+                <figcaption>A parse tree derived from a context-free grammar. <a href="https://commons.wikimedia.org/wiki/File:ParseTree.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
             <h2>Morphology</h2>
 
             <p>Getting the grammar right required handling English morphology. Question formation in English involves "do-support" and subject-auxiliary inversion: "Skibidi Toilet rizzes up the sigma" becomes "Why did Skibidi Toilet rizz up the sigma?" The verb has to be deconjugated from its third-person present form ("rizzes") back to the bare infinitive ("rizz") when "did" is inserted. A <code>deconjugateTV()</code> function handles this, stripping suffixes and applying rules like "ies" to "y" and "es" to base form. It also handles apostrophe-bearing forms and irregular cases.</p>

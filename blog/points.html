@@ -37,6 +37,11 @@
 
             <p>To favor simple results, the solver searches sparse subsets first. For each degree (1 through 4), it tries all k-subsets of monomial columns starting from k = 2 and working upward. The first non-trivial null vector found this way uses the fewest terms possible, which usually gives the cleanest equation. When multiple solutions exist at the same sparsity, a scoring function picks the one with the smallest coefficients and the most symmetric use of x and y, preferring <code>x&sup2; + y&sup2; = 25</code> over an equivalent but lopsided form.</p>
 
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Conic_Sections.svg/330px-Conic_Sections.svg.png" alt="The four conic sections: circle, ellipse, parabola, and hyperbola" loading="lazy">
+                <figcaption>The four conic sections: circle, ellipse, parabola, and hyperbola. <a href="https://commons.wikimedia.org/wiki/File:Conic_Sections.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
             <h2>From floats to exact integers</h2>
 
             <p>Gaussian elimination with partial pivoting produces floating-point null vectors. These need to be converted to exact integer coefficients to display a clean equation. The solver uses <a href="https://en.wikipedia.org/wiki/Continued_fraction">continued fraction</a> expansion to rationalize each coefficient, caps denominators at 1000, then multiplies through by the LCM of all denominators and reduces by the GCD. The result is verified using <code>i128</code> integer arithmetic, with no floating-point at all, to confirm that the equation evaluates to exactly zero at every input point. If verification fails, the candidate is discarded and the search continues.</p>

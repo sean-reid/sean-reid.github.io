@@ -39,6 +39,11 @@
 
             <p>Using WASM for this is partly about performance and partly about packaging. The mortality data and the lookup logic ship as a single binary blob that the browser can execute directly. No API server, no database, no backend infrastructure. The whole thing runs on GitHub Pages as a static site.</p>
 
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Life_expectancy_by_world_region%2C_OWID.svg/330px-Life_expectancy_by_world_region%2C_OWID.svg.png" alt="Life expectancy by world region from 1770 to present" loading="lazy">
+                <figcaption>Life expectancy by world region, 1770 to present. <a href="https://commons.wikimedia.org/wiki/File:Life_expectancy_by_world_region,_OWID.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
             <h2>What the numbers mean</h2>
 
             <p>The output is a ranked list of causes, not a probability distribution. It doesn't tell you there's a 23% chance you'll die of heart disease. It tells you that heart disease is your number one risk, followed by stroke, followed by lung cancer, and so on down the list. The ranking comes from the GBD's disability-adjusted life year and mortality rate data for your specific demographic cell.</p>

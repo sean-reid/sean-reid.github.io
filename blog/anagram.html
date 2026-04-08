@@ -39,6 +39,11 @@
 
             <p>The dictionary is embedded into the <a href="https://webassembly.org/">WebAssembly</a> binary at compile time using Rust's <code>include_str!</code> macro. At initialization, the solver filters the full dictionary down to only words that could possibly be formed from the input phrase's letters. It then sorts those candidates by length, longest first. This ordering biases the search toward solutions with longer words early, which tend to be the interesting ones.</p>
 
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Interacting_with_the_scrabble_board.jpg/400px-Interacting_with_the_scrabble_board.jpg" alt="Scrabble tiles on a board" loading="lazy">
+                <figcaption>Scrabble tiles on a board. <a href="https://commons.wikimedia.org/wiki/File:Interacting_with_the_scrabble_board.jpg">Wikimedia Commons</a></figcaption>
+            </figure>
+
             <h2>Recursive search with pruning</h2>
 
             <p>The search is a depth-first <a href="https://en.wikipedia.org/wiki/Recursion_(computer_science)">recursion</a>. At each level, the algorithm iterates through candidate words, checks whether each can be built from the remaining letter pool, and if so, subtracts those letters and recurses. A <code>start_idx</code> parameter prevents the search from reconsidering words it already passed, which eliminates duplicate permutations. Without this, "star wars" and "wars star" would both appear as separate results.</p>

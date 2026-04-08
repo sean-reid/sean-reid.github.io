@@ -43,6 +43,11 @@
 
             <p>The core technical problem is determining, after each strand is placed, which regions of the circle have been enclosed and what colors their boundaries are. The strands and the circle boundary together form a planar graph. The <a href="https://en.wikipedia.org/wiki/Planar_graph#Euler's_formula">faces of that graph</a> (the regions between strands) need to be enumerated, and each face's boundary needs to be traced to check whether all edges belong to a single player.</p>
 
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Jordan_curve_theorem.svg/250px-Jordan_curve_theorem.svg.png" alt="Illustration of the Jordan curve theorem" loading="lazy">
+                <figcaption>The Jordan curve theorem: a simple closed curve divides the plane into interior and exterior regions. <a href="https://commons.wikimedia.org/wiki/File:Jordan_curve_theorem.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
             <p>The face enumeration algorithm walks the planar graph, following edges and tracking which side of each edge it's traversing. When it returns to the starting edge having traced a complete boundary, it has identified one face. The algorithm runs after every move, because any new strand potentially splits an existing face into two or seals a face that was previously open.</p>
 
             <p>This computation has to be fast. Players expect to see immediately whether their move created a Lacuna. The tricky cases involve strands that share vertices, strands that touch the boundary at multiple points, and degenerate face configurations where a very small region is created between closely spaced strands. Getting the edge-traversal logic correct for all these cases took significant testing.</p>

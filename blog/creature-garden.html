@@ -43,6 +43,11 @@
 
             <p>Food spawns randomly across the canvas and persists for 300 frames before disappearing. If a creature reaches a food item before it despawns, the creature eats it and regains energy. If not, the food vanishes and that's a missed opportunity for the population. The spawn rate is constant, which means the food supply acts as a carrying capacity. Too many creatures and they start competing for insufficient resources. Too few and food piles up uneaten.</p>
 
+            <figure class="small">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Lotka_Volterra_dynamics.svg/330px-Lotka_Volterra_dynamics.svg.png" alt="Lotka-Volterra predator-prey population dynamics graph" loading="lazy">
+                <figcaption>Lotka-Volterra predator-prey population dynamics. <a href="https://commons.wikimedia.org/wiki/File:Lotka_Volterra_dynamics.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
             <h2>Reproduction and death</h2>
 
             <p>Reproduction is stochastic. Each frame, every living creature has a 1% chance of spawning a new creature nearby. The offspring inherits randomized traits rather than copying its parent exactly, so the population stays visually diverse over time. There's no explicit selection pressure based on traits, but creatures that happen to be in food-rich areas survive longer and get more chances to reproduce, which creates a loose spatial <a href="https://en.wikipedia.org/wiki/Natural_selection">selection dynamic</a>.</p>
