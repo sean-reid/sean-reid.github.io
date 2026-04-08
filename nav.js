@@ -96,15 +96,32 @@
     '</div>';
   document.body.appendChild(footer);
 
-  // Random
+  // Random (avoids repeats using sessionStorage)
+  function getSeenPosts() {
+    try { return JSON.parse(sessionStorage.getItem('seen') || '[]'); } catch (e) { return []; }
+  }
+  function markSeen(href) {
+    var seen = getSeenPosts();
+    if (seen.indexOf(href) === -1) seen.push(href);
+    try { sessionStorage.setItem('seen', JSON.stringify(seen)); } catch (e) {}
+  }
+  // Mark current page as seen
+  markSeen(window.location.pathname);
+
   nav.querySelector('.site-nav-random').addEventListener('click', function (e) {
     e.preventDefault();
     getPosts(function (posts) {
       if (!posts.length) return;
-      var current = window.location.pathname;
-      var filtered = posts.filter(function (p) { return p !== current; });
-      if (!filtered.length) filtered = posts;
-      window.location.href = filtered[Math.floor(Math.random() * filtered.length)];
+      var seen = new Set(getSeenPosts());
+      var unseen = posts.filter(function (p) { return !seen.has(p); });
+      // If seen almost everything, reset and just exclude current page
+      if (unseen.length === 0) {
+        try { sessionStorage.removeItem('seen'); } catch (e) {}
+        unseen = posts.filter(function (p) { return p !== window.location.pathname; });
+      }
+      var pick = unseen[Math.floor(Math.random() * unseen.length)];
+      markSeen(pick);
+      window.location.href = pick;
     });
   });
 
