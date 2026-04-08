@@ -1,13 +1,7 @@
 /* Site-wide nav and footer */
 body {
   margin: 0;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.site-content {
-  flex: 1;
+  padding-bottom: 3rem !important;
 }
 
 .site-nav {
@@ -178,16 +172,18 @@ body {
   padding: 2rem 1rem;
 }
 
-/* Footer */
+/* Footer — fixed to bottom of viewport */
 .site-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
   background: #fafafa;
   border-top: 1px solid #e0e0e0;
   padding: 0.5rem 1rem;
   padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
   text-align: center;
-  position: sticky;
-  bottom: 0;
-  z-index: 9999;
 }
 
 .site-footer-links {
