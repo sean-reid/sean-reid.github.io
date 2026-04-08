@@ -23,10 +23,19 @@
     }
   }
 
+  // Favicon
+  if (!document.querySelector('link[rel="icon"]')) {
+    var icon = document.createElement('link');
+    icon.rel = 'icon';
+    icon.type = 'image/svg+xml';
+    icon.href = '/favicon.svg';
+    document.head.appendChild(icon);
+  }
+
   // Ensure viewport-fit=cover for safe area insets on iOS
   var vp = document.querySelector('meta[name="viewport"]');
-  if (vp && vp.content.indexOf('viewport-fit') === -1) {
-    vp.content += ', viewport-fit=cover';
+  if (vp) {
+    if (vp.content.indexOf('viewport-fit') === -1) vp.content += ', viewport-fit=cover';
   }
 
   var css = document.createElement('style');
@@ -37,7 +46,7 @@
     '.site-nav-name:hover { color: #0366d6; }',
     '.site-nav-controls { display: flex; align-items: center; gap: 0.75rem; position: relative; }',
     '.site-nav-search-wrap { position: relative; }',
-    '.site-nav-search { font-family: inherit; font-size: 16px; padding: 0.35rem 1.8rem 0.35rem 0.6rem; border: 1px solid #e0e0e0; border-radius: 4px; outline: none; width: 220px; background: white; color: #1a1a1a; }',
+    '.site-nav-search { font-family: inherit; font-size: 16px !important; padding: 0.35rem 1.8rem 0.35rem 0.6rem; border: 1px solid #e0e0e0; border-radius: 4px; outline: none; width: 220px; background: white; color: #1a1a1a; -webkit-text-size-adjust: 100%; }',
     '.site-nav-search-hint { position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); font-size: 0.7rem; color: #bbb; border: 1px solid #ddd; border-radius: 3px; padding: 0 0.3rem; line-height: 1.4; pointer-events: none; font-family: inherit; }',
     '.site-nav-search:focus { border-color: #0366d6; }',
     '.site-nav-search:focus + .site-nav-search-hint, .site-nav-search:not(:placeholder-shown) + .site-nav-search-hint { display: none; }',
