@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Captcha Royale — Sean Reid</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/captcha-royale.webp">
 </head>
 <body>
     <div class="container">
@@ -19,14 +20,14 @@
 
         <article>
             <figure>
-                <img src="img/captcha-royale.webp" alt="Screenshot of Captcha Royale" loading="lazy">
+                <img decoding="async" fetchpriority="high" src="img/captcha-royale.webp" alt="Screenshot of Captcha Royale">
                 <figcaption>Captcha Royale's landing page.</figcaption>
             </figure>
 
             <p>The premise is simple: up to 16 players enter a room, CAPTCHAs appear on screen, and if you answer wrong or run out of time, you're eliminated. Last player standing wins. The idea came from noticing that CAPTCHAs are one of the few interactions where humans routinely fail at a task designed to be easy for humans. That failure rate felt like it could be the basis for a competitive game, not just a gate on a login form.</p>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Captcha_early.JPG/400px-Captcha_early.JPG" alt="An early CAPTCHA example from 1998" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Captcha_early.JPG/400px-Captcha_early.JPG" alt="An early CAPTCHA example from 1998" loading="lazy">
                 <figcaption>An early CAPTCHA from 1998. The term is a backronym for "Completely Automated Public Turing test to tell Computers and Humans Apart." <a href="https://commons.wikimedia.org/wiki/File:Captcha_early.JPG">Wikimedia Commons</a></figcaption>
             </figure>
 
@@ -39,7 +40,7 @@
             <p>This architecture eliminates an entire class of cheating. There's no image to intercept and feed to an OCR service, because the image is rendered locally from a seed. There's no solution in the network traffic, because the solution is computed server-side from the same seed. The only way to solve the CAPTCHA is to look at it and type the answer.</p>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Turing_Test_Version_3.svg/400px-Turing_Test_Version_3.svg.png" alt="Diagram of the Turing test" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Turing_Test_Version_3.svg/400px-Turing_Test_Version_3.svg.png" alt="Diagram of the Turing test" loading="lazy">
                 <figcaption>Diagram of the Turing test. <a href="https://commons.wikimedia.org/wiki/File:Turing_Test_Version_3.svg">Wikimedia Commons</a></figcaption>
             </figure>
 

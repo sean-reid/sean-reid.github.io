@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bananas for Scale — Sean Reid</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/bananas-for-scale.webp">
 </head>
 <body>
     <div class="container">
@@ -19,21 +20,21 @@
 
         <article>
             <figure>
-                <img src="img/bananas-for-scale.webp" alt="Screenshot of Bananas for Scale homepage showing search bar and featured entries" loading="lazy">
+                <img decoding="async" fetchpriority="high" src="img/bananas-for-scale.webp" alt="Screenshot of Bananas for Scale homepage showing search bar and featured entries">
                 <figcaption>The homepage. Search for anything, or hit Random and see what you get.</figcaption>
             </figure>
 
             <p>Bananas for Scale is a reference site. You look up a thing, get its real measurements, and see those measurements restated in unconventional units. The International Space Station orbits at 408 kilometers, or about 2.3 million bananas end-to-end. A blue whale weighs 150,000 kilograms, or 300,000 fully loaded burritos. Every conversion uses real SI values. The site just swaps the unit.</p>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/Cavendish_banana_from_Maracaibo.jpg/960px-Cavendish_banana_from_Maracaibo.jpg" alt="A Cavendish banana" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/Cavendish_banana_from_Maracaibo.jpg/960px-Cavendish_banana_from_Maracaibo.jpg" alt="A Cavendish banana" loading="lazy">
                 <figcaption>The Cavendish banana. 0.18 meters. The base unit. <a href="https://commons.wikimedia.org/wiki/File:Cavendish_banana_from_Maracaibo.jpg">Wikimedia Commons</a></figcaption>
             </figure>
 
             <p>There are 766 things across 57 categories, from a grain of rice to the Andromeda Galaxy. Each has curated SI measurements (length, mass, speed, volume, whatever applies) paired against 1,057 unconventional units spread across 14 dimensions. A golden retriever is 30 kilograms. Nicolas Cage is 84 kilograms. A Subway Footlong is 0.3048 meters. These are the units.</p>
 
             <figure>
-                <img src="img/bananas-for-scale-entry.webp" alt="Screenshot of the Giraffe entry on Bananas for Scale, showing measurements converted to silly units" loading="lazy">
+                <img decoding="async" src="img/bananas-for-scale-entry.webp" alt="Screenshot of the Giraffe entry on Bananas for Scale, showing measurements converted to silly units" loading="lazy">
                 <figcaption>A thing page for the Giraffe, with its height and mass converted into units like Shaq O'Neals and rubber ducks.</figcaption>
             </figure>
 
@@ -44,7 +45,7 @@
             <p>Each measurement shows two or three conversions. The first two come from the comprehensible pool. The third, about 60% of the time, is picked from outside the range on purpose. Selection uses a seeded PRNG (Mulberry32, fed by a djb2 hash of the thing's slug and measurement ID) so the same entry always shows the same conversions on every page load. The Remix button generates a new seed and picks different units, all client-side, no network call.</p>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Prototype_kilogram_replica.JPG/960px-Prototype_kilogram_replica.JPG" alt="Replica of the International Prototype Kilogram" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Prototype_kilogram_replica.JPG/960px-Prototype_kilogram_replica.JPG" alt="Replica of the International Prototype Kilogram" loading="lazy">
                 <figcaption>A replica of the International Prototype Kilogram, which defined the kilogram from 1889 to 2019. <a href="https://commons.wikimedia.org/wiki/File:Prototype_kilogram_replica.JPG">Wikimedia Commons</a></figcaption>
             </figure>
 

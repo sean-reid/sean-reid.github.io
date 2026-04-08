@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FrankenPeanuts — Sean Reid</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/frankenpeanuts.webp">
 </head>
 <body>
     <div class="container">
@@ -19,14 +20,14 @@
 
         <article>
             <figure>
-                <img src="img/frankenpeanuts.webp" alt="Screenshot of FrankenPeanuts" loading="lazy">
+                <img decoding="async" fetchpriority="high" src="img/frankenpeanuts.webp" alt="Screenshot of FrankenPeanuts">
                 <figcaption>A FrankenPeanuts strip.</figcaption>
             </figure>
 
             <p><a href="https://en.wikipedia.org/wiki/Peanuts">Peanuts</a> ran daily from October 2, 1950 to February 13, 2000. That's nearly 18,000 strips, each drawn by <a href="https://en.wikipedia.org/wiki/Charles_M._Schulz">Charles Schulz</a> alone. FrankenPeanuts picks four panels at random from that archive and stitches them into a new four-panel comic. The results range from accidentally poetic to completely incoherent. Every reload is a new strip.</p>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/en/3/32/Hatlocloistered.jpg" alt="A 1943 two-panel comic strip by Jimmy Hatlo" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/en/3/32/Hatlocloistered.jpg" alt="A 1943 two-panel comic strip by Jimmy Hatlo" loading="lazy">
                 <figcaption>A 1943 comic strip with visible panel gutters. FrankenPeanuts detects these boundaries algorithmically to extract individual panels. <a href="https://en.wikipedia.org/wiki/They%27ll_Do_It_Every_Time">Wikipedia</a></figcaption>
             </figure>
 
@@ -47,7 +48,7 @@
             <p>Processing 50 years of daily strips is a lot of images. The script uses concurrent HTTP requests with connection pooling and configurable delays to avoid overwhelming the source server. A <a href="https://github.com/sean-reid/frankenpeanuts/blob/main/.github/workflows/build-manifest.yml">GitHub Actions workflow</a> parallelizes the job across 10 workers, each handling a different date range. After all chunks complete, a merge step combines the partial manifests into a single <code>manifest.json</code> and commits the result back to the repo. The pipeline is resumable: if it gets interrupted, it checks the existing manifest and skips dates that have already been processed.</p>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Comics_third_page.svg/250px-Comics_third_page.svg.png" alt="Schematic layout of a Sunday comic strip third page" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Comics_third_page.svg/250px-Comics_third_page.svg.png" alt="Schematic layout of a Sunday comic strip third page" loading="lazy">
                 <figcaption>Standard Sunday comic strip third-page panel layout. <a href="https://commons.wikimedia.org/wiki/File:Comics_third_page.svg">Wikimedia Commons</a></figcaption>
             </figure>
 

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>How Will I Die — Sean Reid</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/how-will-i-die.webp">
 </head>
 <body>
     <div class="container">
@@ -19,14 +20,14 @@
 
         <article>
             <figure>
-                <img src="img/how-will-i-die.webp" alt="Screenshot of How Will I Die" loading="lazy">
+                <img decoding="async" fetchpriority="high" src="img/how-will-i-die.webp" alt="Screenshot of How Will I Die">
                 <figcaption>How Will I Die.</figcaption>
             </figure>
 
             <p>Mortality statistics are public, detailed, and kind of fascinating once you start digging into them. The <a href="https://www.healthdata.org/">Institute for Health Metrics and Evaluation</a> publishes the <a href="https://vizhub.healthdata.org/gbd-compare/">Global Burden of Disease</a> dataset, which breaks down causes of death by country, age group, sex, and year. This project makes that data queryable from a browser. Pick your location, enter your age, select your sex, and it tells you the ten things most likely to kill you, ranked by probability.</p>
 
             <figure>
-                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/Social_determinants_of_health_visualization.png" alt="Social determinants of health diagram" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/b/b8/Social_determinants_of_health_visualization.png" alt="Social determinants of health diagram" loading="lazy">
                 <figcaption>Social determinants of health (Whitehead and Dahlgren model). Mortality varies dramatically by location, age, and sex. <a href="https://commons.wikimedia.org/wiki/File:Social_determinants_of_health_visualization.png">Wikimedia Commons</a></figcaption>
             </figure>
 
@@ -39,7 +40,7 @@
             <p>Using WASM for this is partly about performance and partly about packaging. The mortality data and the lookup logic ship as a single binary blob that the browser can execute directly. No API server, no database, no backend infrastructure. The whole thing runs on GitHub Pages as a static site.</p>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Life_expectancy_by_world_region%2C_OWID.svg/330px-Life_expectancy_by_world_region%2C_OWID.svg.png" alt="Life expectancy by world region from 1770 to present" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Life_expectancy_by_world_region%2C_OWID.svg/330px-Life_expectancy_by_world_region%2C_OWID.svg.png" alt="Life expectancy by world region from 1770 to present" loading="lazy">
                 <figcaption>Life expectancy by world region, 1770 to present. <a href="https://commons.wikimedia.org/wiki/File:Life_expectancy_by_world_region,_OWID.svg">Wikimedia Commons</a></figcaption>
             </figure>
 

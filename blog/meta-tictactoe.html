@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meta Tic-Tac-Toe — Sean Reid</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/meta-tictactoe.webp">
 </head>
 <body>
     <div class="container">
@@ -19,14 +20,14 @@
 
         <article>
             <figure>
-                <img src="img/meta-tictactoe.webp" alt="Screenshot of Meta Tic-Tac-Toe" loading="lazy">
+                <img decoding="async" fetchpriority="high" src="img/meta-tictactoe.webp" alt="Screenshot of Meta Tic-Tac-Toe">
                 <figcaption>Meta Tic-Tac-Toe.</figcaption>
             </figure>
 
             <p><a href="https://en.wikipedia.org/wiki/Ultimate_tic-tac-toe">Ultimate tic-tac-toe</a> takes a game that's been solved since childhood and makes it genuinely hard. The board is a 3x3 grid of smaller tic-tac-toe boards. To win, you need to claim three sub-boards in a row. But the twist is what makes it interesting: the cell you play in determines which sub-board your opponent must play in next. Pick the top-right cell of any sub-board, and your opponent is forced to play in the top-right sub-board. This constraint turns a game of local tactics into one of global strategy. Every move has consequences two layers deep.</p>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Super_tic-tac-toe_rules_example.png/330px-Super_tic-tac-toe_rules_example.png" alt="Ultimate tic-tac-toe board" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Super_tic-tac-toe_rules_example.png/330px-Super_tic-tac-toe_rules_example.png" alt="Ultimate tic-tac-toe board" loading="lazy">
                 <figcaption>An Ultimate Tic-Tac-Toe board. Your move within a sub-board determines which sub-board your opponent must play in. <a href="https://commons.wikimedia.org/wiki/File:Super_tic-tac-toe_rules_example.png">Wikimedia Commons</a></figcaption>
             </figure>
 
@@ -41,7 +42,7 @@
             <p>The Rust code is organized into separate modules for types, individual board logic, game state management, and the minimax search itself. <code>types.rs</code> defines the cell states and move structures. <code>board.rs</code> handles the 3x3 sub-board logic, including win detection. <code>game.rs</code> manages the full 9-board state and enforces the "your move picks their board" constraint. <code>minimax.rs</code> contains the search algorithm.</p>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Minimax.svg/330px-Minimax.svg.png" alt="Minimax algorithm game tree diagram" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Minimax.svg/330px-Minimax.svg.png" alt="Minimax algorithm game tree diagram" loading="lazy">
                 <figcaption>A minimax game tree. Each level alternates between maximizing and minimizing players. <a href="https://commons.wikimedia.org/wiki/File:Minimax.svg">Wikimedia Commons</a></figcaption>
             </figure>
 

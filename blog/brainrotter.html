@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BrainRotter — Sean Reid</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/brainrotter.webp">
 </head>
 <body>
     <div class="container">
@@ -19,14 +20,14 @@
 
         <article>
             <figure>
-                <img src="img/brainrotter.webp" alt="Screenshot of BrainRotter" loading="lazy">
+                <img decoding="async" fetchpriority="high" src="img/brainrotter.webp" alt="Screenshot of BrainRotter">
                 <figcaption>BrainRotter output.</figcaption>
             </figure>
 
             <p>The internet has developed its own dialect. Words like "skibidi," "rizz," "sigma," and "sus" have their own grammar and usage patterns that are completely opaque to anyone over 25. I wanted to see what would happen if you fed that vocabulary into a proper <a href="https://en.wikipedia.org/wiki/Context-free_grammar">context-free grammar</a>. The result is BrainRotter: you press a button and it fills a page with paragraphs of grammatically structured, completely unhinged <a href="https://en.wikipedia.org/wiki/Brain_rot">brainrot</a> prose.</p>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Chomsky-hierarchy.svg/250px-Chomsky-hierarchy.svg.png" alt="Chomsky hierarchy of formal grammars" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Chomsky-hierarchy.svg/250px-Chomsky-hierarchy.svg.png" alt="Chomsky hierarchy of formal grammars" loading="lazy">
                 <figcaption>The Chomsky hierarchy of formal grammars. BrainRotter uses a weighted context-free grammar to generate text. <a href="https://commons.wikimedia.org/wiki/File:Chomsky-hierarchy.svg">Wikimedia Commons</a></figcaption>
             </figure>
 
@@ -37,7 +38,7 @@
             <p>The lexicon has over 2,100 terms organized into 13 categories: 347 entities (Skibidi Toilet, Bombardiro Crocodilo, Kai Cenat, Quandale Dingle), 195 transitive and 204 intransitive verbs ("rizzes up," "mogs," "is locked in"), 330 adjectives ("goated," "skibidi-coded," "looksmaxxed"), 139 adverbs, 165 prepositional phrases, 196 interjections, 78 question starters, 59 conjunctions, 55 relative clauses, 135 asides, 85 attributions, and 118 consequences. The vocabulary spans meme eras from Among Us through Italian internet culture.</p>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/ParseTree.svg/400px-ParseTree.svg.png" alt="A parse tree for the sentence 'John hit the ball'" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/ParseTree.svg/400px-ParseTree.svg.png" alt="A parse tree for the sentence 'John hit the ball'" loading="lazy">
                 <figcaption>A parse tree derived from a context-free grammar. <a href="https://commons.wikimedia.org/wiki/File:ParseTree.svg">Wikimedia Commons</a></figcaption>
             </figure>
 

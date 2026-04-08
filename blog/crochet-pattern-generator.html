@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crochet Pattern Generator — Sean Reid</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/crochet-pattern-generator.webp">
 </head>
 <body>
     <div class="container">
@@ -19,14 +20,14 @@
 
         <article>
             <figure>
-                <img src="img/crochet-pattern-generator.webp" alt="Screenshot of Crochet Pattern Generator" loading="lazy">
+                <img decoding="async" fetchpriority="high" src="img/crochet-pattern-generator.webp" alt="Screenshot of Crochet Pattern Generator">
                 <figcaption>Crochet Pattern Generator.</figcaption>
             </figure>
 
             <p><a href="https://en.wikipedia.org/wiki/Amigurumi">Amigurumi</a> are small stuffed figures made by crocheting in the round. You start with a magic ring at the bottom, increase stitches each row to widen the shape, then decrease back down to close it off. The pattern for any given shape is just a list of stitch counts per row. If you know the profile you want (say, a sphere, or a pear, or a mushroom), the math to get those stitch counts is mechanical. So why not draw the profile and let the computer figure out the pattern?</p>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Table-cloth_2008-1.jpg/330px-Table-cloth_2008-1.jpg" alt="Hands crocheting with a hook and yarn" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Table-cloth_2008-1.jpg/330px-Table-cloth_2008-1.jpg" alt="Hands crocheting with a hook and yarn" loading="lazy">
                 <figcaption>Crocheting. The pattern generator converts 2D profile drawings into row-by-row stitch instructions. <a href="https://commons.wikimedia.org/wiki/File:Table-cloth_2008-1.jpg">Wikimedia Commons</a></figcaption>
             </figure>
 
@@ -41,7 +42,7 @@
             <p>Within each row, increases and decreases need to be distributed evenly around the circle to avoid lumps. If row 5 has 12 stitches and row 6 needs 18, that's 6 increases spread across 12 positions. The algorithm spaces them as uniformly as possible so the fabric grows evenly.</p>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Amigurumi_Elephant.jpg/360px-Amigurumi_Elephant.jpg" alt="A crocheted amigurumi elephant" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Amigurumi_Elephant.jpg/360px-Amigurumi_Elephant.jpg" alt="A crocheted amigurumi elephant" loading="lazy">
                 <figcaption>A crocheted amigurumi elephant. <a href="https://commons.wikimedia.org/wiki/File:Amigurumi_Elephant.jpg">Wikimedia Commons</a></figcaption>
             </figure>
 

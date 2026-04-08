@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lacuna — Sean Reid</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/lacuna.webp">
 </head>
 <body>
     <div class="container">
@@ -19,7 +20,7 @@
 
         <article>
             <figure>
-                <img src="img/lacuna.webp" alt="Screenshot of Lacuna" loading="lazy">
+                <img decoding="async" fetchpriority="high" src="img/lacuna.webp" alt="Screenshot of Lacuna">
                 <figcaption>Lacuna's lobby screen.</figcaption>
             </figure>
 
@@ -28,7 +29,7 @@
             <p>I designed the game and its rules from scratch. The physical version would be playable with colored pens and a printed circle, but the topology tracking and scoring would be tedious to do by hand. The digital implementation handles all of that automatically.</p>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/6n-graf.svg/330px-6n-graf.svg.png" alt="A planar graph" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/6n-graf.svg/330px-6n-graf.svg.png" alt="A planar graph" loading="lazy">
                 <figcaption>A planar graph. Lacuna's strands and boundary form a similar structure, and the topology engine enumerates its faces to detect enclosed regions. <a href="https://commons.wikimedia.org/wiki/File:6n-graf.svg">Wikimedia Commons</a></figcaption>
             </figure>
 
@@ -43,7 +44,7 @@
             <p>The core technical problem is determining, after each strand is placed, which regions of the circle have been enclosed and what colors their boundaries are. The strands and the circle boundary together form a planar graph. The <a href="https://en.wikipedia.org/wiki/Planar_graph#Euler's_formula">faces of that graph</a> (the regions between strands) need to be enumerated, and each face's boundary needs to be traced to check whether all edges belong to a single player.</p>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Jordan_curve_theorem.svg/250px-Jordan_curve_theorem.svg.png" alt="Illustration of the Jordan curve theorem" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Jordan_curve_theorem.svg/250px-Jordan_curve_theorem.svg.png" alt="Illustration of the Jordan curve theorem" loading="lazy">
                 <figcaption>The Jordan curve theorem: a simple closed curve divides the plane into interior and exterior regions. <a href="https://commons.wikimedia.org/wiki/File:Jordan_curve_theorem.svg">Wikimedia Commons</a></figcaption>
             </figure>
 

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flow — Sean Reid</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/flow.webp">
 </head>
 <body>
     <div class="container">
@@ -20,7 +21,7 @@
 
         <article>
             <figure>
-                <img src="img/flow.webp" alt="Screenshot of Flow" loading="lazy">
+                <img decoding="async" fetchpriority="high" src="img/flow.webp" alt="Screenshot of Flow">
                 <figcaption>Flow's text input screen.</figcaption>
             </figure>
 
@@ -41,7 +42,7 @@
             <p>Each English word has a natural fixation point, typically around one-third of the way from the left edge. If you track eye movements during reading, the initial fixation lands near this point for most words. Flow identifies this letter in each word, highlights it in amber, and positions it at a fixed horizontal coordinate on screen.</p>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Szakkad.jpg/330px-Szakkad.jpg" alt="Eye saccade movement pattern during reading" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Szakkad.jpg/330px-Szakkad.jpg" alt="Eye saccade movement pattern during reading" loading="lazy">
                 <figcaption>Saccadic eye movements during reading. RSVP eliminates these by displaying words at a fixed point. <a href="https://commons.wikimedia.org/wiki/File:Szakkad.jpg">Wikimedia Commons</a></figcaption>
             </figure>
 
@@ -50,7 +51,7 @@
             <h2>File parsing</h2>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Reading_Fixations_Saccades.jpg/330px-Reading_Fixations_Saccades.jpg" alt="Visualization of eye fixations and saccades during reading" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Reading_Fixations_Saccades.jpg/330px-Reading_Fixations_Saccades.jpg" alt="Visualization of eye fixations and saccades during reading" loading="lazy">
                 <figcaption>Eye fixation points and saccadic movements during reading. <a href="https://commons.wikimedia.org/wiki/File:Reading_Fixations_Saccades.jpg">Wikimedia Commons</a></figcaption>
             </figure>
 

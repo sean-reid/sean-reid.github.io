@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tongue Simulator — Sean Reid</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/tongue-simulator.webp">
 </head>
 <body>
     <div class="container">
@@ -19,14 +20,14 @@
 
         <article>
             <figure>
-                <img src="img/tongue-simulator.webp" alt="Screenshot of Tongue Simulator" loading="lazy">
+                <img decoding="async" fetchpriority="high" src="img/tongue-simulator.webp" alt="Screenshot of Tongue Simulator">
                 <figcaption>Tongue Simulator.</figcaption>
             </figure>
 
             <p>When you speak, your tongue is doing something incredibly complex. It's a muscular hydrostat with no skeleton, deforming continuously through a sequence of target shapes that correspond to the sounds you're producing. Linguists have studied these shapes for over a century using X-ray imaging, MRI, and electromagnetic articulography. But most of us have never actually seen what's happening inside our mouths during speech. This project makes it visible.</p>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Sagittalmouth.png/330px-Sagittalmouth.png" alt="Lateral cross-section of the human vocal tract" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Sagittalmouth.png/330px-Sagittalmouth.png" alt="Lateral cross-section of the human vocal tract" loading="lazy">
                 <figcaption>Lateral cross-section of the human head showing the vocal tract. Tongue Simulator animates these structures in real time. <a href="https://commons.wikimedia.org/wiki/File:Sagittalmouth.png">Wikimedia Commons</a></figcaption>
             </figure>
 
@@ -39,7 +40,7 @@
             <p>The key insight is that the simulation is pre-computed, not real-time. When you hit play, the Rust code runs the full PBD simulation for every frame in the utterance, stores the results, and then the JavaScript playback loop just reads from the pre-computed buffer while the speech plays. This means the physics can be as expensive as needed without causing frame drops during playback.</p>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Cardinal_vowel_tongue_position-front.svg/330px-Cardinal_vowel_tongue_position-front.svg.png" alt="Diagram of tongue positions for front cardinal vowels" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Cardinal_vowel_tongue_position-front.svg/330px-Cardinal_vowel_tongue_position-front.svg.png" alt="Diagram of tongue positions for front cardinal vowels" loading="lazy">
                 <figcaption>Tongue positions for front cardinal vowels in a midsagittal cross-section. <a href="https://commons.wikimedia.org/wiki/File:Cardinal_vowel_tongue_position-front.svg">Wikimedia Commons</a></figcaption>
             </figure>
 

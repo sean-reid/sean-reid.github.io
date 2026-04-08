@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Entropy Bus — Sean Reid</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/entropy-bus.webp">
 </head>
 <body>
     <div class="container">
@@ -19,14 +20,14 @@
 
         <article>
             <figure>
-                <img src="img/entropy-bus.webp" alt="Screenshot of Entropy Bus" loading="lazy">
+                <img decoding="async" fetchpriority="high" src="img/entropy-bus.webp" alt="Screenshot of Entropy Bus">
                 <figcaption>Entropy Bus.</figcaption>
             </figure>
 
             <p>Most racing games ask you to press the right key at the right time. This one asks you to press the <em>wrong</em> key. Or rather, every key. The bus accelerates based on the <a href="https://en.wikipedia.org/wiki/Entropy_(information_theory)">entropy</a> of your keyboard input. Mashing the same key does almost nothing. Alternating between two keys does a little more. But if you use all your keys, letters, numbers, symbols, punctuation, shift combinations, with irregular timing and no discernible pattern, the bus flies.</p>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Binary_entropy_plot.svg/330px-Binary_entropy_plot.svg.png" alt="Binary entropy function plot" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Binary_entropy_plot.svg/330px-Binary_entropy_plot.svg.png" alt="Binary entropy function plot" loading="lazy">
                 <figcaption>The binary entropy function. Entropy Bus measures the information entropy of your keypresses to determine bus speed. <a href="https://commons.wikimedia.org/wiki/File:Binary_entropy_plot.svg">Wikimedia Commons</a></figcaption>
             </figure>
 
@@ -35,7 +36,7 @@
             <p>The entropy calculation looks at your keystrokes within a rolling four-second window. It penalizes several kinds of predictability: sequential key presses (like typing "asdf"), alternating patterns (like bouncing between two keys), and repeated <a href="https://en.wikipedia.org/wiki/Bigram">bigrams</a> (like pressing the same two-key sequence multiple times). It rewards even distribution across many different keys and irregular timing between presses.</p>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Backlit_keyboard.jpg/330px-Backlit_keyboard.jpg" alt="Backlit computer keyboard" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Backlit_keyboard.jpg/330px-Backlit_keyboard.jpg" alt="Backlit computer keyboard" loading="lazy">
                 <figcaption>A backlit keyboard. Entropy Bus rewards pressing as many different keys as possible with irregular timing. <a href="https://commons.wikimedia.org/wiki/File:Backlit_keyboard.jpg">Wikimedia Commons</a></figcaption>
             </figure>
 

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NYT Crosswords — Sean Reid</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/nyt-crosswords.webp">
 </head>
 <body>
     <div class="container">
@@ -19,14 +20,14 @@
 
         <article>
             <figure>
-                <img src="img/nyt-crosswords.webp" alt="Screenshot of NYT Crosswords" loading="lazy">
+                <img decoding="async" fetchpriority="high" src="img/nyt-crosswords.webp" alt="Screenshot of NYT Crosswords">
                 <figcaption>NYT Crosswords player.</figcaption>
             </figure>
 
             <p>The <a href="https://en.wikipedia.org/wiki/The_New_York_Times_crossword_puzzle">New York Times crossword</a> is behind a paywall and the official app is full of ads even for subscribers. I like doing old crosswords, the ones from the 70s and 80s where the clues reference things that no longer exist. There's a publicly available dataset of scraped NYT crossword data in JSON format covering puzzles from January 1976 through December 2017, with some gaps. I built a browser-based player that serves these puzzles through a clean interface with no ads and no account required.</p>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/CrosswordUSA.svg/330px-CrosswordUSA.svg.png" alt="A crossword puzzle grid" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/CrosswordUSA.svg/330px-CrosswordUSA.svg.png" alt="A crossword puzzle grid" loading="lazy">
                 <figcaption>NYT Crosswords provides access to 41 years of New York Times puzzles in a clean, free interface. <a href="https://commons.wikimedia.org/wiki/File:CrosswordUSA.svg">Wikimedia Commons</a></figcaption>
             </figure>
 
@@ -43,7 +44,7 @@
             <p>When you complete a word correctly, the clue gets a green checkmark and a strikethrough. There's a "Reveal" button that fills in all answers if you get stuck, and a "Reset" button that clears the board. These are the only controls. No timer, no scoring, no streak tracking. I wanted something that felt like doing a crossword on paper, not a gamified experience trying to drive engagement metrics.</p>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Working_crossword_Little_Grill_Collective_Harrisonburg_VA_March_2008.jpg/330px-Working_crossword_Little_Grill_Collective_Harrisonburg_VA_March_2008.jpg" alt="Person solving a crossword puzzle with a pen" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Working_crossword_Little_Grill_Collective_Harrisonburg_VA_March_2008.jpg/330px-Working_crossword_Little_Grill_Collective_Harrisonburg_VA_March_2008.jpg" alt="Person solving a crossword puzzle with a pen" loading="lazy">
                 <figcaption>Solving a crossword puzzle with pen and paper. <a href="https://commons.wikimedia.org/wiki/File:Working_crossword_Little_Grill_Collective_Harrisonburg_VA_March_2008.jpg">Wikimedia Commons</a></figcaption>
             </figure>
 

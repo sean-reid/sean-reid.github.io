@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lasers — Sean Reid</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/lasers.webp">
 </head>
 <body>
     <div class="container">
@@ -19,14 +20,14 @@
 
         <article>
             <figure>
-                <img src="img/lasers.webp" alt="Screenshot of Lasers" loading="lazy">
+                <img decoding="async" fetchpriority="high" src="img/lasers.webp" alt="Screenshot of Lasers">
                 <figcaption>Lasers puzzle game.</figcaption>
             </figure>
 
             <p>The idea is old. A laser fires from one point on the board. A target sits somewhere else. Between them, circular obstacles block the direct path. You place mirrors to bounce the laser beam around the obstacles and into the target. The fewer mirrors you use, the better your score.</p>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Reflection_angles.svg/250px-Reflection_angles.svg.png" alt="Angle of incidence equals angle of reflection" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Reflection_angles.svg/250px-Reflection_angles.svg.png" alt="Angle of incidence equals angle of reflection" loading="lazy">
                 <figcaption>The law of reflection: angle of incidence equals angle of reflection. <a href="https://commons.wikimedia.org/wiki/File:Reflection_angles.svg">Wikimedia Commons</a></figcaption>
             </figure>
 
@@ -45,7 +46,7 @@
             <p>This interaction model matters because the rotation is continuous. You aren't snapping to 45-degree increments. The beam path changes continuously as you rotate, so you can watch the laser sweep across the board and land it precisely on the target. There's an undo button if you misplace a mirror, and a full reset if you want to start over.</p>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Laser_mirror_reflection.jpg/330px-Laser_mirror_reflection.jpg" alt="Laser beam reflecting off a mirror" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Laser_mirror_reflection.jpg/330px-Laser_mirror_reflection.jpg" alt="Laser beam reflecting off a mirror" loading="lazy">
                 <figcaption>A laser beam reflecting off a mirror. <a href="https://commons.wikimedia.org/wiki/File:Laser_mirror_reflection.jpg">Wikimedia Commons</a></figcaption>
             </figure>
 

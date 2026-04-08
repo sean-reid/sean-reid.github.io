@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Severed — Sean Reid</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/severed.webp">
 </head>
 <body>
     <div class="container">
@@ -19,14 +20,14 @@
 
         <article>
             <figure>
-                <img src="img/severed.webp" alt="Screenshot of Severed showing a Red Sea cable cut scenario" loading="lazy">
+                <img decoding="async" fetchpriority="high" src="img/severed.webp" alt="Screenshot of Severed showing a Red Sea cable cut scenario">
                 <figcaption>Severed simulating a Red Sea cable crisis. The impact panel on the right ranks affected metros by bandwidth loss.</figcaption>
             </figure>
 
             <p>About 95% of intercontinental data travels through <a href="https://en.wikipedia.org/wiki/Submarine_communications_cable">submarine cables</a>. Not satellites, not microwave relays. Physical cables on the ocean floor, some of them thinner than a garden hose. When one gets cut by a ship anchor, an earthquake, or <a href="https://en.wikipedia.org/wiki/Red_Sea_crisis">military action</a>, the rerouting happens so fast that most people never notice. But when several cables fail at once in the same chokepoint, entire countries can lose connectivity. I wanted to build something that made this infrastructure visible and let you break it yourself.</p>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Submarine_cable_cross-section_3D_plain.svg/330px-Submarine_cable_cross-section_3D_plain.svg.png" alt="Cross-section of a submarine communications cable" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Submarine_cable_cross-section_3D_plain.svg/330px-Submarine_cable_cross-section_3D_plain.svg.png" alt="Cross-section of a submarine communications cable" loading="lazy">
                 <figcaption>Cross-section of a modern submarine cable. The fiber optic cores sit at the center, surrounded by layers of steel wire, copper, and polyethylene. The whole thing is about the diameter of a soda can. <a href="https://commons.wikimedia.org/wiki/File:Submarine_cable_cross-section_3D_plain.svg">Wikimedia Commons</a></figcaption>
             </figure>
 
@@ -61,7 +62,7 @@
             <p>Small island nations are fragile in ways that are obvious in retrospect but easy to overlook. Tonga, Tuvalu, and several Pacific islands depend on a single cable. One anchor drag and they go dark. West Africa is somewhere in between: there's growing cable diversity, but a cluster of failures at the right chokepoint can cascade because the terrestrial alternatives are limited.</p>
 
             <figure>
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/France_Telecom_Marine_Rene_Descartes_p1150247.jpg/600px-France_Telecom_Marine_Rene_Descartes_p1150247.jpg" alt="The cable ship René Descartes" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/France_Telecom_Marine_Rene_Descartes_p1150247.jpg/600px-France_Telecom_Marine_Rene_Descartes_p1150247.jpg" alt="The cable ship René Descartes" loading="lazy">
                 <figcaption>The cable ship René Descartes, operated by Orange Marine, used for laying and repairing submarine cables. When a cable breaks, ships like this one are dispatched to the fault location, grapple the cable from the ocean floor, and splice in a repair. <a href="https://commons.wikimedia.org/wiki/File:France_Telecom_Marine_Rene_Descartes_p1150247.jpg">Wikimedia Commons</a></figcaption>
             </figure>
 

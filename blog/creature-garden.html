@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Creature Garden — Sean Reid</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/creature-garden.webp">
 </head>
 <body>
     <div class="container">
@@ -19,14 +20,14 @@
 
         <article>
             <figure>
-                <img src="img/creature-garden.webp" alt="Screenshot of Creature Garden" loading="lazy">
+                <img decoding="async" fetchpriority="high" src="img/creature-garden.webp" alt="Screenshot of Creature Garden">
                 <figcaption>Creature Garden ecosystem simulation.</figcaption>
             </figure>
 
             <p>I wanted to build a petri dish you could watch. Drop some creatures into a space with limited food and see what happens. They eat, they grow, they reproduce, they die. The population fluctuates. Sometimes it booms. Sometimes it crashes. You can intervene by dropping food wherever you click, or you can just sit back and let the ecosystem run.</p>
 
             <figure>
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/EnergyFlowFrog.jpg/330px-EnergyFlowFrog.jpg" alt="Ecosystem energy cycle diagram" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/EnergyFlowFrog.jpg/330px-EnergyFlowFrog.jpg" alt="Ecosystem energy cycle diagram" loading="lazy">
                 <figcaption>Energy flow in an ecosystem. Creature Garden simulates similar dynamics with procedural organisms competing for food. <a href="https://commons.wikimedia.org/wiki/File:EnergyFlowFrog.jpg">Wikimedia Commons</a></figcaption>
             </figure>
 
@@ -43,7 +44,7 @@
             <p>Food spawns randomly across the canvas and persists for 300 frames before disappearing. If a creature reaches a food item before it despawns, the creature eats it and regains energy. If not, the food vanishes and that's a missed opportunity for the population. The spawn rate is constant, which means the food supply acts as a carrying capacity. Too many creatures and they start competing for insufficient resources. Too few and food piles up uneaten.</p>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Lotka_Volterra_dynamics.svg/330px-Lotka_Volterra_dynamics.svg.png" alt="Lotka-Volterra predator-prey population dynamics graph" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Lotka_Volterra_dynamics.svg/330px-Lotka_Volterra_dynamics.svg.png" alt="Lotka-Volterra predator-prey population dynamics graph" loading="lazy">
                 <figcaption>Lotka-Volterra predator-prey population dynamics. <a href="https://commons.wikimedia.org/wiki/File:Lotka_Volterra_dynamics.svg">Wikimedia Commons</a></figcaption>
             </figure>
 

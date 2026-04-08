@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Points — Sean Reid</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/points.webp">
 </head>
 <body>
     <div class="container">
@@ -19,14 +20,14 @@
 
         <article>
             <figure>
-                <img src="img/points.webp" alt="Screenshot of Points" loading="lazy">
+                <img decoding="async" fetchpriority="high" src="img/points.webp" alt="Screenshot of Points">
                 <figcaption>Points finding an ellipse through clicked coordinates.</figcaption>
             </figure>
 
             <p>In 5th grade I played a game called <a href="http://www.greenglobs.net">Green Globs</a> where green dots were scattered on a coordinate plane and you had to type in an equation whose graph passed through as many as possible. Points is the inverse of that: you click a few points on a grid and the computer finds the simplest algebraic curve through all of them. Not a polynomial fit or a regression, but an exact implicit equation with small integer coefficients, like <code>x&sup2; + y&sup2; = 25</code> or <code>x &middot; y = 6</code>. The solver finds lines, conics, cubics, and quartics in under a millisecond.</p>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Linear_regression.svg/330px-Linear_regression.svg.png" alt="Curve fitting through data points" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Linear_regression.svg/330px-Linear_regression.svg.png" alt="Curve fitting through data points" loading="lazy">
                 <figcaption>Statistical curve fitting finds an approximate best fit. Points instead finds exact implicit equations with integer coefficients. <a href="https://commons.wikimedia.org/wiki/File:Linear_regression.svg">Wikimedia Commons</a></figcaption>
             </figure>
 
@@ -37,7 +38,7 @@
             <p>To favor simple results, the solver searches sparse subsets first. For each degree (1 through 4), it tries all k-subsets of monomial columns starting from k = 2 and working upward. The first non-trivial null vector found this way uses the fewest terms possible, which usually gives the cleanest equation. When multiple solutions exist at the same sparsity, a scoring function picks the one with the smallest coefficients and the most symmetric use of x and y, preferring <code>x&sup2; + y&sup2; = 25</code> over an equivalent but lopsided form.</p>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Conic_Sections.svg/330px-Conic_Sections.svg.png" alt="The four conic sections: circle, ellipse, parabola, and hyperbola" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Conic_Sections.svg/330px-Conic_Sections.svg.png" alt="The four conic sections: circle, ellipse, parabola, and hyperbola" loading="lazy">
                 <figcaption>The four conic sections: circle, ellipse, parabola, and hyperbola. <a href="https://commons.wikimedia.org/wiki/File:Conic_Sections.svg">Wikimedia Commons</a></figcaption>
             </figure>
 

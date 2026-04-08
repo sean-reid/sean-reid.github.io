@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dependencies — Sean Reid</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/dependencies.webp">
 </head>
 <body>
     <div class="container">
@@ -19,14 +20,14 @@
 
         <article>
             <figure>
-                <img src="img/dependencies.webp" alt="Screenshot of Dependencies" loading="lazy">
+                <img decoding="async" fetchpriority="high" src="img/dependencies.webp" alt="Screenshot of Dependencies">
                 <figcaption>Dependencies algorithm comparison.</figcaption>
             </figure>
 
             <p>Imagine you're building a project and it has 100 declared dependencies, but only a handful are actually required. The rest are leftovers from features that got removed, or transitive dependencies that something else already pulls in. You want to find the minimal set. The only test you can perform is: "does the build succeed with this subset of dependencies?" Each test takes time. How do you minimize the number of tests?</p>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Binary_search_tree.svg/250px-Binary_search_tree.svg.png" alt="Binary search tree diagram" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Binary_search_tree.svg/250px-Binary_search_tree.svg.png" alt="Binary search tree diagram" loading="lazy">
                 <figcaption>A binary search tree. The Dependencies visualizer compares greedy and binary search approaches to finding required dependencies. <a href="https://commons.wikimedia.org/wiki/File:Binary_search_tree.svg">Wikimedia Commons</a></figcaption>
             </figure>
 
@@ -41,7 +42,7 @@
             <h2>Binary search</h2>
 
             <figure class="small">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/DependencyGraph.svg/250px-DependencyGraph.svg.png" alt="Dependency graph diagram showing directed acyclic relationships between components" loading="lazy">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/DependencyGraph.svg/250px-DependencyGraph.svg.png" alt="Dependency graph diagram showing directed acyclic relationships between components" loading="lazy">
                 <figcaption>A dependency graph — a directed acyclic graph (DAG) representing relationships between components. <a href="https://commons.wikimedia.org/wiki/File:DependencyGraph.svg">Wikimedia Commons</a></figcaption>
             </figure>
 
