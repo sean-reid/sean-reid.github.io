@@ -205,6 +205,12 @@
     }
   });
 
+  // --- iOS Safari keyboard dismiss fix ---
+  // Forces viewport recalculation after virtual keyboard closes
+  document.addEventListener('focusout', function () {
+    setTimeout(function () { window.scrollBy(0, 0); }, 100);
+  });
+
   // --- Keyboard shortcuts ---
   document.addEventListener('keydown', function (e) {
     var tag = (document.activeElement || {}).tagName;

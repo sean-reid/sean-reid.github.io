@@ -3,14 +3,6 @@ body {
   margin: 0;
 }
 
-@media (hover: hover) {
-  body {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-}
-
 .site-nav {
   position: sticky;
   top: 0;
@@ -179,26 +171,21 @@ body {
   padding: 2rem 1rem;
 }
 
-@media (hover: hover) {
-  .site-content {
-    flex: 1;
-  }
-}
-
-/* Footer */
+/* Footer — sticky on desktop, static on touch devices to avoid iOS keyboard bugs */
 .site-footer {
   background: #fafafa;
   border-top: 1px solid #e0e0e0;
   padding: 0.5rem 1rem;
   padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
   text-align: center;
+  position: sticky;
+  bottom: 0;
+  z-index: 9999;
 }
 
-@media (hover: hover) {
+@media (pointer: coarse) {
   .site-footer {
-    position: sticky;
-    bottom: 0;
-    z-index: 9999;
+    position: static;
   }
 }
 
