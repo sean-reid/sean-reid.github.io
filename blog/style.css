@@ -9,7 +9,7 @@ body {
     line-height: 1.7;
     color: #1a1a1a;
     background: #fafafa;
-    padding: 2rem 1rem;
+    padding: 0;
 }
 
 .container {
@@ -124,24 +124,6 @@ article figcaption a {
     text-decoration: underline;
 }
 
-footer {
-    margin-top: 3rem;
-    padding-top: 2rem;
-    border-top: 1px solid #e0e0e0;
-    display: flex;
-    justify-content: space-between;
-}
-
-footer a {
-    color: #333;
-    text-decoration: none;
-    font-size: 0.9rem;
-    transition: color 0.2s;
-}
-
-footer a:hover {
-    color: #0366d6;
-}
 
 /* Blog index styles */
 .blog-list {

@@ -2,12 +2,25 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Crochet Pattern Generator — Sean Reid</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preload" as="image" href="img/crochet-pattern-generator.webp">
+    <link rel="stylesheet" href="/nav.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 </head>
 <body>
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="/" class="site-nav-name">Sean Reid</a>
+    <div class="site-nav-controls">
+      <div class="site-nav-search-wrap"><input type="text" class="site-nav-search" placeholder="Search..." autocomplete="off"><span class="site-nav-search-hint">/</span></div>
+      <a class="site-nav-random">&rarr; Random</a>
+      <div class="search-dropdown"></div>
+    </div>
+  </div>
+</nav>
+<main class="site-content">
     <div class="container">
         <header>
             <h1>Crochet Pattern Generator</h1>
@@ -58,6 +71,16 @@
         </article>
 
     </div>
+</main>
+<footer class="site-footer">
+  <div class="site-footer-links">
+    <a href="https://github.com/sean-reid">GitHub</a>
+    <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
+    <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
+    <a href="https://socrates-of-athens.github.io">Poetry</a>
+    <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
+  </div>
+</footer>
 <script src="/nav.js"></script>
 </body>
 </html>
