@@ -7,18 +7,29 @@
 
   var activeIndex = -1;
 
-  // Desktop: sticky footer. Mobile: no sticky anything (avoids iOS keyboard bugs).
+  // Sticky footer everywhere. On touch devices, temporarily disable during
+  // keyboard input to avoid iOS Safari viewport bugs.
   var isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-  if (isTouch) {
-    // Header stays sticky (CSS default), footer stays static
-  } else if (footer) {
-    document.body.style.minHeight = '100vh';
-    document.body.style.display = 'flex';
-    document.body.style.flexDirection = 'column';
-    document.querySelector('.site-content').style.flex = '1';
-    footer.style.position = 'sticky';
-    footer.style.bottom = '0';
-    footer.style.zIndex = '9999';
+  if (isTouch && footer) {
+    input.addEventListener('focus', function () {
+      footer.style.position = 'static';
+      nav.style.position = 'static';
+      document.body.style.minHeight = '';
+      document.body.style.display = '';
+      document.body.style.flexDirection = '';
+    });
+    input.addEventListener('blur', function () {
+      setTimeout(function () {
+        window.scrollBy(0, 0);
+        requestAnimationFrame(function () {
+          footer.style.position = '';
+          nav.style.position = '';
+          document.body.style.minHeight = '100vh';
+          document.body.style.display = 'flex';
+          document.body.style.flexDirection = 'column';
+        });
+      }, 300);
+    });
   }
 
   // Discover blog posts from page links or fetch homepage
