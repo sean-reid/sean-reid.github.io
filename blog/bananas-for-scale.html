@@ -44,7 +44,7 @@
                 <figcaption>The Cavendish banana. 0.18 meters. The base unit. <a href="https://commons.wikimedia.org/wiki/File:Cavendish_banana_from_Maracaibo.jpg">Wikimedia Commons</a></figcaption>
             </figure>
 
-            <p>There are 766 things across 57 categories, from a grain of rice to the Andromeda Galaxy. Each has curated SI measurements (length, mass, speed, volume, whatever applies) paired against 1,057 unconventional units spread across 14 dimensions. A golden retriever is 30 kilograms. Nicolas Cage is 84 kilograms. A Subway Footlong is 0.3048 meters. These are the units.</p>
+            <p>There are 1,167 things across 66 categories, from a grain of rice to the Andromeda Galaxy. Each has curated SI measurements (length, mass, speed, volume, whatever applies) paired against 1,250 unconventional units spread across 16 dimensions. A golden retriever is 30 kilograms. Nicolas Cage is 84 kilograms. A Subway Footlong is 0.3048 meters. These are the units.</p>
 
             <figure>
                 <img decoding="async" src="img/bananas-for-scale-entry.webp" alt="Screenshot of the Giraffe entry on Bananas for Scale, showing measurements converted to silly units" loading="lazy">
@@ -64,13 +64,13 @@
 
             <h2>Static all the way down</h2>
 
-            <p>The entire site is pre-rendered at build time. A SQLite database holds the things, measurements, categories, and silly units. At build time, <a href="https://nextjs.org/">Next.js</a> queries the database, runs the conversion engine for every measurement of every thing, and outputs 766 static HTML pages plus 57 category pages. The database doesn't exist at runtime. There's no server, no API, no lambda. The deployed site is a folder of HTML, CSS, JavaScript, and a search index.</p>
+            <p>The entire site is pre-rendered at build time. A SQLite database holds the things, measurements, categories, and silly units. At build time, <a href="https://nextjs.org/">Next.js</a> queries the database, runs the conversion engine for every measurement of every thing, and outputs 1,167 static HTML pages plus 66 category pages. The database doesn't exist at runtime. There's no server, no API, no lambda. The deployed site is a folder of HTML, CSS, JavaScript, and a search index.</p>
 
             <p>Search works the same way. A build script generates a JSON index of all things with their names, categories, and search aliases. The client loads that index and runs <a href="https://lucaong.github.io/minisearch/">MiniSearch</a> (about 7 KB) with prefix matching, fuzzy tolerance, and field boosting that weights names over categories. Results come back in single-digit milliseconds because the entire corpus is already in memory. The search overlay shows up to eight results grouped by category.</p>
 
             <h2>The data problem</h2>
 
-            <p>Curating 766 entries with accurate measurements took more effort than the code. A blue whale's length is well-documented. The mass of a cumulus cloud is not. Every measurement needed a real SI value from a credible source, which meant tracking down specifications, research papers, and occasionally doing the unit conversions by hand to verify the number wasn't off by an order of magnitude. Some things have one measurement. Others have five or six: length, mass, wingspan, top speed, cruising altitude.</p>
+            <p>Curating 1,167 entries with accurate measurements took more effort than the code. A blue whale's length is well-documented. The mass of a cumulus cloud is not. Every measurement needed a real SI value from a credible source, which meant tracking down specifications, research papers, and occasionally doing the unit conversions by hand to verify the number wasn't off by an order of magnitude. Some things have one measurement. Others have five or six: length, mass, wingspan, top speed, cruising altitude.</p>
 
             <p>The units needed the same treatment. Each carries a singular and plural form ("1 golden retriever" vs. "2.5 golden retrievers") and a dimension tag that constrains which measurements it can pair with. Mass units only pair with mass measurements. Length units only pair with length. The conversion engine enforces dimensional consistency throughout.</p>
 
