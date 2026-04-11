@@ -59,13 +59,19 @@
 
             <p>The heatmap renders to an offscreen canvas in 8-pixel cells. For each cell, the renderer finds the nearest AP, calculates signal strength based on distance, and checks line-of-sight by counting wall crossings. Each wall attenuates the signal by 5 dB. The result maps to five color bands: dark red for dead zones, red for poor, orange for fair, yellow for good, and green for excellent coverage. The heatmap recalculates whenever you move an AP or toggle it with the H key.</p>
 
-            <p>Wall detection works automatically. When you upload a floorplan image, the app runs <a href="https://en.wikipedia.org/wiki/Topological_skeleton">Zhang-Suen thinning</a> to extract a skeleton of the walls, then recovers wall thickness by scanning perpendicular to each skeleton line. The boundary detection finds the building outline using edge pixels and a convex hull. Walls that the algorithm misses can be drawn manually.</p>
+            <p>Wall detection runs automatically when you load a floorplan. The pipeline starts with <a href="https://en.wikipedia.org/wiki/Optical_character_recognition">OCR</a> via <a href="https://tesseract.projectnaptha.com/">Tesseract.js</a> to mask out text labels (room names, dimensions) that would confuse the detector. It then applies adaptive local thresholding using an integral image, morphological close to seal door gaps, flood fill to identify the building interior, and blob filtering to remove noise. The result is a set of wall segments with thickness. Walls that the algorithm misses can be drawn manually.</p>
 
             <h2>The RF model</h2>
 
             <p>The app covers all three consumer WiFi bands: 2.4 GHz (channels 1-13), 5 GHz (UNII-1 through UNII-3, with DFS channel flags), and 6 GHz (channels 1-233, with preferred scanning channel subsets). Channel widths range from 20 MHz up to 320 MHz on 6 GHz. Each combination has a base throughput estimate assuming WiFi 6 at 50% MAC efficiency. Co-channel contention reduces throughput proportionally: if two APs share a channel and overlap by 30%, the effective rate drops accordingly.</p>
 
             <p>The model is simplified on purpose. Real RF propagation depends on wall material, furniture, reflection paths, and antenna patterns. Deconflict uses constant wall attenuation and free-space path loss because the goal is channel planning, not site survey accuracy. The heatmap tells you "this corner has weak coverage" and "these two APs are conflicting," which is what you need to decide where to put the next AP.</p>
+
+            <h2>Automatic placement optimizer</h2>
+
+            <p>You can place APs manually, but the app also includes a <a href="https://en.wikipedia.org/wiki/Simulated_annealing">simulated annealing</a> optimizer that adjusts positions for better coverage. It runs 10,000 iterations in a Web Worker, moving APs within the building footprint and evaluating signal strength at 200 sampled interior points with wall attenuation factored in. An incremental evaluation cache (a Float32Array grid of signal values per sample per AP) means that when one AP moves, only that column gets recomputed. The optimizer reports coverage improvement as a percentage when it finishes.</p>
+
+            <p>A real-time coverage bar in the sidebar shows the current coverage percentage as you work, updating instantly when you add or reposition an AP. Below 30% it shows red, 30-60% orange, above 60% green.</p>
 
             <h2>Implementation</h2>
 
