@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+    <title>Deconflict - Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/deconflict.webp">
+    <link rel="stylesheet" href="/nav.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="/" class="site-nav-name">Sean Reid</a>
+    <div class="site-nav-controls">
+      <div class="site-nav-search-wrap"><input type="text" class="site-nav-search" placeholder="Search..." autocomplete="off"><span class="site-nav-search-hint">/</span></div>
+      <a class="site-nav-random">&rarr; Random</a>
+      <div class="search-dropdown"></div>
+    </div>
+  </div>
+</nav>
+<main class="site-content">
+    <div class="container">
+        <header>
+            <h1>Deconflict</h1>
+            <p class="meta">Browser-based WiFi planner with signal heatmaps and graph coloring channel assignment</p>
+            <p class="links-row">
+                <a href="https://deconflict.pages.dev/">Live Demo</a>
+                <a href="https://github.com/sean-reid/deconflict">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <figure>
+                <img decoding="async" fetchpriority="high" src="img/deconflict.webp" alt="Screenshot of Deconflict showing three access points on a floorplan with signal heatmap">
+                <figcaption>Three access points placed on a floorplan. The heatmap shows signal coverage from excellent (green) to dead (red). Each AP has been auto-assigned a non-conflicting 5 GHz channel.</figcaption>
+            </figure>
+
+            <p>WiFi works until it doesn't. You add a second access point and suddenly both are slower. The problem is almost always channel conflict: two APs close enough to interfere, broadcasting on the same or overlapping frequencies. Enterprise tools solve this with controllers that cost thousands. Deconflict does it in the browser for free. Upload a floorplan, drop access points where you want them, and the app assigns channels automatically using <a href="https://en.wikipedia.org/wiki/DSatur">graph coloring</a>.</p>
+
+            <figure class="small">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/8/8c/2.4_GHz_Wi-Fi_channels_%28802.11b%2Cg_WLAN%29.svg" alt="2.4 GHz WiFi channel overlap diagram" loading="lazy">
+                <figcaption>2.4 GHz WiFi channels and their overlapping frequencies. Only channels 1, 6, and 11 don't interfere with each other. <a href="https://commons.wikimedia.org/wiki/File:2.4_GHz_Wi-Fi_channels_(802.11b,g_WLAN).svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <h2>Channel assignment as graph coloring</h2>
+
+            <p>The channel assignment problem maps directly to <a href="https://en.wikipedia.org/wiki/Graph_coloring">graph coloring</a>. Each AP is a node. If two APs are close enough to interfere (their coverage radii overlap), they share an edge. Assigning channels so no adjacent nodes share a color is the classic vertex coloring problem. The solver uses <a href="https://en.wikipedia.org/wiki/DSatur">DSatur</a> (Degree of Saturation), which picks the most constrained node first, assigns it the lowest available channel, and repeats. For WiFi planning this works well because the densest clusters get colored first, and DSatur typically finds near-optimal solutions in under 5 milliseconds.</p>
+
+            <p>The app also ships with three alternative algorithms for comparison: Welsh-Powell (sorts by degree), greedy (simplest possible), and backtracking (finds the true minimum chromatic number but is slower). All four run in a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API">Web Worker</a> so the canvas stays responsive. The solver re-runs automatically every time you add, move, or remove an AP.</p>
+
+            <figure class="small">
+                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/6/6b/Map_coloring_via_graphs.png" alt="Graph coloring applied to a map" loading="lazy">
+                <figcaption>Constructing a graph from a map and coloring it so no adjacent regions share a color. The same principle assigns WiFi channels so no overlapping APs share a frequency. <a href="https://commons.wikimedia.org/wiki/File:Map_coloring_via_graphs.png">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <h2>Signal heatmap</h2>
+
+            <p>The heatmap renders to an offscreen canvas in 8-pixel cells. For each cell, the renderer finds the nearest AP, calculates signal strength based on distance, and checks line-of-sight by counting wall crossings. Each wall attenuates the signal by 5 dB. The result maps to five color bands: dark red for dead zones, red for poor, orange for fair, yellow for good, and green for excellent coverage. The heatmap recalculates whenever you move an AP or toggle it with the H key.</p>
+
+            <p>Wall detection works automatically. When you upload a floorplan image, the app runs <a href="https://en.wikipedia.org/wiki/Topological_skeleton">Zhang-Suen thinning</a> to extract a skeleton of the walls, then recovers wall thickness by scanning perpendicular to each skeleton line. The boundary detection finds the building outline using edge pixels and a convex hull. Walls that the algorithm misses can be drawn manually.</p>
+
+            <h2>The RF model</h2>
+
+            <p>The app covers all three consumer WiFi bands: 2.4 GHz (channels 1-13), 5 GHz (UNII-1 through UNII-3, with DFS channel flags), and 6 GHz (channels 1-233, with preferred scanning channel subsets). Channel widths range from 20 MHz up to 320 MHz on 6 GHz. Each combination has a base throughput estimate assuming WiFi 6 at 50% MAC efficiency. Co-channel contention reduces throughput proportionally: if two APs share a channel and overlap by 30%, the effective rate drops accordingly.</p>
+
+            <p>The model is simplified on purpose. Real RF propagation depends on wall material, furniture, reflection paths, and antenna patterns. Deconflict uses constant wall attenuation and free-space path loss because the goal is channel planning, not site survey accuracy. The heatmap tells you "this corner has weak coverage" and "these two APs are conflicting," which is what you need to decide where to put the next AP.</p>
+
+            <h2>Implementation</h2>
+
+            <p>The frontend is <a href="https://svelte.dev/">Svelte 5</a> with <a href="https://svelte.dev/docs/kit">SvelteKit</a>, rendering to HTML5 Canvas with a custom layered engine (floorplan, walls, heatmap, APs, selection UI). The canvas uses matrix transforms for pan and zoom, redraws on a dirty flag to avoid unnecessary frames, and scales for retina displays. State auto-saves to localStorage every two seconds with undo/redo support.</p>
+
+            <p>The codebase is a monorepo managed by <a href="https://pnpm.io/">pnpm</a> and <a href="https://turbo.build/">Turborepo</a>. The solver, geometry, and channel packages are separate TypeScript libraries with their own test suites. The app builds to static files via SvelteKit's static adapter and deploys to <a href="https://pages.cloudflare.com/">Cloudflare Pages</a>. A service worker enables offline use and PWA installation.</p>
+        </article>
+
+    </div>
+</main>
+<footer class="site-footer">
+  <div class="site-footer-links">
+    <a href="https://github.com/sean-reid">GitHub</a>
+    <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
+    <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
+    <a href="https://socrates-of-athens.github.io">Poetry</a>
+    <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
+  </div>
+</footer>
+    <script src="/nav.js"></script>
+</body>
+</html>

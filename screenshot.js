@@ -272,6 +272,49 @@ const interactions = {
     // Wait for thing page to fully render with measurements and conversions
     await new Promise(r => setTimeout(r, 5000));
   },
+  'deconflict': async (page) => {
+    // Clear localStorage to get fresh state with sample buttons
+    await page.evaluate(() => localStorage.clear());
+    await page.reload({ waitUntil: 'networkidle2' });
+    await new Promise(r => setTimeout(r, 3000));
+    // Dismiss welcome dialog
+    await page.evaluate(() => {
+      const btns = document.querySelectorAll('button');
+      for (const b of btns) {
+        if (b.textContent && b.textContent.includes('Get Started')) { b.click(); break; }
+      }
+    });
+    await new Promise(r => setTimeout(r, 1000));
+    // Click Floorplan tab (last one, near APs tab)
+    await page.evaluate(() => {
+      const fpBtns = Array.from(document.querySelectorAll('button')).filter(b => b.textContent.trim() === 'Floorplan');
+      if (fpBtns.length) fpBtns[fpBtns.length - 1].click();
+    });
+    await new Promise(r => setTimeout(r, 1000));
+    // Click Office sample
+    await page.evaluate(() => {
+      const btns = document.querySelectorAll('button');
+      for (const b of btns) {
+        if (b.textContent && b.textContent.includes('Office')) { b.click(); break; }
+      }
+    });
+    await new Promise(r => setTimeout(r, 4000));
+    // Place APs across the office floorplan
+    const canvas = await page.$('canvas');
+    if (canvas) {
+      const box = await canvas.boundingBox();
+      const aps = [
+        [0.25, 0.3], [0.55, 0.35], [0.4, 0.65], [0.7, 0.55]
+      ];
+      for (const [rx, ry] of aps) {
+        await page.mouse.click(box.x + box.width * rx, box.y + box.height * ry);
+        await new Promise(r => setTimeout(r, 600));
+      }
+    }
+    // Toggle heatmap
+    await page.keyboard.press('h');
+    await new Promise(r => setTimeout(r, 2000));
+  },
   'severed': async (page) => {
     // Wait for globe and data to load, then click a scenario
     await new Promise(r => setTimeout(r, 6000));
@@ -320,6 +363,7 @@ const sites = [
   { name: 'discern', url: 'https://discern.seanreid.workers.dev/' },
   { name: 'bananas-for-scale', url: 'https://sean-reid.github.io/bananas-for-scale/' },
   { name: 'bananas-for-scale-entry', url: 'https://sean-reid.github.io/bananas-for-scale/thing/giraffe/' },
+  { name: 'deconflict', url: 'https://deconflict.pages.dev/' },
 ];
 
 const filter = process.argv.slice(2);
