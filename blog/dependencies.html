@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
-    <title>Dependencies — Sean Reid</title>
+    <title>Dependencies - Sean Reid</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preload" as="image" href="img/dependencies.webp">
     <link rel="stylesheet" href="/nav.css">
@@ -56,7 +56,7 @@
 
             <figure class="small">
                 <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/DependencyGraph.svg/250px-DependencyGraph.svg.png" alt="Dependency graph diagram showing directed acyclic relationships between components" loading="lazy">
-                <figcaption>A dependency graph — a directed acyclic graph (DAG) representing relationships between components. <a href="https://commons.wikimedia.org/wiki/File:DependencyGraph.svg">Wikimedia Commons</a></figcaption>
+                <figcaption>A dependency graph - a directed acyclic graph (DAG) representing relationships between components. <a href="https://commons.wikimedia.org/wiki/File:DependencyGraph.svg">Wikimedia Commons</a></figcaption>
             </figure>
 
             <p>The second algorithm is smarter. It starts with an empty set and uses a divide-and-conquer approach. For the pool of unknown dependencies, it splits them in half. It tests whether the build succeeds without the left half. If it does, none of those dependencies are required and the entire left half is eliminated in one test. If it fails, at least one required dependency lives in that half, so it recurses into the left half to find it. The same logic applies to the right half.</p>
