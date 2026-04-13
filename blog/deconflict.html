@@ -33,8 +33,8 @@
 
         <article>
             <figure>
-                <img decoding="async" fetchpriority="high" src="img/deconflict.webp" alt="Screenshot of Deconflict showing three access points on a floorplan with signal heatmap">
-                <figcaption>Three access points placed on a floorplan. The heatmap shows signal coverage from excellent (green) to dead (red). Each AP has been auto-assigned a non-conflicting 5 GHz channel.</figcaption>
+                <img decoding="async" fetchpriority="high" src="img/deconflict.webp" alt="Screenshot of Deconflict showing four access points on an office floorplan with signal heatmap and AP properties panel">
+                <figcaption>Four access points placed on an office floorplan. The heatmap shows signal coverage from excellent (green) to dead (red). The sidebar shows AP properties including model selection, band, channel width, and TX power.</figcaption>
             </figure>
 
             <p>WiFi works until it doesn't. You add a second access point and suddenly both are slower. The problem is almost always channel conflict: two APs close enough to interfere, broadcasting on the same or overlapping frequencies. Enterprise tools solve this with controllers that cost thousands. Deconflict does it in the browser for free. Upload a floorplan, drop access points where you want them, and the app assigns channels automatically using <a href="https://en.wikipedia.org/wiki/DSatur">graph coloring</a>.</p>
@@ -55,29 +55,45 @@
                 <figcaption>Constructing a graph from a map and coloring it so no adjacent regions share a color. The same principle assigns WiFi channels so no overlapping APs share a frequency. <a href="https://commons.wikimedia.org/wiki/File:Map_coloring_via_graphs.png">Wikimedia Commons</a></figcaption>
             </figure>
 
+            <h2>AP vendor database</h2>
+
+            <p>The app includes a database of 101 real access point models from 14 vendors: Ubiquiti, TP-Link, Netgear, Ruckus, Cisco Meraki, Aruba, ASUS, Linksys, Cisco, eero, Google, Apple, Fortinet, and EnGenius. When you select a model, its per-band specifications auto-fill: TX power from manufacturer datasheets and FCC filings (typically 17-25 dBm), supported bands, maximum channel widths (20 MHz up to 320 MHz on WiFi 7 models), and typical indoor range. The model picker is a searchable combobox that fuzzy-matches across vendor, model name, and WiFi standard. You can also use a custom mode for manual configuration.</p>
+
+            <h2>Wall materials</h2>
+
+            <p>Not all walls attenuate equally. A glass partition barely dents the signal. A concrete wall kills it. The app models six wall materials with per-material dB attenuation at 5 GHz, based on <a href="https://en.wikipedia.org/wiki/ITU_model_for_indoor_attenuation">ITU-R P.1238</a> propagation studies: drywall (3 dB), glass (2 dB), wood (5 dB), brick (8 dB), concrete (12 dB), and metal (20 dB). After the auto-detector finds walls, you can click any wall segment to override its material, or use the material paint brush to assign materials across regions.</p>
+
+            <p>The RF model uses <a href="https://en.wikipedia.org/wiki/Digital_differential_analyzer_(graphics_algorithm)">DDA ray marching</a> to trace rays from each AP through the wall grid, accumulating per-material dB losses at each wall crossing. A precomputed attenuation field stores O(1) lookup values on a 6-pixel grid (12-pixel during drag for responsiveness). The heatmap updates live as you draw or erase walls, re-syncing wall data on each brush stroke.</p>
+
             <h2>Signal heatmap</h2>
 
-            <p>The heatmap renders to an offscreen canvas in 8-pixel cells. For each cell, the renderer finds the nearest AP, calculates signal strength based on distance, and checks line-of-sight by counting wall crossings. Each wall attenuates the signal by 5 dB. The result maps to five color bands: dark red for dead zones, red for poor, orange for fair, yellow for good, and green for excellent coverage. The heatmap recalculates whenever you move an AP or toggle it with the H key.</p>
+            <p>The heatmap renders to an offscreen canvas using inverse quartic path loss: signal strength falls off as 1/(1+(d/r)^4), where d is distance and r is the AP's range. For each cell, the renderer finds the nearest AP, calculates signal strength, and traces through walls to accumulate material-specific attenuation. The result maps to five color bands: dark red for dead zones, red for poor, orange for fair, yellow for good, and green for excellent coverage. The heatmap recalculates whenever you move an AP or toggle it with the H key.</p>
 
-            <p>Wall detection runs automatically when you load a floorplan. The pipeline starts with <a href="https://en.wikipedia.org/wiki/Optical_character_recognition">OCR</a> via <a href="https://tesseract.projectnaptha.com/">Tesseract.js</a> to mask out text labels (room names, dimensions) that would confuse the detector. It then applies adaptive local thresholding using an integral image, morphological close to seal door gaps, flood fill to identify the building interior, and blob filtering to remove noise. The result is a set of wall segments with thickness. Walls that the algorithm misses can be drawn manually.</p>
+            <p>Wall detection runs automatically when you load a floorplan. The pipeline starts with <a href="https://en.wikipedia.org/wiki/Optical_character_recognition">OCR</a> via <a href="https://tesseract.projectnaptha.com/">Tesseract.js</a> to mask out text labels (room names, dimensions) that would confuse the detector. It then applies adaptive local thresholding using an integral image, morphological close to seal door gaps, flood fill to identify the building interior, and blob filtering to remove noise. The result is a set of wall segments with thickness. Walls that the algorithm misses can be drawn manually with the wall brush.</p>
 
-            <h2>The RF model</h2>
+            <h2>Wall cleanup brush</h2>
 
-            <p>The app covers all three consumer WiFi bands: 2.4 GHz (channels 1-13), 5 GHz (UNII-1 through UNII-3, with DFS channel flags), and 6 GHz (channels 1-233, with preferred scanning channel subsets). Channel widths range from 20 MHz up to 320 MHz on 6 GHz. Each combination has a base throughput estimate assuming WiFi 6 at 50% MAC efficiency. Co-channel contention reduces throughput proportionally: if two APs share a channel and overlap by 30%, the effective rate drops accordingly.</p>
-
-            <p>The model is simplified on purpose. Real RF propagation depends on wall material, furniture, reflection paths, and antenna patterns. Deconflict uses constant wall attenuation and free-space path loss because the goal is channel planning, not site survey accuracy. The heatmap tells you "this corner has weak coverage" and "these two APs are conflicting," which is what you need to decide where to put the next AP.</p>
+            <p>The auto-detector gets you most of the way, but some walls need manual correction. The wall editor has three modes: draw (adds walls with the active material), erase (removes walls), and material paint (changes the material of existing walls without drawing new ones). The brush is circular with configurable radius, and strokes are interpolated so you get smooth lines even with fast mouse movement. On mobile, single-finger touch draws while two-finger gestures pan and zoom. The heatmap updates live as you paint.</p>
 
             <h2>Automatic placement optimizer</h2>
 
-            <p>You can place APs manually, but the app also includes a <a href="https://en.wikipedia.org/wiki/Simulated_annealing">simulated annealing</a> optimizer that adjusts positions for better coverage. It runs 10,000 iterations in a Web Worker, moving APs within the building footprint and evaluating signal strength at 200 sampled interior points with wall attenuation factored in. An incremental evaluation cache (a Float32Array grid of signal values per sample per AP) means that when one AP moves, only that column gets recomputed. The optimizer reports coverage improvement as a percentage when it finishes.</p>
+            <p>You can place APs manually, but the app also includes a three-stage optimizer that adjusts positions for better coverage, all running in a Web Worker.</p>
 
-            <p>A real-time coverage bar in the sidebar shows the current coverage percentage as you work, updating instantly when you add or reposition an AP. Below 30% it shows red, 30-60% orange, above 60% green.</p>
+            <p>Stage one is signal-weighted <a href="https://en.wikipedia.org/wiki/Lloyd%27s_algorithm">Lloyd's algorithm</a> (k-means). It seeds positions using k-means++ initialization, then runs 30 iterations where each sample point is assigned to its strongest AP, with weak-signal areas weighted 3x higher so the optimizer pulls APs toward dead zones. Stage two is <a href="https://en.wikipedia.org/wiki/Particle_swarm_optimization">particle swarm optimization</a> with 20 particles over 60 iterations, exploring the neighborhood around the Lloyd's solution with decreasing inertia (0.9 to 0.4). Stage three is coordinate descent polish, searching 8 directions at progressively finer steps (5 pixels down to 0.5) until no improvement is found.</p>
+
+            <p>All three stages share a precomputed wall attenuation cache: a Float32Array storing the dB loss from every source grid cell to every sample point, built once before optimization starts. When an AP moves, only its column gets recomputed. A real-time coverage bar in the sidebar shows the current percentage as you work.</p>
+
+            <h2>The RF model</h2>
+
+            <p>The app covers all three consumer WiFi bands: 2.4 GHz (channels 1-13), 5 GHz (UNII-1 through UNII-3, with DFS channel flags), and 6 GHz (channels 1-233, with preferred scanning channel subsets). Channel widths range from 20 MHz up to 320 MHz on 6 GHz. Reference path loss varies by band: 40 dB at 2.4 GHz, 47 dB at 5 GHz, 49 dB at 6 GHz. The receiver sensitivity threshold is -85 dBm, a typical WiFi client. Each band and channel width combination has a base throughput estimate assuming WiFi 6 at 50% MAC efficiency. Co-channel contention reduces throughput proportionally.</p>
+
+            <p>The model is simplified on purpose. Real RF propagation depends on furniture, reflection paths, and antenna patterns. Deconflict uses per-material wall attenuation and free-space path loss because the goal is channel planning, not site survey accuracy. The heatmap tells you "this corner has weak coverage" and "these two APs are conflicting," which is what you need to decide where to put the next AP.</p>
 
             <h2>Implementation</h2>
 
-            <p>The frontend is <a href="https://svelte.dev/">Svelte 5</a> with <a href="https://svelte.dev/docs/kit">SvelteKit</a>, rendering to HTML5 Canvas with a custom layered engine (floorplan, walls, heatmap, APs, selection UI). The canvas uses matrix transforms for pan and zoom, redraws on a dirty flag to avoid unnecessary frames, and scales for retina displays. State auto-saves to localStorage every two seconds with undo/redo support.</p>
+            <p>The frontend is <a href="https://svelte.dev/">Svelte 5</a> with <a href="https://svelte.dev/docs/kit">SvelteKit</a>, rendering to HTML5 Canvas with a custom layered engine (floorplan, walls, heatmap, APs, selection UI). State is managed with Svelte 5 runes split into reactive atoms. The canvas uses matrix transforms for pan and zoom, redraws on a dirty flag to avoid unnecessary frames, and scales for retina displays. State auto-saves to localStorage every two seconds with undo/redo support. You can also drag-and-drop a floorplan image directly onto the canvas.</p>
 
-            <p>The codebase is a monorepo managed by <a href="https://pnpm.io/">pnpm</a> and <a href="https://turbo.build/">Turborepo</a>. The solver, geometry, and channel packages are separate TypeScript libraries with their own test suites. The app builds to static files via SvelteKit's static adapter and deploys to <a href="https://pages.cloudflare.com/">Cloudflare Pages</a>. A service worker enables offline use and PWA installation.</p>
+            <p>The codebase is a monorepo managed by <a href="https://pnpm.io/">pnpm</a> and <a href="https://turbo.build/">Turborepo</a>. The solver, geometry, and channel packages are separate TypeScript libraries with their own test suites. The app builds to static files via SvelteKit's static adapter and deploys to <a href="https://pages.cloudflare.com/">Cloudflare Pages</a>, with PR branches auto-deploying to preview URLs. A service worker enables offline use and PWA installation.</p>
         </article>
 
     </div>

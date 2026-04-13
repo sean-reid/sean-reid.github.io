@@ -299,12 +299,20 @@ const interactions = {
       }
     });
     await new Promise(r => setTimeout(r, 4000));
-    // Place APs across the office floorplan
+    // Click Fit to center the floorplan
+    await page.evaluate(() => {
+      const btns = document.querySelectorAll('button');
+      for (const b of btns) {
+        if (b.textContent.trim() === 'Fit') { b.click(); break; }
+      }
+    });
+    await new Promise(r => setTimeout(r, 1000));
+    // Place APs on the centered floorplan
     const canvas = await page.$('canvas');
     if (canvas) {
       const box = await canvas.boundingBox();
       const aps = [
-        [0.25, 0.3], [0.55, 0.35], [0.4, 0.65], [0.7, 0.55]
+        [0.25, 0.35], [0.5, 0.3], [0.35, 0.6], [0.6, 0.55]
       ];
       for (const [rx, ry] of aps) {
         await page.mouse.click(box.x + box.width * rx, box.y + box.height * ry);
