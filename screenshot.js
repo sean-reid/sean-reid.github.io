@@ -371,7 +371,7 @@ const sites = [
   { name: 'discern', url: 'https://discern.seanreid.workers.dev/' },
   { name: 'bananas-for-scale', url: 'https://sean-reid.github.io/bananas-for-scale/' },
   { name: 'bananas-for-scale-entry', url: 'https://sean-reid.github.io/bananas-for-scale/thing/giraffe/' },
-  { name: 'deconflict', url: 'https://deconflict.pages.dev/' },
+  { name: 'deconflict', url: 'https://deconflict.app/' },
 ];
 
 const filter = process.argv.slice(2);
