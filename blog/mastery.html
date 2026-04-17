@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+    <title>Mastery - Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/mastery.webp">
+    <link rel="stylesheet" href="/nav.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="/" class="site-nav-name">Sean Reid</a>
+    <div class="site-nav-controls">
+      <div class="site-nav-search-wrap"><input type="text" class="site-nav-search" placeholder="Search..." autocomplete="off"><span class="site-nav-search-hint">/</span></div>
+      <a class="site-nav-random">&rarr; Random</a>
+      <div class="search-dropdown"></div>
+    </div>
+  </div>
+</nav>
+<main class="site-content">
+    <div class="container">
+        <header>
+            <h1>Mastery</h1>
+            <p class="meta">100 skills ranked by difficulty across 19 dimensions, with interactive challenges</p>
+            <p class="links-row">
+                <a href="https://sean-reid.github.io/mastery/">Live Demo</a>
+                <a href="https://github.com/sean-reid/mastery">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <figure>
+                <img decoding="async" fetchpriority="high" src="img/mastery.webp" alt="Screenshot of Mastery showing the ranking page with category filters and a skill card for Coracle Building">
+                <figcaption>The ranking page. 100 skills sorted by composite difficulty score, filterable by category. Each card shows the skill description, category, and score.</figcaption>
+            </figure>
+
+            <p>The "10,000 hours" framing treats all skills as equally shaped. They're not. Chess and cardiac surgery might both take a decade to master, but they score very differently on failure cost, physical demand, and how fast the field changes under your feet. Mastery ranks 100 skills across 19 difficulty dimensions, each scored 0-10 with cited sources. The result is a ranked list from easiest to hardest, but the interesting part is the shape of each skill's difficulty profile, not just the number.</p>
+
+            <figure class="small">
+                <img decoding="async" src="img/cc/competence-hierarchy.svg" alt="Four stages of competence hierarchy" loading="lazy">
+                <figcaption>The four stages of competence, from unconscious incompetence to unconscious competence. Mastery's 19-dimension model tries to capture why some skills move through these stages faster than others. <a href="https://commons.wikimedia.org/wiki/File:Competence_Hierarchy_adapted_from_Noel_Burch_by_Igor_Kokcharov.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <h2>The 19 dimensions</h2>
+
+            <p>Each skill is scored on: time to basic competence, time to expert performance, feedback delay, failure cost, cognitive demand, physical demand, prerequisite knowledge, measurability, perishability, precision required, ambiguity, instruction dependency, environmental variability, concurrent sub-skill load, plateau density, domain evolution rate, observability of expertise, luck/variance ratio, and social coordination load. The composite score is a weighted average. Time to expert and cognitive demand carry the highest weights (0.08 and 0.07). Luck/variance and domain evolution carry the lowest (0.04 and 0.03).</p>
+
+            <p>Every score has a confidence interval between 0 and 1. Chess time-to-expert gets 0.9 confidence because Elo ratings and training studies provide hard data. Stand-up comedy ambiguity gets lower confidence because "good" is subjective and the data is thin. The confidence values are visible in each skill's methodology panel alongside the source citations.</p>
+
+            <h2>The skills</h2>
+
+            <p>100 skills across 10 categories: games and strategy, languages, instruments and sound, sports and athletics, trades and crafts, academic and intellectual, physical feats, performance and expression, survival and fieldwork, and technology and engineering. The collection includes expected anchors like chess, piano, and gymnastics alongside things like Carolinian wayfinding (Polynesian star navigation), mokume-gane (Japanese metal layering), vinkensport (Belgian competitive bird singing), and ferrofluid sculpting. The mix is deliberate. Familiar skills give you calibration points. Unfamiliar ones are where the scoring model gets tested.</p>
+
+            <figure class="small">
+                <img decoding="async" src="img/cc/spider-chart.svg" alt="A radar chart showing multiple axes" loading="lazy">
+                <figcaption>A radar chart. Each skill in Mastery has one of these showing its 19-axis difficulty profile. Two skills with the same composite score can have completely different shapes. <a href="https://commons.wikimedia.org/wiki/File:Spider_Chart.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <h2>Interactive challenges</h2>
+
+            <p>Twelve of the skills have playable challenges that test a fragment of the actual skill. Pitch Matcher has you match a reference tone using a slider, measuring accuracy in cents. Pattern Memory recreates <a href="https://en.wikipedia.org/wiki/Adriaan_de_Groot">de Groot's</a> 1946 chess experiment: you see a board position for five seconds, then pick which of four options matches. Polyrhythm Tapper asks you to maintain independent rhythms (2:3, 3:4, 4:5) with the keyboard. Beat Detector tests whether you can eliminate the interference pattern between two detuned frequencies. Star Navigation simulates Polynesian wayfinding with star path selection.</p>
+
+            <p>The challenges map back to the scoring dimensions. Pitch Matcher tests precision and feedback delay. Pattern Memory tests cognitive demand. Polyrhythm Tapper tests concurrent sub-skill load. They're not full skill assessments, just enough to give you a feel for why a particular dimension scored high.</p>
+
+            <h2>Implementation</h2>
+
+            <p>The site is built with <a href="https://astro.build/">Astro</a>, server-rendered to static HTML. Each skill is a JSON file validated against a <a href="https://zod.dev/">Zod</a> schema at build time, covering all 19 axis scores, sources, metadata, and optional challenge references. <a href="https://gsap.com/">GSAP</a> handles scroll-triggered card animations. <a href="https://github.com/darkroomengineering/lenis">Lenis</a> provides momentum scrolling. <a href="https://www.fusejs.io/">Fuse.js</a> powers the command palette (Cmd+K) for fuzzy search across all 100 skills. Interactive challenges use the Web Audio API for pitch and rhythm detection, and Canvas for timers and waveform visualization. The whole thing deploys to <a href="https://pages.github.com/">GitHub Pages</a>.</p>
+        </article>
+
+    </div>
+</main>
+<footer class="site-footer">
+  <div class="site-footer-links">
+    <a href="https://github.com/sean-reid">GitHub</a>
+    <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
+    <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
+    <a href="https://socrates-of-athens.github.io">Poetry</a>
+    <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
+  </div>
+</footer>
+<script src="/nav.js"></script>
+</body>
+</html>

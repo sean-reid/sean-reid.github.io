@@ -323,6 +323,12 @@ const interactions = {
     await page.keyboard.press('h');
     await new Promise(r => setTimeout(r, 2000));
   },
+  'mastery': async (page) => {
+    // Wait for page to load and animations to settle, then scroll down a bit to show skill cards
+    await new Promise(r => setTimeout(r, 4000));
+    await page.evaluate(() => window.scrollBy(0, 600));
+    await new Promise(r => setTimeout(r, 2000));
+  },
   'severed': async (page) => {
     // Wait for globe and data to load, then click a scenario
     await new Promise(r => setTimeout(r, 6000));
@@ -372,6 +378,7 @@ const sites = [
   { name: 'bananas-for-scale', url: 'https://sean-reid.github.io/bananas-for-scale/' },
   { name: 'bananas-for-scale-entry', url: 'https://sean-reid.github.io/bananas-for-scale/thing/giraffe/' },
   { name: 'deconflict', url: 'https://deconflict.app/' },
+  { name: 'mastery', url: 'https://sean-reid.github.io/mastery/' },
 ];
 
 const filter = process.argv.slice(2);

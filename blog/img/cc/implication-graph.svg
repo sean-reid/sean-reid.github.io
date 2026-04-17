@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg  version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="612" height="504" viewBox="0 0 612 504"
+	 overflow="visible" enable-background="new 0 0 612 504" xml:space="preserve">
+<g>
+	<path fill="none" stroke="#0060B6" stroke-width="3" d="M576,252V324c0,79.528-64.471,144-144,144L396,468"/>
+	<path fill="#0060B6" d="M386.948,468c4.26-1.58,9.545-4.277,12.82-7.133l-2.58,7.133l2.58,7.132
+		C396.493,472.278,391.208,469.581,386.948,468z"/>
+</g>
+<g>
+	<path fill="none" stroke="#0060B6" stroke-width="3" d="M252,36l-72,0c-79.529,0-144,64.471-144,144l0,36"/>
+	<path fill="#0060B6" d="M36,225.053c-1.581-4.26-4.277-9.545-7.132-12.82l7.132,2.58l7.132-2.58
+		C40.277,215.508,37.58,220.793,36,225.053z"/>
+</g>
+<g>
+	<path fill="none" stroke="#0060B6" stroke-width="3" d="M252,468L180.001,468C100.472,468,36,403.529,36,324L36,288"/>
+	<path fill="#0060B6" d="M36,278.948c1.581,4.26,4.277,9.545,7.132,12.82L36,289.189l-7.132,2.579
+		C31.723,288.493,34.42,283.208,36,278.948z"/>
+</g>
+<g>
+	<line fill="none" stroke="#0060B6" stroke-width="3" x1="252" y1="252" x2="72" y2="252"/>
+	<path fill="#0060B6" d="M62.947,252c4.26-1.581,9.545-4.277,12.82-7.133L73.188,252l2.58,7.132
+		C72.492,256.278,67.207,253.581,62.947,252z"/>
+</g>
+<g>
+	<g>
+		<path fill="none" stroke="#0060B6" stroke-width="3" d="M396,252h180V180c0-79.529-64.471-144-144-144l-36,0"/>
+		<path fill="#0060B6" d="M386.948,36c4.26-1.581,9.545-4.277,12.82-7.132L397.188,36l2.58,7.132
+			C396.493,40.277,391.208,37.58,386.948,36z"/>
+	</g>
+	<path fill="#0060B6" d="M386.948,252c4.26-1.581,9.545-4.277,12.82-7.133l-2.58,7.133l2.58,7.132
+		C396.493,256.278,391.208,253.581,386.948,252z"/>
+</g>
+<rect x="138" y="246" fill="#FFFFFF" width="12" height="12"/>
+<rect x="462" y="246" fill="#FFFFFF" width="12" height="12"/>
+<g>
+	<g>
+		<path fill="none" stroke="#0060B6" stroke-width="3" d="M468,360V198c0-29.823-24.177-54-54-54H396"/>
+		<path fill="#0060B6" d="M386.948,144c4.26-1.581,9.545-4.277,12.82-7.132l-2.58,7.132l2.58,7.132
+			C396.493,148.277,391.208,145.58,386.948,144z"/>
+	</g>
+</g>
+<g>
+	<path fill="none" stroke="#0060B6" stroke-width="3" d="M252,360h-54c-29.823,0-54-24.177-54-54V180"/>
+	<path fill="#0060B6" d="M144,170.947c1.581,4.26,4.277,9.545,7.132,12.82l-7.132-2.58l-7.132,2.58
+		C139.723,180.492,142.42,175.207,144,170.947z"/>
+</g>
+<g>
+	<line fill="none" stroke="#0060B6" stroke-width="3" x1="252" y1="144" x2="180" y2="144"/>
+	<path fill="#0060B6" d="M170.947,144c4.26-1.581,9.545-4.277,12.82-7.132l-2.58,7.132l2.58,7.132
+		C180.492,148.277,175.207,145.58,170.947,144z"/>
+</g>
+<g>
+	<g>
+		<polyline fill="none" stroke="#0060B6" stroke-width="3" points="549,279 468,360 396,360 		"/>
+		<path fill="#0060B6" d="M386.948,360c4.26-1.581,9.545-4.277,12.82-7.133l-2.58,7.133l2.58,7.132
+			C396.493,364.278,391.208,361.581,386.948,360z"/>
+	</g>
+	<path fill="#0060B6" d="M555.401,272.599c-1.895,4.13-3.725,9.773-4.022,14.108l-3.219-6.867l-6.867-3.219
+		C545.627,276.324,551.272,274.495,555.401,272.599z"/>
+</g>
+<g>
+	<line fill="none" stroke="#0060B6" stroke-width="3" x1="36" y1="252" x2="117" y2="171"/>
+	<path fill="#0060B6" d="M123.401,164.599c-1.895,4.13-3.725,9.774-4.022,14.109l-3.219-6.868l-6.868-3.219
+		C113.627,168.324,119.272,166.494,123.401,164.599z"/>
+</g>
+<g>
+	<g>
+		<polyline fill="none" stroke="#0060B6" stroke-width="3" points="252,396 252,468 324,468 		"/>
+		<path fill="#0060B6" d="M333.053,468c-4.26,1.581-9.545,4.277-12.82,7.132l2.58-7.132l-2.58-7.132
+			C323.508,463.723,328.793,466.42,333.053,468z"/>
+	</g>
+	<path fill="#0060B6" d="M252,386.948c1.581,4.26,4.277,9.545,7.132,12.82L252,397.189l-7.132,2.579
+		C247.723,396.493,250.42,391.208,252,386.948z"/>
+</g>
+<g>
+	<g>
+		<polyline fill="none" stroke="#0060B6" stroke-width="3" points="360,288 360,360 360,432 		"/>
+		<path fill="#0060B6" d="M360,441.053c-1.581-4.26-4.277-9.545-7.132-12.82l7.132,2.579l7.132-2.579
+			C364.277,431.508,361.58,436.793,360,441.053z"/>
+	</g>
+	<path fill="#0060B6" d="M360,278.948c1.581,4.26,4.277,9.545,7.132,12.82L360,289.189l-7.132,2.579
+		C355.722,288.493,358.419,283.208,360,278.948z"/>
+</g>
+<g>
+	<g>
+		<polyline fill="none" stroke="#0060B6" stroke-width="3" points="252,180 252,252 252,324 		"/>
+		<path fill="#0060B6" d="M252,333.053c-1.581-4.26-4.277-9.545-7.132-12.82l7.132,2.58l7.132-2.58
+			C256.277,323.508,253.58,328.793,252,333.053z"/>
+	</g>
+	<path fill="#0060B6" d="M252,170.947c1.581,4.26,4.277,9.545,7.132,12.82l-7.132-2.58l-7.132,2.58
+		C247.723,180.492,250.42,175.207,252,170.947z"/>
+</g>
+<g>
+	<g>
+		<polyline fill="none" stroke="#0060B6" stroke-width="3" points="360,72 360,144 360,216 		"/>
+		<path fill="#0060B6" d="M360,225.053c-1.581-4.26-4.277-9.545-7.132-12.82l7.132,2.58l7.132-2.58
+			C364.277,215.508,361.58,220.793,360,225.053z"/>
+	</g>
+	<path fill="#0060B6" d="M360,62.947c1.581,4.26,4.277,9.545,7.132,12.82L360,73.188l-7.132,2.58
+		C355.722,72.492,358.419,67.207,360,62.947z"/>
+</g>
+<g>
+	<g>
+		<polyline fill="none" stroke="#0060B6" stroke-width="3" points="324,36 252,36 252,108 		"/>
+		<path fill="#0060B6" d="M252,117.053c-1.581-4.26-4.277-9.545-7.132-12.82l7.132,2.58l7.132-2.58
+			C256.277,107.508,253.58,112.793,252,117.053z"/>
+	</g>
+	<path fill="#0060B6" d="M333.053,36c-4.26,1.581-9.545,4.277-12.82,7.132l2.58-7.132l-2.58-7.132
+		C323.508,31.723,328.793,34.42,333.053,36z"/>
+</g>
+<circle fill="#FFFFEB" stroke="#000000" cx="252" cy="36" r="22.5"/>
+<circle fill="#FFFFEB" stroke="#000000" cx="360" cy="36" r="22.5"/>
+<circle fill="#FFFFEB" stroke="#000000" cx="252" cy="144" r="22.5"/>
+<circle fill="#FFFFEB" stroke="#000000" cx="360" cy="144" r="22.5"/>
+<circle fill="#FFFFEB" stroke="#000000" cx="144" cy="144" r="22.5"/>
+<circle fill="#FFFFEB" stroke="#000000" cx="36" cy="252" r="22.5"/>
+<circle fill="#FFFFEB" stroke="#000000" cx="252" cy="252" r="22.5"/>
+<circle fill="#FFFFEB" stroke="#000000" cx="360" cy="252" r="22.5"/>
+<circle fill="#FFFFEB" stroke="#000000" cx="252" cy="360" r="22.5"/>
+<circle fill="#FFFFEB" stroke="#000000" cx="360" cy="360" r="22.5"/>
+<circle fill="#FFFFEB" stroke="#000000" cx="468" cy="360" r="22.5"/>
+<circle fill="#FFFFEB" stroke="#000000" cx="576" cy="252" r="22.5"/>
+<circle fill="#FFFFEB" stroke="#000000" cx="252" cy="468" r="22.5"/>
+<circle fill="#FFFFEB" stroke="#000000" cx="360" cy="468" r="22.5"/>
+<text transform="matrix(1 0 0 1 235.6821 470.9995)"><tspan x="0" y="0" font-family="Times" font-style="normal" font-size="24">~</tspan><tspan x="12.984" y="0" font-family="Times" font-style="italic" font-size="24">x</tspan><tspan x="23.637" y="7" font-family="Times" font-style="normal" font-size="18">0</tspan></text>
+<text transform="matrix(1 0 0 1 235.6821 362.9995)"><tspan x="0" y="0" font-family="Times" font-style="normal" font-size="24">~</tspan><tspan x="12.984" y="0" font-family="Times" font-style="italic" font-size="24">x</tspan><tspan x="23.637" y="7" font-family="Times" font-style="normal" font-size="18">3</tspan></text>
+<text transform="matrix(1 0 0 1 235.6821 254.9995)"><tspan x="0" y="0" font-family="Times" font-style="normal" font-size="24">~</tspan><tspan x="12.984" y="0" font-family="Times" font-style="italic" font-size="24">x</tspan><tspan x="23.637" y="7" font-family="Times" font-style="normal" font-size="18">1</tspan></text>
+<text transform="matrix(1 0 0 1 19.6821 254.9995)"><tspan x="0" y="0" font-family="Times" font-style="normal" font-size="24">~</tspan><tspan x="12.984" y="0" font-family="Times" font-style="italic" font-size="24">x</tspan><tspan x="23.637" y="7" font-family="Times" font-style="normal" font-size="18">5</tspan></text>
+<text transform="matrix(1 0 0 1 134.1743 146.9995)"><tspan x="0" y="0" font-family="Times" font-style="italic" font-size="24">x</tspan><tspan x="10.652" y="7" font-family="Times" font-style="normal" font-size="18">6</tspan></text>
+<text transform="matrix(1 0 0 1 566.1743 254.9995)"><tspan x="0" y="0" font-family="Times" font-style="italic" font-size="24">x</tspan><tspan x="10.652" y="7" font-family="Times" font-style="normal" font-size="18">5</tspan></text>
+<text transform="matrix(1 0 0 1 451.6821 362.9995)"><tspan x="0" y="0" font-family="Times" font-style="italic" font-size="24">~x</tspan><tspan x="23.637" y="7" font-family="Times" font-style="normal" font-size="18">6</tspan></text>
+<text transform="matrix(1 0 0 1 235.6821 146.9995)"><tspan x="0" y="0" font-family="Times" font-style="normal" font-size="24">~</tspan><tspan x="12.984" y="0" font-family="Times" font-style="italic" font-size="24">x</tspan><tspan x="23.637" y="7" font-family="Times" font-style="normal" font-size="18">4</tspan></text>
+<text transform="matrix(1 0 0 1 235.6821 38.9995)"><tspan x="0" y="0" font-family="Times" font-style="normal" font-size="24">~</tspan><tspan x="12.984" y="0" font-family="Times" font-style="italic" font-size="24">x</tspan><tspan x="23.637" y="7" font-family="Times" font-style="normal" font-size="18">2</tspan></text>
+<text transform="matrix(1 0 0 1 350.1743 470.9995)"><tspan x="0" y="0" font-family="Times" font-style="italic" font-size="24">x</tspan><tspan x="10.652" y="7" font-family="Times" font-style="normal" font-size="18">2</tspan></text>
+<text transform="matrix(1 0 0 1 350.1743 362.9995)"><tspan x="0" y="0" font-family="Times" font-style="italic" font-size="24">x</tspan><tspan x="10.652" y="7" font-family="Times" font-style="normal" font-size="18">4</tspan></text>
+<text transform="matrix(1 0 0 1 350.1743 254.9995)"><tspan x="0" y="0" font-family="Times" font-style="italic" font-size="24">x</tspan><tspan x="10.652" y="7" font-family="Times" font-style="normal" font-size="18">1</tspan></text>
+<text transform="matrix(1 0 0 1 350.1743 146.9995)"><tspan x="0" y="0" font-family="Times" font-style="italic" font-size="24">x</tspan><tspan x="10.652" y="7" font-family="Times" font-style="normal" font-size="18">3</tspan></text>
+<text transform="matrix(1 0 0 1 350.1743 38.9995)"><tspan x="0" y="0" font-family="Times" font-style="italic" font-size="24">x</tspan><tspan x="10.652" y="7" font-family="Times" font-style="normal" font-size="18">0</tspan></text>
+<rect fill="none" width="612" height="504"/>
+</svg>

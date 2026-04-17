@@ -40,7 +40,7 @@
             <p>The opening of <em>A Tale of Two Cities</em> is one of the most quoted passages in English literature. "It was the best of times, it was the worst of times." Run it through Antibook and you get something like: "It wasn't the worst of places, it wasn't the best of places." The sentence structure survives. The meaning inverts. The result is absurd in a way that's surprisingly readable.</p>
 
             <figure class="small">
-                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Gutenberg_Bible%2C_Lenox_Copy%2C_New_York_Public_Library%2C_2009._Pic_01.jpg/330px-Gutenberg_Bible%2C_Lenox_Copy%2C_New_York_Public_Library%2C_2009._Pic_01.jpg" alt="A page from the Gutenberg Bible" loading="lazy">
+                <img decoding="async" src="img/cc/gutenberg-bible.webp" alt="A page from the Gutenberg Bible" loading="lazy">
                 <figcaption>A page from the Gutenberg Bible. Antibook draws its source texts from Project Gutenberg's digital catalog and inverts every word. <a href="https://commons.wikimedia.org/wiki/File:Gutenberg_Bible,_Lenox_Copy,_New_York_Public_Library,_2009._Pic_01.jpg">Wikimedia Commons</a></figcaption>
             </figure>
 
@@ -53,7 +53,7 @@
             <p>Antibook uses a five-tier antonym lookup. The first tier is a hand-curated dictionary of about 900 word pairs. These are the obvious ones: good/bad, up/down, love/hate, yes/no. Because high-frequency words dominate natural language, this small list covers 60 to 70 percent of the tokens in a typical book by frequency. The second tier pulls from <a href="https://wordnet.princeton.edu/">Princeton WordNet</a> via <a href="https://www.nltk.org/">NLTK</a>, adding another 15 to 20 percent. The third tier uses the <a href="https://en.wikipedia.org/wiki/Moby_Project">Moby Thesaurus</a> with transitive closure to find indirect antonym relationships. An optional fourth tier uses <a href="https://nlp.stanford.edu/projects/glove/">GloVe</a> word embeddings to find semantic opposites by vector inversion. Everything that falls through all four tiers gets left unchanged: proper nouns, articles, prepositions, and other words that have no meaningful opposite.</p>
 
             <figure class="small">
-                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/English-English_dictionaries_and_thesaurus_books.JPG/400px-English-English_dictionaries_and_thesaurus_books.JPG" alt="English dictionaries and thesaurus books" loading="lazy">
+                <img decoding="async" src="img/cc/dictionaries.webp" alt="English dictionaries and thesaurus books" loading="lazy">
                 <figcaption>English dictionaries and thesaurus books. <a href="https://commons.wikimedia.org/wiki/File:English-English_dictionaries_and_thesaurus_books.JPG">Wikimedia Commons</a></figcaption>
             </figure>
 

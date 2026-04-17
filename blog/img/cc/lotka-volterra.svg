@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svg4522"
+   width="190.88mm"
+   height="100.16mm"
+   version="1.1"
+   viewBox="0 0 190.87798 100.1637"
+   sodipodi:docname="Lotka_Volterra_dynamics.svg"
+   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)">
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1271"
+     inkscape:window-height="819"
+     id="namedview25"
+     showgrid="false"
+     inkscape:zoom="1.27"
+     inkscape:cx="360.71812"
+     inkscape:cy="266.51597"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg4522" />
+  <defs
+     id="defs4516">
+    <marker
+       id="Arrow2Mstart"
+       overflow="visible"
+       orient="auto">
+      <path
+         id="path4522"
+         transform="scale(.6)"
+         d="m8.7186 4.0337-10.926-4.0177 10.926-4.0177c-1.7455 2.3721-1.7354 5.6175-6e-7 8.0354z"
+         fill-rule="evenodd"
+         stroke="#000"
+         stroke-linejoin="round"
+         stroke-width=".625" />
+    </marker>
+    <marker
+       id="Arrow2Mend"
+       overflow="visible"
+       orient="auto">
+      <path
+         id="path4525"
+         transform="scale(-.6)"
+         d="m8.7186 4.0337-10.926-4.0177 10.926-4.0177c-1.7455 2.3721-1.7354 5.6175-6e-7 8.0354z"
+         fill-rule="evenodd"
+         stroke="#000"
+         stroke-linejoin="round"
+         stroke-width=".625" />
+    </marker>
+  </defs>
+  <metadata
+     id="metadata4519">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     id="layer2"
+     transform="translate(-7.1815 -21.077)"
+     display="none">
+    <rect
+       id="rect5143"
+       x="7.1815"
+       y="21.077"
+       width="190.88"
+       height="100.16"
+       fill="#fff" />
+  </g>
+  <g
+     id="layer1"
+     transform="translate(-7.1815 -21.077)">
+    <text
+       id="text6014"
+       transform="rotate(-90)"
+       x="-85.143883"
+       y="15.832001"
+       fill="#000000"
+       font-family="'Linux Biolinum G'"
+       font-size="6.35px"
+       letter-spacing="0px"
+       stroke-width=".26458px"
+       word-spacing="0px"
+       style="line-height:125%"
+       xml:space="preserve"><tspan
+         id="tspan6012"
+         x="-85.143883"
+         y="15.832001"
+         font-size="7.7611px"
+         stroke-width=".26458px">population</tspan></text>
+    <path
+       id="path4496"
+       d="m21.454 26.61v81.884h172.36"
+       fill="none"
+       marker-end="url(#Arrow2Mend)"
+       marker-start="url(#Arrow2Mstart)"
+       stroke="#000"
+       stroke-width=".92399" />
+    <path
+       id="path4972"
+       d="m23.689 74.009s8.0607 3.7818 18.615-10.356c12.002-16.076 13.985-23.068 25.513-1.2761 11.528 21.792 21.167 10.994 30.049-0.19632 8.8824-11.19 12.381-23.04 24.899 0.83436 8.0455 16.58 18.312 13.521 25.75 3.681 16.243-22.051 17.925-23.192 29.597-2.1863"
+       fill="none"
+       stroke="#0074f4"
+       stroke-width=".98354" />
+    <path
+       id="path5674"
+       d="m23.929 82.596c9.3214 10.051 21.107 16.941 32.761 2.6727 11.654-14.269 13.745-11.753 24.816 0.2008 11.072 11.953 21.734 9.1187 29.388 0.14174 7.654-8.9769 10.118-16.44 24.204-1.2838 14.086 15.156 23.841 8.3708 30.454 0.29159 3.3067-4.0396 5.9869-7.7309 9.4355-8.5666 0.86216-0.20893 1.7724-0.23939 2.7524-0.0522"
+       fill="none"
+       stroke="#fe0000"
+       stroke-width="1.165" />
+    <text
+       id="text6018"
+       x="101.25616"
+       y="116.65209"
+       fill="#000000"
+       font-family="'Linux Biolinum G'"
+       font-size="6.35px"
+       letter-spacing="0px"
+       stroke-width=".26458px"
+       word-spacing="0px"
+       style="line-height:125%"
+       xml:space="preserve"><tspan
+         id="tspan6016"
+         x="101.25616"
+         y="116.65209"
+         font-size="7.7611px"
+         stroke-width=".26458px">time</tspan></text>
+    <text
+       id="text6234"
+       x="149.32736"
+       y="30.549114"
+       fill="#000000"
+       font-family="'Linux Biolinum G'"
+       font-size="7.7611px"
+       letter-spacing="0px"
+       stroke-width=".26458px"
+       word-spacing="0px"
+       style="line-height:125%"
+       xml:space="preserve"><tspan
+         id="tspan6232"
+         x="149.32736"
+         y="30.549114"
+         font-size="7.7611px"
+         stroke-width=".26458px">prey</tspan></text>
+    <text
+       id="text6238"
+       x="149.32736"
+       y="40.678875"
+       fill="#000000"
+       font-family="'Linux Biolinum G'"
+       font-size="7.7611px"
+       letter-spacing="0px"
+       stroke-width=".26458px"
+       word-spacing="0px"
+       style="line-height:125%"
+       xml:space="preserve"><tspan
+         id="tspan6236"
+         x="149.32736"
+         y="40.678875"
+         font-size="7.7611px"
+         stroke-width=".26458px">predator</tspan></text>
+    <path
+       id="path6240"
+       d="m132.79 29.765h13.985"
+       fill="none"
+       stroke="#0074f4"
+       stroke-width="1.165" />
+    <path
+       id="path6240-6"
+       d="m132.79 38.881h13.985"
+       fill="#fe0000"
+       fill-rule="evenodd"
+       stroke="#fe0000"
+       stroke-width="1.165" />
+  </g>
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:8.46697903px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26459309"
+     x="24.163027"
+     y="10.577061"
+     id="text29"><tspan
+       sodipodi:role="line"
+       id="tspan27"
+       x="24.163027"
+       y="10.577061"
+       style="stroke-width:0.26459309">Linearized version</tspan></text>
+</svg>

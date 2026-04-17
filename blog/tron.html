@@ -40,7 +40,7 @@
             <p>Two lightcycles race across a grid. Each leaves a wall behind it. Hit any wall and you die. The game is from the 1982 <a href="https://en.wikipedia.org/wiki/Tron">Tron film</a>, and it's been reimplemented countless times, but I wanted to build one with a competent AI opponent and a speed mechanic that rewards risky play.</p>
 
             <figure class="small">
-                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Euclidean_Voronoi_diagram.svg/330px-Euclidean_Voronoi_diagram.svg.png" alt="Voronoi diagram" loading="lazy">
+                <img decoding="async" src="img/cc/voronoi-euclidean.svg" alt="Voronoi diagram" loading="lazy">
                 <figcaption>A Voronoi diagram. The AI bots use Voronoi territory evaluation to maximize claimable space. <a href="https://commons.wikimedia.org/wiki/File:Euclidean_Voronoi_diagram.svg">Wikimedia Commons</a></figcaption>
             </figure>
 
@@ -59,7 +59,7 @@
             <p>The bot doesn't look ahead multiple turns. It's purely reactive, one step of lookahead with the Voronoi heuristic. Despite this, it plays well. It rarely traps itself, it chases you into corners when it has the advantage, and it knows when to sacrifice a corridor to secure a larger region.</p>
 
             <figure class="small">
-                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Coloured_Voronoi_2D.svg/330px-Coloured_Voronoi_2D.svg.png" alt="Colored Voronoi diagram in 2D showing territory partitions" loading="lazy">
+                <img decoding="async" src="img/cc/voronoi-coloured.svg" alt="Colored Voronoi diagram in 2D showing territory partitions" loading="lazy">
                 <figcaption>A colored 2D Voronoi diagram. Each cell contains all points closest to its seed. <a href="https://commons.wikimedia.org/wiki/File:Coloured_Voronoi_2D.svg">Wikimedia Commons</a></figcaption>
             </figure>
 

@@ -40,7 +40,7 @@
             <p>In 2005, three <a href="https://www.csail.mit.edu/">MIT</a> grad students built <a href="https://pdos.csail.mit.edu/archive/scigen/">SCIGen</a>, a program that generated fake computer science papers using a <a href="https://en.wikipedia.org/wiki/Context-free_grammar">context-free grammar</a>. They submitted one of the generated papers to the <a href="https://en.wikipedia.org/wiki/SCIgen#Use">World Multiconference on Systemics, Cybernetics and Informatics</a>, and it was accepted for presentation. The paper was titled "<a href="https://pdos.csail.mit.edu/archive/scigen/rooter.pdf">Rooter: A Methodology for the Typical Unification of Access Points and Redundancy</a>" and it meant nothing at all.</p>
 
             <figure class="small">
-                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Simple_Parse_Tree_1.svg/330px-Simple_Parse_Tree_1.svg.png" alt="A context-free grammar parse tree" loading="lazy">
+                <img decoding="async" src="img/cc/simple-parse-tree.svg" alt="A context-free grammar parse tree" loading="lazy">
                 <figcaption>A context-free grammar parse tree. SCIGen uses thousands of grammar rules to recursively expand symbols into realistic-looking academic prose. <a href="https://commons.wikimedia.org/wiki/File:Simple_Parse_Tree_1.svg">Wikimedia Commons</a></figcaption>
             </figure>
 
@@ -63,7 +63,7 @@
             <p>Making the grammar produce compilable LaTeX was the most time-consuming part of the project. LaTeX is sensitive to syntax errors, and a context-free grammar that generates LaTeX has to ensure that every <code>\begin</code> has a matching <code>\end</code>, every <code>{</code> has a matching <code>}</code>, every <code>\ref</code> points to a <code>\label</code> that exists, and every citation key in the text corresponds to an entry in the bibliography. Many of the grammar rules had to be adjusted to maintain these invariants.</p>
 
             <figure class="small">
-                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/The_current_academic_publishing_system_-_fncom-06-00079-g001.jpeg/330px-The_current_academic_publishing_system_-_fncom-06-00079-g001.jpeg" alt="Diagram of the academic publishing system" loading="lazy">
+                <img decoding="async" src="img/cc/academic-publishing.webp" alt="Diagram of the academic publishing system" loading="lazy">
                 <figcaption>The academic publishing workflow, from submission through peer review to publication. <a href="https://commons.wikimedia.org/wiki/File:The_current_academic_publishing_system_-_fncom-06-00079-g001.jpeg">Wikimedia Commons</a></figcaption>
             </figure>
 

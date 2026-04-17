@@ -40,7 +40,7 @@
             <p>WiFi works until it doesn't. You add a second access point and suddenly both are slower. The problem is almost always channel conflict: two APs close enough to interfere, broadcasting on the same or overlapping frequencies. Deconflict is a browser-based tool for planning around this. Upload a floorplan, drop access points where you want them, and the app assigns channels automatically using <a href="https://en.wikipedia.org/wiki/DSatur">graph coloring</a>. It models multi-floor buildings with per-material wall and slab attenuation, and includes a database of real AP models so the signal estimates reflect actual hardware.</p>
 
             <figure class="small">
-                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/8/8c/2.4_GHz_Wi-Fi_channels_%28802.11b%2Cg_WLAN%29.svg" alt="2.4 GHz WiFi channel overlap diagram" loading="lazy">
+                <img decoding="async" src="img/cc/wifi-channels.svg" alt="2.4 GHz WiFi channel overlap diagram" loading="lazy">
                 <figcaption>2.4 GHz WiFi channels and their overlapping frequencies. Only channels 1, 6, and 11 don't interfere with each other. <a href="https://commons.wikimedia.org/wiki/File:2.4_GHz_Wi-Fi_channels_(802.11b,g_WLAN).svg">Wikimedia Commons</a></figcaption>
             </figure>
 
@@ -51,7 +51,7 @@
             <p>Each band is solved independently, since 2.4 GHz, 5 GHz, and 6 GHz don't interfere with each other. The solver builds a separate interference graph per band, each with its own channel pool, then merges the results. The app also ships with three alternative algorithms for comparison: Welsh-Powell (sorts by degree), greedy (simplest possible), and backtracking (finds the true minimum chromatic number but is slower). All run in a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API">Web Worker</a> so the canvas stays responsive, and the solver re-runs automatically every time you add, move, or remove an AP.</p>
 
             <figure class="small">
-                <img decoding="async" src="https://upload.wikimedia.org/wikipedia/commons/6/6b/Map_coloring_via_graphs.png" alt="Graph coloring applied to a map" loading="lazy">
+                <img decoding="async" src="img/cc/map-coloring.webp" alt="Graph coloring applied to a map" loading="lazy">
                 <figcaption>Constructing a graph from a map and coloring it so no adjacent regions share a color. The same principle assigns WiFi channels so no overlapping APs share a frequency. <a href="https://commons.wikimedia.org/wiki/File:Map_coloring_via_graphs.png">Wikimedia Commons</a></figcaption>
             </figure>
 
