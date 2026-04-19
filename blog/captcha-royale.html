@@ -48,7 +48,7 @@
 
             <h2>Deterministic CAPTCHA generation</h2>
 
-            <p>The CAPTCHA engine is written in <a href="https://www.rust-lang.org/">Rust</a> and compiled to <a href="https://webassembly.org/">WebAssembly</a>. Both the client and the server run the same WASM module. When a round starts, the server sends a seed and a set of difficulty parameters. The client's WASM module uses those inputs to generate the CAPTCHA locally, and the server's copy generates the same CAPTCHA independently to validate the answer. Because the generation is deterministic (seeded with <a href="https://en.wikipedia.org/wiki/HMAC">HMAC-SHA256</a> and driven by <a href="https://en.wikipedia.org/wiki/Salsa20#ChaCha_variant">ChaCha8</a>), both sides produce identical output without ever transmitting the CAPTCHA image or solution over the network.</p>
+            <p>The CAPTCHA engine is written in <a href="https://www.rust-lang.org/">Rust</a> and compiled to <a href="https://webassembly.org/">WebAssembly</a>. Both the client and the server run the same WASM module. When a round starts, the server sends a seed \(s\) and difficulty parameters \(\theta\). The client's WASM module feeds \(s\) through <a href="https://en.wikipedia.org/wiki/HMAC">HMAC-SHA256</a> to derive a 256-bit key, then uses that key to initialize a <a href="https://en.wikipedia.org/wiki/Salsa20#ChaCha_variant">ChaCha8</a> stream cipher as a <a href="https://en.wikipedia.org/wiki/Cryptographically_secure_pseudorandom_number_generator">CSPRNG</a>. All random choices during CAPTCHA generation (character selection, warp control points, noise positions, distractor placement) are drawn from this stream. Because ChaCha8 is deterministic given the same key, the server's copy generates the identical CAPTCHA independently and validates the answer without ever transmitting the image or solution over the network.</p>
 
             <p>This architecture eliminates an entire class of cheating. There's no image to intercept and feed to an OCR service, because the image is rendered locally from a seed. There's no solution in the network traffic, because the solution is computed server-side from the same seed. The only way to solve the CAPTCHA is to look at it and type the answer.</p>
 
@@ -83,7 +83,11 @@
 
             <p>Players start at 1000 <a href="https://en.wikipedia.org/wiki/Elo_rating_system">ELO</a> and are sorted into six brackets: Bronze (below 800), Silver (800 to 1000), Gold (1000 to 1200), Platinum (1200 to 1500), Diamond (1500 to 2000), and Master (above 2000). The matchmaker initially tries to fill a room from the player's own bracket. After 30 seconds it expands to adjacent brackets, and after 60 seconds it opens to two brackets in either direction.</p>
 
-            <p>The K-factor scales with experience: 40 for players with fewer than 30 matches, 24 for 30 to 100, and 16 beyond that. New players move quickly through the brackets until the system has enough data to place them accurately, then the swings dampen. In a battle royale with more than two players, the ELO adjustment is calculated pairwise against every other participant and averaged. This means a Bronze player who survives deep into a lobby full of Gold players will gain significantly more rating than one who merely beats other Bronze players.</p>
+            <p>The K-factor scales with experience: \(K = 40\) for fewer than 30 matches, \(K = 24\) for 30-100, and \(K = 16\) beyond that. New players move quickly through the brackets until the system has enough data, then the swings dampen. In a battle royale with \(n\) players, the Elo adjustment for player \(i\) is the average of pairwise updates against every other participant:</p>
+
+            \[\Delta R_i = \frac{1}{n-1} \sum_{j \neq i} K\bigl(S_{ij} - E_{ij}\bigr), \qquad E_{ij} = \frac{1}{1 + 10^{(R_j - R_i)/400}}\]
+
+            <p>where \(S_{ij} = 1\) if player \(i\) outlasted player \(j\) and 0 otherwise. This means a Bronze player who survives deep into a lobby full of Gold players gains significantly more rating than one who merely beats other Bronze players, because \(E_{ij}\) is low against higher-rated opponents.</p>
 
             <h2>The monorepo</h2>
 

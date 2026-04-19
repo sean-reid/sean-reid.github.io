@@ -44,13 +44,34 @@
                 <figcaption>Crocheting. The pattern generator converts 2D profile drawings into row-by-row stitch instructions. <a href="https://commons.wikimedia.org/wiki/File:Table-cloth_2008-1.jpg">Wikimedia Commons</a></figcaption>
             </figure>
 
-            <p>That's what this tool does. You draw one side of your desired shape on a canvas. The app treats that drawing as a <a href="https://en.wikipedia.org/wiki/Surface_of_revolution">surface of revolution</a>, rotating it around the vertical axis to produce a 3D solid. Then it samples the radius at each row height and converts those radii into stitch counts, respecting the physical constraints of crochet.</p>
+            <p>That's what this tool does. You draw one side of your desired shape on a canvas. The app treats that drawing as a <a href="https://en.wikipedia.org/wiki/Surface_of_revolution">surface of revolution</a>, rotating it around the vertical axis to produce a 3D solid. Formally, the drawn profile defines a radius function \(r(z)\), where \(z\) is the height. Rotating this curve around the \(z\)-axis sweeps out a surface whose cross-section at height \(z\) is a circle of circumference</p>
+
+            \[C(z) = 2\pi\, r(z).\]
+
+            <p>The tool samples \(r(z)\) at each row height and converts those circumferences into stitch counts, respecting the physical constraints of crochet.</p>
 
             <h2>From drawing to stitches</h2>
 
-            <p>The drawn profile gets smoothed into a <a href="https://en.wikipedia.org/wiki/B-spline">B-spline</a> curve so that minor hand tremors don't produce jagged radius changes between rows. The algorithm samples the curve at fixed height intervals, one per row. At each sample point, it computes the circumference of the corresponding circle and divides by the stitch gauge (which is configurable based on your yarn and hook size) to get the number of stitches for that row.</p>
+            <p>The drawn profile gets smoothed into a <a href="https://en.wikipedia.org/wiki/B-spline">B-spline</a> curve so that minor hand tremors don't produce jagged radius changes between rows. Given a set of drawn control points \(\{(r_i, z_i)\}\), the algorithm fits a B-spline of degree \(p\) over a knot vector \(\mathbf{t} = (t_0, t_1, \ldots, t_{m})\). The smoothed radius function is then</p>
 
-            <p>The tricky part is enforcing crochet constraints. In real life, you can at most double the stitch count from one row to the next (by doing an increase in every stitch). You can at most halve it (by doing a decrease in every stitch). If the drawn profile demands a faster radius change than these limits allow, the algorithm clamps the stitch count and the actual shape will deviate slightly from the drawing. This is honest: the pattern won't promise a shape the yarn can't deliver.</p>
+            \[r(z) = \sum_{i=0}^{n} c_i\, N_{i,p}(z),\]
+
+            <p>where \(c_i\) are the spline coefficients and \(N_{i,p}(z)\) are the B-spline basis functions defined recursively by the Cox&ndash;de Boor formula over the knot vector \(\mathbf{t}\). The knot vector is clamped (its first and last \(p+1\) entries are repeated) so that the curve interpolates the endpoints of the drawing.</p>
+
+            <figure class="small">
+                <img decoding="async" src="img/cc/bezier-curve.svg" alt="Bezier curve construction" loading="lazy">
+                <figcaption>A Bezier curve constructed from control points. B-splines generalize this by joining multiple curve segments with smooth continuity at the knots. <a href="https://commons.wikimedia.org/wiki/File:Bezier_curve.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <p>The algorithm samples this curve at fixed height intervals, one per row. At each sample point \(z\), it computes the circumference \(C(z) = 2\pi\, r(z)\) and divides by the stitch gauge \(g\) (configurable based on your yarn and hook size) to get the ideal stitch count for that row:</p>
+
+            \[n(z) = \left\lfloor \frac{C(z)}{g} \right\rfloor = \left\lfloor \frac{2\pi\, r(z)}{g} \right\rfloor.\]
+
+            <p>The tricky part is enforcing crochet constraints. In real life, you can at most double the stitch count from one row to the next (by doing an increase in every stitch), and at most halve it (by doing a decrease in every stitch). Letting \(n_k\) denote the stitch count at row \(k\), the clamping constraint is</p>
+
+            \[\lceil n_{k} / 2 \rceil \;\leq\; n_{k+1} \;\leq\; 2 \cdot n_{k}.\]
+
+            <p>If the ideal stitch count derived from the drawn profile falls outside this band, the algorithm clamps it to the nearest feasible value and the actual shape will deviate slightly from the drawing. This is honest: the pattern won't promise a shape the yarn can't deliver.</p>
 
             <p>Within each row, increases and decreases need to be distributed evenly around the circle to avoid lumps. If row 5 has 12 stitches and row 6 needs 18, that's 6 increases spread across 12 positions. The algorithm spaces them as uniformly as possible so the fabric grows evenly.</p>
 

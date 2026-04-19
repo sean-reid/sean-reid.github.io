@@ -46,9 +46,29 @@
 
             <h2>Null spaces and Vandermonde matrices</h2>
 
-            <p>The algorithm treats curve-finding as a linear algebra problem. For a given degree d, there is a finite set of monomial terms. Degree 2, for example, has six: 1, x, y, x&sup2;, xy, y&sup2;. Any implicit curve of that degree is a linear combination of these monomials set equal to zero. The solver builds a <a href="https://en.wikipedia.org/wiki/Vandermonde_matrix">Vandermonde matrix</a> where each row is a clicked point and each column is a monomial evaluated at that point, then looks for a <a href="https://en.wikipedia.org/wiki/Kernel_(linear_algebra)">null vector</a>: a set of coefficients that makes every row vanish. That null vector is the equation of the curve.</p>
+            <p>The algorithm treats curve-finding as a linear algebra problem. An implicit algebraic curve of degree \(d\) takes the form \(\sum c_j \, m_j(x, y) = 0\), where each \(m_j\) is a monomial \(x^a y^b\) with \(a + b \le d\). Degree 2, for example, has six monomials — \(1, \; x, \; y, \; x^2, \; xy, \; y^2\) — and any conic section is a linear combination of them set to zero.</p>
 
-            <p>To favor simple results, the solver searches sparse subsets first. For each degree (1 through 4), it tries all k-subsets of monomial columns starting from k = 2 and working upward. The first non-trivial null vector found this way uses the fewest terms possible, which usually gives the cleanest equation. When multiple solutions exist at the same sparsity, a scoring function picks the one with the smallest coefficients and the most symmetric use of x and y, preferring <code>x&sup2; + y&sup2; = 25</code> over an equivalent but lopsided form.</p>
+            <p>Given \(n\) clicked points \((x_1, y_1), \dots, (x_n, y_n)\), the solver builds a generalized <a href="https://en.wikipedia.org/wiki/Vandermonde_matrix">Vandermonde matrix</a> \(V\) where each row evaluates every monomial at one point:</p>
+
+            \[V = \begin{pmatrix} m_1(x_1,y_1) & m_2(x_1,y_1) & \cdots & m_k(x_1,y_1) \\ m_1(x_2,y_2) & m_2(x_2,y_2) & \cdots & m_k(x_2,y_2) \\ \vdots & \vdots & \ddots & \vdots \\ m_1(x_n,y_n) & m_2(x_n,y_n) & \cdots & m_k(x_n,y_n) \end{pmatrix}\]
+
+            <p>The curve's coefficients \(\mathbf{c} = (c_1, \dots, c_k)^T\) must satisfy \(V\mathbf{c} = \mathbf{0}\), so the solver looks for a non-trivial vector in \(\ker(V)\). When \(n < k\) (fewer points than monomials), the system is underdetermined and the <a href="https://en.wikipedia.org/wiki/Kernel_(linear_algebra)">null space</a> is non-empty, guaranteeing at least one exact solution.</p>
+
+            <h3>Contrast with least-squares regression</h3>
+
+            <p>A statistical approach would treat this as a regression problem. Given data \((x_i, y_i)\) and a model \(f(x;\beta)\), ordinary least squares minimizes the residual sum of squares:</p>
+
+            \[\min_{\beta} \sum_{i=1}^{n} (y_i - f(x_i; \beta))^2\]
+
+            <p>For polynomial regression of degree \(d\), the model is \(f(x;\beta) = \beta_0 + \beta_1 x + \cdots + \beta_d x^d\) and the optimal coefficients satisfy the <a href="https://en.wikipedia.org/wiki/Ordinary_least_squares#Matrix/vector_formulation">normal equations</a> \((X^T X)\hat{\beta} = X^T \mathbf{y}\), where \(X\) is the design matrix. But regression finds an <em>approximate</em> fit — it minimizes error rather than eliminating it — and it only handles explicit functions \(y = f(x)\), missing circles, ellipses, and other curves that fail the vertical-line test.</p>
+
+            <p>Points takes the opposite approach: it demands <em>exact</em> interpolation through every clicked point and works with implicit equations \(F(x,y) = 0\), which naturally represent the full zoo of algebraic curves. The trade-off is that it requires enough monomials relative to points for the null space to be non-trivial.</p>
+
+            <h3>Sparsity search and model selection</h3>
+
+            <p>To favor simple results, the solver searches sparse subsets first. For each degree \(d \in \{1, 2, 3, 4\}\), it enumerates all \(\binom{k}{s}\) subsets of \(s\) monomial columns, starting from \(s = 2\) and working upward. The first non-trivial null vector found this way uses the fewest terms possible, which usually gives the cleanest equation.</p>
+
+            <p>This sparsity-first strategy is the implicit-curve analogue of model selection in regression. In the least-squares world, fitting a high-degree polynomial to few points leads to <a href="https://en.wikipedia.org/wiki/Overfitting">overfitting</a> — the curve passes through the data but oscillates wildly between points. Regularization methods like the <a href="https://en.wikipedia.org/wiki/Akaike_information_criterion">AIC</a> or <a href="https://en.wikipedia.org/wiki/Lasso_(statistics)">LASSO</a> (\(\ell_1\) penalty) push toward simpler models. Points achieves the same goal combinatorially: by trying fewer monomials first, it finds the sparsest exact representation before a denser one is ever considered. When multiple solutions exist at the same sparsity, a scoring function picks the one with the smallest coefficients and the most symmetric use of \(x\) and \(y\), preferring <code>x&sup2; + y&sup2; = 25</code> over an equivalent but lopsided form.</p>
 
             <figure class="small">
                 <img decoding="async" src="img/cc/conic-sections.svg" alt="The four conic sections: circle, ellipse, parabola, and hyperbola" loading="lazy">
@@ -57,7 +77,9 @@
 
             <h2>From floats to exact integers</h2>
 
-            <p>Gaussian elimination with partial pivoting produces floating-point null vectors. These need to be converted to exact integer coefficients to display a clean equation. The solver uses <a href="https://en.wikipedia.org/wiki/Continued_fraction">continued fraction</a> expansion to rationalize each coefficient, caps denominators at 1000, then multiplies through by the LCM of all denominators and reduces by the GCD. The result is verified using <code>i128</code> integer arithmetic, with no floating-point at all, to confirm that the equation evaluates to exactly zero at every input point. If verification fails, the candidate is discarded and the search continues.</p>
+            <p>Gaussian elimination with partial pivoting produces a floating-point null vector \(\tilde{\mathbf{c}} \in \mathbb{R}^k\). These approximate coefficients need to be converted to exact integers to display a clean equation. The solver applies <a href="https://en.wikipedia.org/wiki/Continued_fraction">continued fraction</a> expansion to each \(\tilde{c}_j\), recovering a rational approximation \(p_j / q_j\) with \(q_j \le 1000\). It then multiplies through by \(\operatorname{lcm}(q_1, \dots, q_k)\) and divides by \(\gcd(p_1, \dots, p_k)\) to obtain the smallest integer coefficient vector \(\mathbf{c} \in \mathbb{Z}^k\).</p>
+
+            <p>The result is verified using <code>i128</code> integer arithmetic, with no floating-point at all, confirming that \(\sum_j c_j \, m_j(x_i, y_i) = 0\) holds exactly for every input point \(i\). If verification fails — meaning numerical error in the Gaussian elimination produced a spurious null vector — the candidate is discarded and the search continues with the next subset.</p>
 
             <h2>Rendering the curve</h2>
 

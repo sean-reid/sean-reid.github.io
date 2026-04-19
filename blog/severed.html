@@ -24,7 +24,7 @@
     <div class="container">
         <header>
             <h1>Severed</h1>
-            <p class="meta">Interactive submarine cable failure simulator on a 3D globe</p>
+            <p class="meta">Bottleneck shortest paths on a weighted graph of 930 metros and 1,500 submarine and terrestrial links</p>
             <p class="links-row">
                 <a href="https://sean-reid.github.io/severed/">Live Demo</a>
                 <a href="https://github.com/sean-reid/severed">Source</a>
@@ -48,19 +48,32 @@
 
             <h2>The graph model</h2>
 
-            <p>The network is modeled as a weighted graph where nodes are metro areas (not countries, because a country like the United States has dozens of independent landing points) and edges are either submarine cable segments or terrestrial backbone links. Cable data comes from <a href="https://www.submarinecablemap.com/">TeleGeography's Submarine Cable Map</a>, which tracks 594 operational cables with their GeoJSON routes and landing stations. Each cable is split into segments connecting pairs of metros, and each segment carries a capacity estimate in terabits per second.</p>
+            <p>The network is modeled as a weighted graph \(G = (V, E, w)\) where vertices are metro areas (not countries, because a country like the United States has dozens of independent landing points) and edges are either submarine cable segments or terrestrial backbone links. The weight function \(w : E \to \mathbb{R}^+\) assigns each edge a capacity in terabits per second. Cable data comes from <a href="https://www.submarinecablemap.com/">TeleGeography's Submarine Cable Map</a>, which tracks 594 operational cables with their GeoJSON routes and landing stations. Each cable is split into segments connecting pairs of metros.</p>
 
-            <p>The capacity numbers are the trickiest part of the dataset. Some cables have publicly reported design capacity from FCC filings or press releases. Most don't. For those, the simulator uses an estimation heuristic based on the cable's ready-for-service year and fiber pair count: newer cables carry more data per pair because cables from the 2020s carry far more per pair than cables from the early 2000s. Every capacity figure has a confidence tag (<code>verified</code>, <code>estimated</code>, or <code>approximated</code>) so you can see which numbers are solid and which are educated guesses.</p>
+            <p>The capacity numbers are the trickiest part of the dataset. Some cables have publicly reported design capacity from FCC filings or press releases. Most don't. For those, the simulator uses an estimation heuristic based on the cable's ready-for-service year and fiber pair count: newer cables carry more data per pair because wavelength-division multiplexing density has grown roughly exponentially since the early 2000s. Every capacity figure has a confidence tag (<code>verified</code>, <code>estimated</code>, or <code>approximated</code>) so you can see which numbers are solid and which are educated guesses.</p>
 
-            <p>Submarine cables alone don't tell the full story. Traffic between, say, Frankfurt and Paris doesn't go through a submarine cable. It goes overland. So the graph also includes 151 hand-researched <a href="https://en.wikipedia.org/wiki/Backbone_network">terrestrial backbone</a> edges connecting major metros across the same landmass. These are the hardest data to source because terrestrial capacity is rarely published, so each edge cites the operator press releases and industry reports it was derived from.</p>
+            <p>Submarine cables alone don't tell the full story. Traffic between Frankfurt and Paris goes overland, not through a submarine cable. So the graph also includes 151 hand-researched <a href="https://en.wikipedia.org/wiki/Backbone_network">terrestrial backbone</a> edges connecting major metros across the same landmass. The full graph has \(|V| = 930\) metro vertices, 92 designated hub vertices \(H \subset V\), and roughly 1,500 edges.</p>
 
-            <h2>How the simulation works</h2>
+            <h2>Bottleneck shortest paths</h2>
 
-            <p>The engine runs <a href="https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm">Dijkstra's algorithm</a> from each of 92 global hub metros (New York, London, Singapore, Tokyo, and so on) to compute a baseline. For every metro in the graph, it calculates the bottleneck bandwidth along the shortest path to each hub, then sums them. This isn't a full <a href="https://en.wikipedia.org/wiki/Maximum_flow_problem">max-flow</a> computation, which would be prohibitively expensive at this scale. It's a deliberate approximation that captures "how much bandwidth can this city realistically reach on the global internet" without solving an all-pairs max-flow problem.</p>
+            <p>The question the simulator answers is: for each metro, how much total bandwidth can it reach across the global internet? The exact answer requires solving an <a href="https://en.wikipedia.org/wiki/Maximum_flow_problem">all-pairs max-flow</a> problem, which is computationally prohibitive at this scale (\(O(|V|^2)\) flow computations, each at least \(O(|V| \cdot |E|)\)). Instead, the engine uses a bottleneck path approximation.</p>
 
-            <p>When you cut a cable, the engine resolves which graph edges are affected. For a chokepoint cut, it checks which cable segments have endpoints or midpoints inside a predefined polygon (the Red Sea polygon, for instance, covers the strait between Yemen and Djibouti). For a point cut, it finds all segments within a configurable radius. The affected edges are removed from the graph, Dijkstra runs again from every hub, and the engine diffs the results against the baseline. Per-metro output includes bandwidth loss percentage, latency change, path diversity, and the top five cables or terrestrial links that now carry rerouted traffic.</p>
+            <p>For a path \(P = (v_0, v_1, \ldots, v_k)\) in the graph, the <a href="https://en.wikipedia.org/wiki/Widest_path_problem">bottleneck bandwidth</a> is the minimum edge weight along the path:</p>
 
-            <p>The whole simulation completes in under 200 milliseconds. It runs in a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API">Web Worker</a> so the globe stays interactive while the graph engine churns.</p>
+            \[B(P) = \min_{i=0}^{k-1} w(v_i, v_{i+1})\]
+
+            <figure class="small">
+                <img decoding="async" src="img/cc/dynamic-programming.svg" alt="Optimal substructure in shortest paths" loading="lazy">
+                <figcaption>Optimal substructure in shortest paths: the best path from \(s\) to \(t\) through \(u\) is composed of the best path from \(s\) to \(u\) and the best path from \(u\) to \(t\). Dijkstra's algorithm exploits this property, greedily extending the best-known path at each step. <a href="https://commons.wikimedia.org/wiki/File:Shortest_path_optimal_substructure.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <p>The engine runs a modified <a href="https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm">Dijkstra's algorithm</a> from each of the 92 hub metros, using \(\max\) instead of \(\min\) for path relaxation (maximizing the bottleneck rather than minimizing distance). For each metro \(v\), the aggregate connectivity score is:</p>
+
+            \[\operatorname{score}(v) = \sum_{h \in H} B^*(v, h)\]
+
+            <p>where \(B^*(v, h)\) is the maximum bottleneck bandwidth over all paths from \(v\) to hub \(h\). This runs in \(O(|H| \cdot (|V| + |E|) \log |V|)\) using a max-heap, completing in under 200 milliseconds for the full graph.</p>
+
+            <p>When you cut a cable, the engine removes the affected edges from \(G\), recomputes \(\operatorname{score}(v)\) for all metros, and diffs against the pre-cut baseline. For a chokepoint cut (like the Red Sea), the engine checks which cable segments have endpoints or midpoints inside a predefined polygon. For a point cut, it finds all segments within a configurable radius. Per-metro output includes the bandwidth loss ratio \(1 - \operatorname{score}'(v)/\operatorname{score}(v)\), path diversity (number of distinct hub-reaching paths), and the top rerouting edges that absorbed redistributed traffic. The simulation runs in a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API">Web Worker</a> so the globe stays interactive.</p>
 
             <h2>Validation against real events</h2>
 

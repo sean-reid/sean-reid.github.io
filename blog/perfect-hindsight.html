@@ -50,6 +50,28 @@
 
             <p>The calculation is simple in principle. For each trading day, look at every stock in the <a href="https://en.wikipedia.org/wiki/S%26P_500">S&amp;P 500</a>, find the one with the highest daily return, and assume you held it. Multiply all those daily returns together across the chosen time horizon and you get the cumulative return. The constraint is long-only: no shorting, so on days when every stock drops, you still pick the least-bad one.</p>
 
+            <p>Let \( S_t \) be the set of stocks in the index on day \( t \), and let \( r_{i,t} \) be the daily return of stock \( i \) on that day. The oracle strategy picks the best performer each day, so the cumulative portfolio value after \( T \) trading days starting from an initial investment \( V_0 \) is:</p>
+
+            \[ V_T \;=\; V_0 \prod_{t=1}^{T} \bigl(1 + \max_{i \in S_t}\, r_{i,t}\bigr) \]
+
+            <p>The overall return multiple is then \( V_T / V_0 \), and the annualized return solves \( V_T = V_0\,(1+r_a)^{T/252} \), giving:</p>
+
+            \[ r_a \;=\; \left(\frac{V_T}{V_0}\right)^{252/T} - 1 \]
+
+            <p>where 252 is the conventional number of trading days per year.</p>
+
+            <h2>As a dynamic program</h2>
+
+            <p>The zero-cost version is trivially greedy: each day is independent, so picking the daily maximum is already globally optimal. Things get more interesting when you introduce a transaction cost \( c \) for switching stocks. Now the decision on day \( t \) depends on what you held on day \( t-1 \), and the problem becomes a genuine <a href="https://en.wikipedia.org/wiki/Dynamic_programming">dynamic program</a>.</p>
+
+            <p>Define \( \text{dp}[t][i] \) as the maximum portfolio value at the end of day \( t \) if you hold stock \( i \). The recurrence is:</p>
+
+            \[ \text{dp}[t][i] \;=\; (1 + r_{i,t}) \;\max\!\Bigl(\;\text{dp}[t\!-\!1][i],\;\;\max_{j \neq i}\;\text{dp}[t\!-\!1][j]\,(1-c)\Bigr) \]
+
+            <p>The first branch inside the max is "hold" (keep stock \( i \), pay no cost), and the second is "switch" (sell stock \( j \), pay cost \( c \), buy stock \( i \)). The final answer is \( \max_i \text{dp}[T][i] \). When \( c = 0 \), the switch branch always dominates or ties and the recurrence collapses back to the greedy product above.</p>
+
+            <p>This has a structural resemblance to the <a href="https://en.wikipedia.org/wiki/Maximum_subarray_problem">maximum subarray problem</a>. In Kadane's algorithm you decide each step whether to extend the current run or start fresh; here you decide each day whether to extend your current holding or switch to a different stock. The transaction cost plays the role of the "reset penalty" that makes contiguous runs valuable. Without it, every day is a fresh start and no memory is needed.</p>
+
             <p>The interactive tool lets you adjust the time horizon and starting investment. A slider controls how many years of data to include, and a currency input sets the initial amount. The main display shows the final portfolio value, the overall return multiple, the annualized return percentage, and the total number of trades. These update in real time as you move the slider.</p>
 
             <figure class="small">
@@ -59,7 +81,7 @@
 
             <h2>The visualization</h2>
 
-            <p>A line chart plots the cumulative portfolio value on a log scale over time. Log scale is necessary because the numbers span so many orders of magnitude that a linear chart would be a flat line at zero for most of the plot and then a vertical spike at the end. Hovering over the chart shows the specific trade for that day: the date, the dollar amount, which stock was selected, and its daily return.</p>
+            <p>A line chart plots the cumulative portfolio value on a log scale over time. Log scale is necessary because the numbers span so many orders of magnitude that a linear chart would be a flat line at zero for most of the plot and then a vertical spike at the end. It is also the natural scale for multiplicative processes: taking the log of the cumulative product turns it into a cumulative sum of log-returns, \( \ln V_T = \ln V_0 + \sum_{t=1}^{T} \ln\!\bigl(1 + \max_i r_{i,t}\bigr) \), so constant visual slope corresponds to a constant rate of compounding. Hovering over the chart shows the specific trade for that day: the date, the dollar amount, which stock was selected, and its daily return.</p>
 
             <p>Below the chart, a summary table shows every available time horizon with its total return, annualized return, final value, and trade count. Clicking a row in the table updates the chart to show that specific period. A horizontal bar chart breaks down which stocks were held most frequently and how much they contributed to the total return. Some names show up more than you'd expect. Volatile stocks dominate because a stock that regularly swings 10% in a day will be the best performer on a lot of those up days.</p>
 

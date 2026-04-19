@@ -59,7 +59,11 @@
 
             <h2>What the numbers mean</h2>
 
-            <p>The output is a ranked list of causes, not a probability distribution. It doesn't tell you there's a 23% chance you'll die of heart disease. It tells you that heart disease is your number one risk, followed by stroke, followed by lung cancer, and so on down the list. The ranking comes from the GBD's disability-adjusted life year and mortality rate data for your specific demographic cell.</p>
+            <p>The output is a ranked list of causes of death for your demographic cell. The GBD provides cause-specific mortality rates \(\mu_c(a, s, \ell)\) per 100,000 population, stratified by age group \(a\), sex \(s\), and location \(\ell\). The ranking orders causes by descending \(\mu_c\): the cause with the highest rate for your cell appears first. The all-cause mortality rate \(\mu = \sum_c \mu_c\) determines life expectancy, and each cause's share of total mortality gives its <a href="https://en.wikipedia.org/wiki/Proportional_mortality_ratio">proportional mortality ratio</a>:</p>
+
+            \[\text{PMR}_c = \frac{\mu_c}{\sum_{c'} \mu_{c'}}\]
+
+            <p>This isn't quite the probability that cause \(c\) will be your actual cause of death (that would require a <a href="https://en.wikipedia.org/wiki/Competing_risks">competing risks</a> model), but it's a reasonable approximation when causes are approximately independent. The tool shows rankings rather than raw percentages because the absolute rates depend on time horizon, which the input doesn't specify.</p>
 
             <p>The interface is deliberately minimal. Three inputs, one button, one list. There's no attempt to soften the presentation or add disclaimers about how "everyone is unique." The data is what the data is. If you're a 35-year-old man in Brazil, the tool tells you what 35-year-old men in Brazil tend to die of, ranked by frequency. What you do with that information is your business.</p>
 

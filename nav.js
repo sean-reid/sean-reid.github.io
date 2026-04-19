@@ -229,6 +229,32 @@
     if (e.key === 'Escape') { input.value = ''; input.blur(); dropdown.classList.remove('open'); dropdown.innerHTML = ''; activeIndex = -1; }
   });
 
+  // --- KaTeX math rendering (lazy-loaded) ---
+  var mathContent = document.body.textContent;
+  if (mathContent.indexOf('\\(') !== -1 || mathContent.indexOf('\\[') !== -1) {
+    var katexCSS = document.createElement('link');
+    katexCSS.rel = 'stylesheet';
+    katexCSS.href = 'https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css';
+    document.head.appendChild(katexCSS);
+    var katexJS = document.createElement('script');
+    katexJS.src = 'https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js';
+    katexJS.onload = function () {
+      var autoJS = document.createElement('script');
+      autoJS.src = 'https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/auto-render.min.js';
+      autoJS.onload = function () {
+        renderMathInElement(document.body, {
+          delimiters: [
+            { left: '\\[', right: '\\]', display: true },
+            { left: '\\(', right: '\\)', display: false }
+          ],
+          throwOnError: false
+        });
+      };
+      document.head.appendChild(autoJS);
+    };
+    document.head.appendChild(katexJS);
+  }
+
   // --- Homepage search from query param ---
   var isHome = window.location.pathname === '/' || window.location.pathname === '/index.html';
   if (isHome) {

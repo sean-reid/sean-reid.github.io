@@ -48,9 +48,40 @@
 
             <h2>The AI</h2>
 
-            <p>The opponent uses <a href="https://en.wikipedia.org/wiki/Minimax">minimax</a> with <a href="https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning">alpha-beta pruning</a>, searching three plies deep. Three plies doesn't sound like much, but the branching factor in ultimate tic-tac-toe is large. When you're constrained to a single sub-board, there are up to nine possible moves. When you have free choice, there can be dozens of legal moves spread across multiple sub-boards. Alpha-beta pruning cuts branches where the best possible outcome for one player is already worse than a previously found alternative, which keeps the search tractable.</p>
+            <p>The opponent uses <a href="https://en.wikipedia.org/wiki/Minimax">minimax</a> with <a href="https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning">alpha-beta pruning</a>, searching three plies deep. Minimax models the game as a two-player zero-sum decision process. Given a game state \(s\), the algorithm computes a value \(V(s)\) by recursing over all legal moves and alternating between the two players. At terminal or depth-limited states, a heuristic evaluation function provides the base case. The recurrence is:</p>
 
-            <p>The evaluation function scores board states at the leaves of the search tree. It calls <code>evaluate_global()</code>, which examines the meta-board (which sub-boards have been won by whom) and returns a numeric score. Positive values favor the maximizing player; negative values favor the minimizer. The function considers not just which sub-boards are won but how close each player is to completing a row of three at the meta level.</p>
+            \[V(s) = \begin{cases} \text{eval}(s) & \text{if } s \text{ is terminal or depth limit reached} \\ \max_{a \in A(s)} V(s') & \text{if it is the maximizer's turn} \\ \min_{a \in A(s)} V(s') & \text{if it is the minimizer's turn} \end{cases}\]
+
+            <p>where \(A(s)\) is the set of legal actions in state \(s\) and \(s'\) is the successor state after taking action \(a\).</p>
+
+            <h3>Game tree complexity</h3>
+
+            <p>Three plies doesn't sound like much, but the branching factor in ultimate tic-tac-toe is large. When you're constrained to a single sub-board, there are up to 9 possible moves. When you have free choice (because the target sub-board is already won or filled), there can be dozens of legal moves spread across multiple open sub-boards. The effective branching factor \(b\) varies throughout the game but averages roughly \(b \approx 9\) in constrained positions and can spike above 40 in free-choice positions. With a search depth of \(d = 3\), a naive minimax explores on the order of \(O(b^d)\) nodes. In the constrained case that's \(9^3 = 729\) nodes; in free-choice positions it grows into the tens of thousands.</p>
+
+            <p>The full game tree for ultimate tic-tac-toe has been estimated at around \(10^{50}\) to \(10^{60}\) possible states, far too large to solve by brute force. For comparison, standard 3x3 tic-tac-toe has only \(9! = 362{,}880\) possible games and is trivially solved. The meta-level constraint is what makes exhaustive search infeasible and depth-limited heuristic search necessary.</p>
+
+            <h3>Alpha-beta pruning</h3>
+
+            <p>Alpha-beta pruning maintains two bounds during the search: \(\alpha\), the best value the maximizer can guarantee, and \(\beta\), the best value the minimizer can guarantee. A subtree is pruned whenever \(\alpha \geq \beta\), because the current player already has a better option elsewhere in the tree. Formally, the search becomes:</p>
+
+            \[\text{alphabeta}(s, d, \alpha, \beta) = \begin{cases} \text{eval}(s) & \text{if } d = 0 \text{ or } s \text{ is terminal} \\ \max_{a \in A(s)} \text{alphabeta}(s', d-1, \alpha, \beta) & \text{maximizer, with } \alpha \leftarrow \max(\alpha, v) \\ \min_{a \in A(s)} \text{alphabeta}(s', d-1, \alpha, \beta) & \text{minimizer, with } \beta \leftarrow \min(\beta, v) \end{cases}\]
+
+            <p>with cutoff when \(\alpha \geq \beta\). With optimal move ordering, alpha-beta reduces the effective number of nodes explored from \(O(b^d)\) to \(O(b^{d/2})\), which is equivalent to searching twice as deep for the same cost. In practice, move ordering is imperfect, so the actual performance lies between these bounds: roughly \(O(b^{3d/4})\) for reasonable heuristic ordering. This is what keeps the search tractable at depth three even in free-choice positions.</p>
+
+            <figure class="small">
+                <img decoding="async" src="img/cc/alpha-beta-pruning.svg" alt="Alpha-beta pruning on a game tree" loading="lazy">
+                <figcaption>Alpha-beta pruning eliminates branches that cannot affect the final decision. Gray subtrees are never evaluated. <a href="https://commons.wikimedia.org/wiki/File:AB_pruning.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <h3>Evaluation function</h3>
+
+            <p>The evaluation function scores board states at the leaves of the search tree. It calls <code>evaluate_global()</code>, which examines the meta-board (which sub-boards have been won by whom) and returns a numeric score. Positive values favor the maximizing player; negative values favor the minimizer.</p>
+
+            <p>Conceptually, for each of the eight winning lines \(\ell\) on the meta-board (three rows, three columns, two diagonals), the function computes a line score based on how many sub-boards each player has claimed along that line. Let \(x_\ell\) be the number of sub-boards won by the maximizer on line \(\ell\) and \(o_\ell\) the count for the minimizer. A line that contains marks from both players is blocked and contributes nothing. Otherwise, the evaluation is:</p>
+
+            \[\text{eval}(s) = \sum_{\ell} \left( w(x_\ell) - w(o_\ell) \right)\]
+
+            <p>where \(w(k)\) is a weighting function that assigns increasing value to more marks on an unblocked line, such as \(w(0) = 0\), \(w(1) = 1\), \(w(2) = 10\), \(w(3) = +\infty\) (a win). This makes the AI value positions that threaten to complete a meta-row far more than isolated sub-board wins, and it captures both offensive and defensive priorities in a single scalar.</p>
 
             <p>The Rust code is organized into separate modules for types, individual board logic, game state management, and the minimax search itself. <code>types.rs</code> defines the cell states and move structures. <code>board.rs</code> handles the 3x3 sub-board logic, including win detection. <code>game.rs</code> manages the full 9-board state and enforces the "your move picks their board" constraint. <code>minimax.rs</code> contains the search algorithm.</p>
 

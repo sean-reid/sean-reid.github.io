@@ -52,9 +52,21 @@
 
             <h2>Voronoi territory</h2>
 
-            <p>The AI decides where to go by computing a <a href="https://en.wikipedia.org/wiki/Voronoi_diagram">Voronoi partition</a> of the remaining open space. Conceptually, it asks: "if both players expanded outward from their current positions as fast as possible, how much space would each one claim?" The player who can reach more cells owns more territory. The bot evaluates each possible direction by simulating one step in that direction and computing the resulting territory split. It picks whichever direction maximizes its own reachable area.</p>
+            <p>The AI decides where to go by computing a <a href="https://en.wikipedia.org/wiki/Voronoi_diagram">Voronoi partition</a> of the remaining open space. Given a set of sites \(P = \{p_1, p_2, \ldots, p_n\}\) in the plane, the <strong>Voronoi diagram</strong> partitions the space into cells, one per site, such that every point in a cell is closer to its site than to any other. Formally, the Voronoi cell for site \(p_i\) is:</p>
 
-            <p>This is a well-known heuristic in lightcycle AI. It works because the game is fundamentally about space control. A player who gets trapped in a smaller region than their opponent will eventually run out of room. The Voronoi approach approximates an optimal partition without needing to search deep into the game tree. It runs in time proportional to the board area, which is fast enough to compute every frame without any perceptible lag.</p>
+            \[V_i = \{x : d(x, p_i) \leq d(x, p_j) \text{ for all } j \neq i\}\]
+
+            <p>In continuous geometry with Euclidean distance, this produces the familiar polygon tessellation. In a Tron grid, the sites are the two players' current positions and the distance function \(d\) is not Euclidean but geodesic: the shortest path length through unoccupied cells, respecting walls as impassable obstacles. This turns each Voronoi cell into the set of grid squares that a given player can reach before the other.</p>
+
+            <p>Conceptually, the AI asks: "if both players expanded outward from their current positions as fast as possible, how much space would each one claim?" The player who can reach more cells owns more territory. Let \(A_i\) denote the area (cell count) of \(V_i\). The bot evaluates each candidate direction \(m \in \{\text{up}, \text{down}, \text{left}, \text{right}\}\) by simulating one step in that direction and computing the resulting territory split. Its decision rule is a greedy maximization of reachable area:</p>
+
+            \[m^* = \arg\max_{m} \; A_{\text{bot}}(m)\]
+
+            <p>where \(A_{\text{bot}}(m)\) is the bot's Voronoi cell area after taking move \(m\).</p>
+
+            <p>This is a well-known heuristic in lightcycle AI. It works because the game is fundamentally about space control. A player who gets trapped in a smaller region than their opponent will eventually run out of room. The Voronoi approach approximates an optimal partition without needing to search deep into the game tree.</p>
+
+            <p>Computing a true Voronoi diagram in continuous space is an \(O(n \log n)\) operation, classically solved by <a href="https://en.wikipedia.org/wiki/Fortune%27s_algorithm">Fortune's sweep-line algorithm</a>. On a discrete grid with obstacles, the equivalent is a <strong>BFS flood fill</strong>: both players' positions are enqueued simultaneously, and the search expands outward one cell at a time, marking each cell for whichever player reaches it first. This is effectively a discrete geodesic Voronoi computation. It runs in \(O(W \times H)\) time for a grid of width \(W\) and height \(H\), which is fast enough to compute every frame without any perceptible lag.</p>
 
             <p>The bot doesn't look ahead multiple turns. It's purely reactive, one step of lookahead with the Voronoi heuristic. Despite this, it plays well. It rarely traps itself, it chases you into corners when it has the advantage, and it knows when to sacrifice a corridor to secure a larger region.</p>
 

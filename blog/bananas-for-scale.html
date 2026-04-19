@@ -53,9 +53,9 @@
 
             <h2>Picking the right wrong unit</h2>
 
-            <p>Not every unit works for every measurement. A giraffe that's 0.000003 Eiffel Towers tall is a useless number. The conversion engine scores every candidate unit and classifies it as "comprehensible" if the result is finite and non-degenerate (between 10⁻³⁰ and 10³⁰).</p>
+            <p>Not every unit works for every measurement. A giraffe that's 0.000003 Eiffel Towers tall is a useless number. Every conversion is a ratio of SI values: given a measurement \(m\) in SI units and a unit \(u\) also in SI, the converted value is simply \(v = m / u\). The conversion engine classifies this as "comprehensible" if \(10^{-30} \leq v \leq 10^{30}\) and finite. <a href="https://en.wikipedia.org/wiki/Dimensional_analysis">Dimensional consistency</a> is enforced throughout: mass units only pair with mass measurements, length with length, and so on across 16 physical dimensions.</p>
 
-            <p>Each measurement shows two or three conversions. The first two come from the comprehensible pool. The third, about 60% of the time, is picked from outside the range on purpose. Selection uses a seeded PRNG (Mulberry32, fed by a djb2 hash of the thing's slug and measurement ID) so the same entry always shows the same conversions on every page load. The Remix button generates a new seed and picks different units, all client-side, no network call.</p>
+            <p>Each measurement shows two or three conversions. The first two come from the comprehensible pool. The third, about 60% of the time, is picked from outside the range on purpose. Selection uses a seeded PRNG (<a href="https://gist.github.com/tommyettinger/46a874533244883189143505d203312c">Mulberry32</a>, a 32-bit xorshift generator with period \(2^{32}\), fed by a <a href="https://en.wikipedia.org/wiki/Daniel_J._Bernstein">djb2</a> hash of the thing's slug and measurement ID) so the same entry always shows the same conversions on every page load. The Remix button generates a new seed and picks different units, all client-side.</p>
 
             <figure class="small">
                 <img decoding="async" src="img/cc/prototype-kilogram.webp" alt="Replica of the International Prototype Kilogram" loading="lazy">

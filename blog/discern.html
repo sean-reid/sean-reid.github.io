@@ -24,7 +24,7 @@
     <div class="container">
         <header>
             <h1>Discern</h1>
-            <p class="meta">Elo-rated swipe game for distinguishing real photos from AI-generated images</p>
+            <p class="meta">Dual Elo rating system with logistic expected-score model and empirical recalibration</p>
             <p class="links-row">
                 <a href="https://discern.seanreid.workers.dev/">Live Demo</a>
                 <a href="https://github.com/sean-reid/discern">Source</a>
@@ -48,9 +48,22 @@
 
             <h2>Dual Elo system</h2>
 
-            <p>Both players and images carry Elo ratings. A new player starts at 1200. When you guess correctly, your rating goes up and the image's rating goes down (it was too easy). When you guess wrong, the opposite happens (the image fooled someone at your skill level, so it's harder than its rating suggested). The math is the standard <a href="https://en.wikipedia.org/wiki/Elo_rating_system#Mathematical_details">Elo formula</a>: expected score is <code>1 / (1 + 10^((imageElo - userElo) / 400))</code>, and the actual update is <code>K * (actual - expected)</code>.</p>
+            <p>Both players and images carry <a href="https://en.wikipedia.org/wiki/Elo_rating_system">Elo ratings</a>. A new player starts at 1200. When you guess correctly, your rating goes up and the image's rating goes down (it was too easy to detect). When you guess wrong, the opposite happens. The expected probability that a player with rating \(R_p\) correctly classifies an image with rating \(R_i\) follows the logistic model:</p>
 
-            <p>New players use a K-factor of 48 for their first 30 games so their rating converges faster. After that, K drops to 32. During the provisional period, the server skips updating image Elo to prevent noisy early play from corrupting difficulty scores. Image Elo also gets recalculated nightly using empirical fool-rate: an image that fools 50% of players settles at 1200, one that fools everyone drifts toward 1800, and one that fools nobody drops to 600. The nightly pass blends 30% empirical and 70% current rating to prevent wild swings.</p>
+            \[E = \frac{1}{1 + 10^{(R_i - R_p)/400}}\]
+
+            <p>After each game, both ratings update by \(K(S - E)\) where \(S \in \{0, 1\}\) is the actual outcome (1 = correct, 0 = fooled). New players use \(K = 48\) for their first 30 games so their rating converges faster; after that, \(K\) drops to 32. The 400 in the denominator sets the scale: a 400-point gap corresponds to a 10:1 odds ratio. During the provisional period, the server skips updating image Elo to prevent noisy early play from corrupting difficulty scores.</p>
+
+            <p>Image Elo also gets recalibrated nightly using empirical fool-rate. Let \(f\) be the fraction of players who misclassified an image. The empirical rating maps this to the Elo scale:</p>
+
+            \[R_{\mathrm{emp}} = 1200 + 400 \cdot \log_{10}\!\left(\frac{f}{1 - f}\right)\]
+
+            <p>An image that fools 50% of players gets \(R_{\mathrm{emp}} = 1200\); one that fools 90% drifts toward 1580; one that fools 10% drops to 820. The nightly pass blends 30% empirical and 70% current rating (\(R' = 0.7 R + 0.3 R_{\mathrm{emp}}\)) to prevent wild swings while still anchoring ratings to observed difficulty.</p>
+
+            <figure class="small">
+                <img decoding="async" src="img/cc/normal-distribution.svg" alt="Normal distribution probability density function" loading="lazy">
+                <figcaption>The normal distribution. Elo ratings in a large population tend toward this shape, centered at the default rating. <a href="https://commons.wikimedia.org/wiki/File:Normal_Distribution_PDF.svg">Wikimedia Commons</a></figcaption>
+            </figure>
 
             <figure class="small">
                 <img decoding="async" src="img/cc/carlsen-elo.svg" alt="Graph of Magnus Carlsen's Elo rating over time" loading="lazy">
@@ -59,9 +72,9 @@
 
             <h2>Adaptive difficulty</h2>
 
-            <p>When the server selects the next image, it queries for images within a &plusmn;200 Elo window of the player's current rating. This keeps the challenge calibrated. A player at 1400 sees images that fool roughly 55-65% of people at their level. A player at 900 sees images with obvious artifacts. The system also balances real and AI images based on your recent history, so you won't see five real photos in a row.</p>
+            <p>When the server selects the next image, it queries for images within a \(\pm 200\) Elo window of the player's current rating: \(|R_i - R_p| \leq 200\). At this distance the expected score ranges from about 0.24 to 0.76, keeping the challenge calibrated without being trivial or impossible. A player at 1400 sees images with roughly 55-65% fool rates against their skill level. A player at 900 sees images with obvious artifacts.</p>
 
-            <p>Image selection also favors images that have been shown less frequently. This spreads exposure across the pool and ensures newly ingested images get rated quickly rather than sitting untouched while popular images accumulate thousands of answers.</p>
+            <p>Within the eligible pool, selection favors images that have been shown less frequently. This spreads exposure across the pool and ensures newly ingested images accumulate enough data to stabilize their Elo quickly. The system also balances real and AI images based on recent history, preventing long streaks of one category.</p>
 
             <h2>Anti-cheat</h2>
 

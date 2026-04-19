@@ -24,7 +24,7 @@
     <div class="container">
         <header>
             <h1>Crossword Generator</h1>
-            <p class="meta">SAT-based puzzle generation for automated crossword book publishing</p>
+            <p class="meta">Crossword construction as Boolean satisfiability, solved by conflict-driven clause learning</p>
             <p class="links-row">
                 <a href="https://sean-reid.github.io/crossword-generator/">Live Demo</a>
                 <a href="https://github.com/sean-reid/crossword-generator">Source</a>
@@ -50,14 +50,51 @@
 
             <p>I looked at existing open-source crossword generators before writing my own. Most of them use <a href="https://en.wikipedia.org/wiki/Backtracking">backtracking search</a>: pick a word, place it, pick another, check if it fits, undo and retry when it doesn't. These generators work for small grids but they tend to get stuck in local optima, producing puzzles that are sparse and uneven. The grids have dead zones where no words interlock, and the word choices feel like afterthoughts jammed into remaining gaps.</p>
 
-            <p>Crossword construction is a <a href="https://en.wikipedia.org/wiki/Constraint_satisfaction_problem">constraint satisfaction problem</a>. Every cell in the grid is a variable, every word placement creates a set of letter-equality constraints between intersecting slots, and the requirement that all words come from a valid dictionary constrains the domain of each variable. This maps naturally to <a href="https://en.wikipedia.org/wiki/Boolean_satisfiability_problem">Boolean satisfiability</a>.</p>
+            <p>Crossword construction is a <a href="https://en.wikipedia.org/wiki/Constraint_satisfaction_problem">constraint satisfaction problem</a>. Every cell in the grid is a variable with domain \(\{A, B, \ldots, Z, \text{black}\}\). Every word placement creates letter-equality constraints between intersecting slots: if an across word and a down word share cell \((r, c)\), their respective characters at that position must agree. The requirement that all words come from a valid dictionary constrains each slot to a finite set of letter sequences. This maps naturally to <a href="https://en.wikipedia.org/wiki/Boolean_satisfiability_problem">Boolean satisfiability (SAT)</a>.</p>
 
-            <p>The <a href="https://github.com/sean-reid/crossword-generator/blob/main/wasm/src/encoder.rs">encoder</a> translates the grid dimensions, target density, and dictionary into a SAT formula. <a href="https://github.com/jix/varisat">Varisat</a> (a Rust SAT solver) processes the formula and either produces a valid assignment or reports unsatisfiability. When the density target is too aggressive for the available word list, the solver tells you instead of running forever, which is useful for parameter tuning. When it succeeds, the solution is guaranteed to satisfy all constraints simultaneously, so you never get partially valid grids.</p>
+            <h2>The SAT encoding</h2>
+
+            <p>The <a href="https://github.com/sean-reid/crossword-generator/blob/main/wasm/src/encoder.rs">encoder</a> introduces Boolean variables \(x_{r,c,\ell}\) meaning "cell \((r, c)\) contains letter \(\ell\)," where \(\ell \in \{A, B, \ldots, Z, \blacksquare\}\). For each cell, an exactly-one constraint enforces that precisely one value is assigned:</p>
+
+            \[\sum_{\ell} x_{r,c,\ell} = 1 \qquad \forall\; (r, c) \in \text{grid}\]
+
+            <p>This is encoded in CNF as an at-least-one clause \((x_{r,c,A} \lor x_{r,c,B} \lor \cdots)\) plus pairwise at-most-one clauses \((\neg x_{r,c,\ell_i} \lor \neg x_{r,c,\ell_j})\) for all \(i \neq j\). For an \(n \times n\) grid with 27 possible values per cell, this produces \(27n^2\) variables and \(n^2 \binom{27}{2} = 351\, n^2\) mutual-exclusion clauses just for the cell assignments.</p>
+
+            <p>For each slot (a maximal contiguous run of non-black cells), the encoder generates clauses asserting that the letter sequence matches some word in the dictionary. If slot \(s\) has length \(k\) and the dictionary contains \(m\) words of length \(k\), each word \(w = w_1 w_2 \cdots w_k\) contributes the implication: "if slot \(s\) uses word \(w\), then \(x_{s_1, w_1} \land x_{s_2, w_2} \land \cdots \land x_{s_k, w_k}\)." The disjunction over all valid words for each slot is the dictionary constraint.</p>
+
+            <p>Intersection constraints between crossing slots are the key structural feature. If an across slot and a down slot share cell \((r, c)\), with the across slot at position \(i\) and the down slot at position \(j\), then for every letter \(\ell\):</p>
+
+            \[x_{\text{across}, i, \ell} \;\leftrightarrow\; x_{\text{down}, j, \ell}\]
+
+            <p>These biconditionals, encoded as pairs of implications in CNF, are what make crossword generation hard: they couple slots together, creating a web of dependencies that propagates constraints across the grid. The density target adds <a href="https://en.wikipedia.org/wiki/Cardinality_constraint">cardinality constraints</a> on the total number of black cells.</p>
 
             <figure class="small">
                 <img decoding="async" src="img/cc/implication-graph.svg" alt="An implication graph for a 2-satisfiability problem" loading="lazy">
-                <figcaption>An implication graph for a Boolean satisfiability problem. <a href="https://commons.wikimedia.org/wiki/File:Implication_graph.svg">Wikimedia Commons</a></figcaption>
+                <figcaption>An implication graph for a Boolean satisfiability problem. Nodes are variable assignments; edges are logical implications. When a conflict is detected, the solver analyzes this graph to learn a new clause. <a href="https://commons.wikimedia.org/wiki/File:Implication_graph.svg">Wikimedia Commons</a></figcaption>
             </figure>
+
+            <h2>CDCL solving</h2>
+
+            <p>The resulting formula is in <a href="https://en.wikipedia.org/wiki/Conjunctive_normal_form">conjunctive normal form (CNF)</a> and is solved by <a href="https://github.com/jix/varisat">Varisat</a>, a Rust <a href="https://en.wikipedia.org/wiki/Conflict-driven_clause_learning">CDCL</a> solver. CDCL extends basic <a href="https://en.wikipedia.org/wiki/DPLL_algorithm">DPLL</a> with three key techniques:</p>
+
+            <p><strong>Unit propagation.</strong> If a clause has all but one literal set to false, the remaining literal must be true. This cascades: setting one variable can force dozens of others, rapidly pruning the search space. In crossword terms, if a slot has been narrowed to a single compatible word, all its letter assignments become forced.</p>
+
+            <p><strong>Conflict-driven clause learning.</strong> When the solver reaches a contradiction (an unsatisfiable clause), it traces the implication graph backward to find the set of decisions that caused the conflict, learns a new clause that prevents the same combination from recurring, and backtracks to the earliest relevant decision level. This is <a href="https://en.wikipedia.org/wiki/Non-chronological_backtracking">non-chronological backtracking</a>: the solver can skip many decision levels at once.</p>
+
+            <p><strong>Variable selection heuristics.</strong> VSIDS (Variable State Independent Decaying Sum) scores each variable by how often it appears in recently learned clauses, focusing the search on the most constrained parts of the formula. For crosswords, this tends to prioritize cells at busy intersections.</p>
+
+            <p>For a 16x16 grid at 50% density, the formula has roughly 7,000 variables and 100,000+ clauses. Varisat typically finds a solution (or proves unsatisfiability) in under 10 seconds. When the density target is too aggressive for the available word list, the solver proves no valid grid exists rather than running forever.</p>
+
+            <figure class="small">
+                <img decoding="async" src="img/cc/four-color-map.svg" alt="Four-color map theorem example" loading="lazy">
+                <figcaption>The four-color theorem: every planar map can be colored with at most four colors such that no adjacent regions share a color. Like crossword generation, this is a constraint satisfaction problem that can be encoded as SAT. <a href="https://commons.wikimedia.org/wiki/File:Four_Colour_Map_Example.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <h2>Complexity</h2>
+
+            <p>Crossword construction is <a href="https://en.wikipedia.org/wiki/NP-completeness">NP-complete</a>. The decision problem -- "given this grid shape and this dictionary, does a valid filling exist?" -- can be reduced from <a href="https://en.wikipedia.org/wiki/Boolean_satisfiability_problem#3-satisfiability">3-SAT</a>. The reduction encodes each Boolean variable as a pair of crossing slots whose intersection cell forces a consistent true/false assignment. This means no polynomial-time algorithm is known for the general case, and SAT solvers are a natural fit: they are engineered precisely for this class of problem.</p>
+
+            <p>In practice, the structure of crossword instances is far from worst-case. The constraint graph is sparse (each cell participates in at most two slots), the dictionary heavily prunes each slot's domain, and unit propagation resolves most cells without search. The empirical difficulty correlates with density: at 30% fill, solutions are abundant and found in milliseconds. At 60%+, the solver spends more time in conflict analysis. At very high densities with a small dictionary, the formula is often unsatisfiable, and the solver proves this faster than finding a solution would take if one existed, because learned clauses prune the space aggressively.</p>
 
             <h2>The book pipeline</h2>
 
@@ -65,9 +102,7 @@
 
             <p>Cover generation handles the most tedious part of KDP publishing. The tool calculates spine width from the page count and paper stock (color interior uses thicker paper, so the spine is wider for the same page count), renders an SVG template at the <a href="https://kdp.amazon.com/en_US/help/topic/G201834180">required trim dimensions</a>, and outputs a print-ready cover. Supported trim sizes range from 5x8 to 8x10, covering the most common KDP paperback formats.</p>
 
-            <p><a href="https://docs.rs/rayon/latest/rayon/">Rayon</a> parallelizes the puzzle generation across all available CPU cores. On a modern machine, 100 puzzles at the default 16x16 grid size and 50% density takes about 5 to 10 minutes. Each puzzle uses a deterministic seed, so any individual result can be reproduced exactly. The <code>--compile</code> flag runs pdflatex automatically after LaTeX generation, producing the final PDF in one step.</p>
-
-            <p>The full set of CLI flags covers everything you need to go from nothing to a publishable book: <code>-c</code> for puzzle count, <code>-s</code> for grid size, <code>--density</code> for fill percentage, <code>-t/-a/-p</code> for title/author/publisher, <code>--isbn</code> and <code>--copyright</code> for legal fields, <code>-j</code> for thread count, <code>--seed</code> for reproducibility, and <code>-o</code> for output path.</p>
+            <p><a href="https://docs.rs/rayon/latest/rayon/">Rayon</a> parallelizes the puzzle generation across all available CPU cores. On a modern machine, 100 puzzles at the default 16x16 grid size and 50% density takes about 5 to 10 minutes. Each puzzle uses a deterministic seed, so any individual result can be reproduced exactly.</p>
 
             <h2>Dictionary curation</h2>
 

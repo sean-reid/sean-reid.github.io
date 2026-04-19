@@ -24,7 +24,7 @@
     <div class="container">
         <header>
             <h1>Gravity Well Arena</h1>
-            <p class="meta">Top-down combat where Schwarzschild time dilation is the core mechanic</p>
+            <p class="meta">Top-down combat built on the Schwarzschild metric, Verlet integration, and null geodesics</p>
             <p class="links-row">
                 <a href="https://sean-reid.github.io/gravity/">Live Demo</a>
                 <a href="https://github.com/sean-reid/gravity">Source</a>
@@ -46,20 +46,34 @@
 
             <p>You pilot a ship around black holes. When you dive closer to a gravity well, the simulation dilates: the external universe speeds up relative to you. Enemies move faster, projectiles close in quicker, everything outside your local frame accelerates. But your own controls stay at normal speed, because the game runs on the player's <a href="https://en.wikipedia.org/wiki/Proper_time">proper time</a>. This creates a situation where going deeper into a well gives you a tactical edge (from your perspective, the world is in slow motion and you have more time to aim) but simultaneously makes the environment more dangerous (from the world's perspective, you're reacting in slow motion). Balancing these two effects is the entire game.</p>
 
-            <h2>How the physics work</h2>
+            <h2>The Schwarzschild metric and time dilation</h2>
 
             <figure class="small">
                 <img decoding="async" src="img/cc/orbit-times.svg" alt="Gravitational time dilation diagram" loading="lazy">
-                <figcaption>Gravitational time dilation near a massive object. <a href="https://commons.wikimedia.org/wiki/File:Gravitational_time_dilation.svg">Wikimedia Commons</a></figcaption>
+                <figcaption>Gravitational time dilation near a massive object. Clocks closer to the mass tick slower relative to distant observers. <a href="https://commons.wikimedia.org/wiki/File:Gravitational_time_dilation.svg">Wikimedia Commons</a></figcaption>
             </figure>
 
-            <p>Orbital mechanics use <a href="https://en.wikipedia.org/wiki/Verlet_integration">Verlet integration</a>. The time dilation factor is computed from the <a href="https://en.wikipedia.org/wiki/Schwarzschild_metric">Schwarzschild metric</a> directly, not from a hand-tuned curve. At the Rim (the outermost zone), dilation is minimal. In the Belt, it becomes noticeable. In the Furnace, the universe is moving fast enough that you have to plan moves carefully. In the Abyss, close to the event horizon, the effect is extreme.</p>
+            <p>The <a href="https://en.wikipedia.org/wiki/Schwarzschild_metric">Schwarzschild metric</a> describes the geometry of spacetime around a non-rotating, uncharged mass \(M\). The time dilation factor at radial coordinate \(r\) from the center is:</p>
 
-            <p>Some levels have two black holes orbiting each other. Binary systems create chaotic dynamics where the dilation fields overlap and interfere. You can slingshot between the two wells, picking up speed from one and using the other's dilation to create a timing advantage, but the trajectories become very difficult to predict. I spent a lot of time playtesting these levels because the emergent behavior kept surprising me.</p>
+            \[\frac{d\tau}{dt} = \sqrt{1 - \frac{r_s}{r}}, \qquad r_s = \frac{2GM}{c^2}\]
+
+            <p>where \(\tau\) is <a href="https://en.wikipedia.org/wiki/Proper_time">proper time</a> (the clock of the local observer), \(t\) is coordinate time (the distant observer's clock), and \(r_s\) is the <a href="https://en.wikipedia.org/wiki/Schwarzschild_radius">Schwarzschild radius</a>. As \(r \to r_s\), the ratio \(d\tau/dt \to 0\): local time freezes relative to the outside universe. At \(r = \infty\) the ratio is 1 and there is no dilation.</p>
+
+            <p>The game maps this directly onto gameplay. Each frame, the simulation computes the dilation factor at the player's position and scales the time step for all external entities accordingly. If the player is deep in the gravity well with \(d\tau/dt = 0.3\), every enemy, projectile, and environmental hazard ticks at \(1/0.3 \approx 3.3\times\) the player's rate. The player's own controls tick at their normal rate, since the game runs in the player's proper time frame. The result: diving deep gives you more time to react (the world looks slow-motion from your frame), but the world perceives you as nearly frozen.</p>
+
+            <h2>Orbital mechanics</h2>
+
+            <p>Ship and projectile trajectories are integrated using <a href="https://en.wikipedia.org/wiki/Verlet_integration">Stormer-Verlet integration</a>, a symplectic method that conserves energy over long trajectories better than Euler integration. The update for position \(\mathbf{x}\) with acceleration \(\mathbf{a}\) is:</p>
+
+            \[\mathbf{x}(t + \Delta t) = 2\mathbf{x}(t) - \mathbf{x}(t - \Delta t) + \mathbf{a}(t)\,\Delta t^2\]
+
+            <p>The gravitational acceleration from a mass at position \(\mathbf{p}\) follows the Newtonian inverse-square law: \(\mathbf{a} = -GM\,(\mathbf{x} - \mathbf{p}) / |\mathbf{x} - \mathbf{p}|^3\). For binary black hole levels, accelerations from both masses are summed, producing a restricted <a href="https://en.wikipedia.org/wiki/Three-body_problem">three-body problem</a> where the two black holes orbit each other on fixed paths while the player's ship (negligible mass) moves in their combined field. The overlapping dilation fields create regions where time dilation changes rapidly with position, making trajectory prediction difficult.</p>
+
+            <p>Some levels have two black holes orbiting each other. Binary systems create chaotic dynamics where the dilation fields overlap and interfere. You can slingshot between the two wells, picking up speed from one and using the other's dilation to create a timing advantage, but the trajectories become very difficult to predict.</p>
 
             <h2>Weapons</h2>
 
-            <p>There are six weapons, each designed to interact with gravity wells differently. The railgun fires a fast kinetic projectile that curves in gravitational fields. The mass driver is slower but heavier. The photon lance fires along <a href="https://en.wikipedia.org/wiki/Geodesics_in_general_relativity">null geodesics</a>, which means it follows the curvature of spacetime. In practice, you can shoot it around a black hole and hit a target on the other side, which took some iteration to balance. The gravity bomb drops a temporary point mass that distorts nearby trajectories. The impulse rocket is a guided missile that does little direct damage but delivers an orbital kick on impact, shoving targets deeper into the gravity well. The tidal mine settles into a stable orbit and detonates when something passes at a different altitude, dealing damage proportional to the altitude difference.</p>
+            <p>There are six weapons, each designed to interact with gravity wells differently. The railgun fires a fast kinetic projectile that curves in gravitational fields (Verlet-integrated like the ship). The mass driver is slower but heavier. The photon lance fires along <a href="https://en.wikipedia.org/wiki/Geodesics_in_general_relativity">null geodesics</a> (\(ds^2 = 0\)), tracing the path light would follow through curved spacetime. In practice, you can shoot it around a black hole and hit a target on the other side, because the beam bends toward the mass just as starlight bends around the sun. The gravity bomb drops a temporary point mass that distorts nearby trajectories, effectively adding a term to the gravitational potential. The impulse rocket delivers an orbital kick on impact, shoving targets deeper into the gravity well (into stronger dilation). The tidal mine settles into a stable orbit and detonates when something passes at a different altitude, dealing damage proportional to the <a href="https://en.wikipedia.org/wiki/Tidal_force">tidal gradient</a> \(\partial^2 \Phi / \partial r^2\) between the two altitudes.</p>
 
             <p>The weapon balance ended up being shaped by the dilation mechanic in ways I didn't fully anticipate. Weapons that are slow in flat space become threatening in dilated space because the target is experiencing compressed time. This meant that the "weak" weapons (mines, gravity bombs) become the most dangerous in the deep zones where dilation is strongest.</p>
 

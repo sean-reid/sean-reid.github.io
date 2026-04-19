@@ -48,9 +48,17 @@
 
             <h2>Reflection physics</h2>
 
-            <p>The laser is a ray. When it hits a mirror, the reflection follows the standard rule from optics: angle of incidence equals angle of reflection, computed relative to the mirror's normal vector. The game recalculates the full beam path every time you place or adjust a mirror, so you get instant visual feedback as you rotate a mirror into position. The beam traces itself across the canvas in real time, glowing red against the dark background.</p>
+            <p>The laser is a ray \(\mathbf{r}(t) = \mathbf{o} + t\,\mathbf{d}\) with origin \(\mathbf{o}\) and direction \(\mathbf{d}\). When it hits a mirror with unit normal \(\hat{\mathbf{n}}\), the reflected direction follows the <a href="https://en.wikipedia.org/wiki/Specular_reflection">law of specular reflection</a>:</p>
 
-            <p>Collision detection handles two kinds of geometry: flat mirrors (line segments) and round obstacles (circles). For mirrors, it's a ray-segment intersection test. For obstacles, it's ray-circle intersection. The beam terminates when it hits an obstacle, leaves the canvas bounds, or strikes the target. If it strikes the target, you win.</p>
+            \[\mathbf{d}' = \mathbf{d} - 2(\mathbf{d} \cdot \hat{\mathbf{n}})\,\hat{\mathbf{n}}\]
+
+            <p>This is the standard formula from optics: the component of \(\mathbf{d}\) perpendicular to the mirror surface reverses while the parallel component is preserved. The angle of incidence equals the angle of reflection, both measured from \(\hat{\mathbf{n}}\). The game recalculates the full beam path every time you place or adjust a mirror, so you get instant visual feedback as you rotate a mirror into position.</p>
+
+            <p>Collision detection handles two kinds of geometry. For mirrors (line segments), it solves the <a href="https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection">ray-segment intersection</a>: parameterize the ray and the segment, solve the 2x2 linear system, and check that both parameters fall in their valid ranges (\(t > 0\) for the ray, \(u \in [0,1]\) for the segment). For circular obstacles, the ray-circle intersection reduces to a quadratic in \(t\):</p>
+
+            \[|\mathbf{o} + t\,\mathbf{d} - \mathbf{c}|^2 = R^2\]
+
+            <p>which has real solutions when the discriminant is non-negative (the ray passes within distance \(R\) of center \(\mathbf{c}\)). The beam terminates when it hits an obstacle, leaves the canvas bounds, or strikes the target.</p>
 
             <h2>Placing mirrors</h2>
 
