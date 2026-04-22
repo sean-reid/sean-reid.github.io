@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+    <title>String - Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/string.webp">
+    <link rel="stylesheet" href="/nav.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="/" class="site-nav-name">Sean Reid</a>
+    <div class="site-nav-controls">
+      <div class="site-nav-search-wrap"><input type="text" class="site-nav-search" placeholder="Search..." autocomplete="off"><span class="site-nav-search-hint">/</span></div>
+      <a class="site-nav-random">&rarr; Random</a>
+      <div class="search-dropdown"></div>
+    </div>
+  </div>
+</nav>
+<main class="site-content">
+    <div class="container">
+        <header>
+            <h1>String</h1>
+            <p class="meta">Stochastic greedy optimization with Boltzmann sampling and antialiased line rasterization for physical string art</p>
+            <p class="links-row">
+                <a href="https://string-loom.pages.dev/">Live Demo</a>
+                <a href="https://github.com/sean-reid/string">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <figure>
+                <img decoding="async" fetchpriority="high" src="img/string.webp" alt="Screenshot of String showing a portrait rendered as string art with the parameters panel">
+                <figcaption>A portrait rendered as string art: thousands of straight lines between pins on a circle, approximating a photograph. The parameters panel controls pin count, line budget, thread opacity, and annealing temperature.</figcaption>
+            </figure>
+
+            <p>String art is a constrained approximation problem. You have \(n\) pins arranged uniformly on a circle and a single thread. The thread runs from pin to pin in straight chords. Each chord darkens the pixels it crosses. The goal is to find a sequence of chords that, when superimposed, approximates a target grayscale image. This is a combinatorial optimization problem: the search space is the set of all pin sequences of length \(L\) (the line budget), which is \(O(n^L)\). Exhaustive search is impossible, so the solver uses a stochastic greedy algorithm with Boltzmann sampling.</p>
+
+            <h2>Pin geometry</h2>
+
+            <p>The \(n\) pins are placed uniformly on a circle of radius \(r\) centered at \((c_x, c_y)\):</p>
+
+            \[\mathbf{p}_i = \begin{pmatrix} c_x + r\cos\theta_i \\ c_y + r\sin\theta_i \end{pmatrix}, \qquad \theta_i = \frac{2\pi i}{n} - \frac{\pi}{2}\]
+
+            <p>The offset of \(-\pi/2\) places pin 0 at 12 o'clock with clockwise numbering. The radius is set to \(r = s/2 - 1.5\) where \(s = 700\) is the solver's internal resolution, leaving a 1.5-pixel margin to avoid boundary artifacts.</p>
+
+            <p>Not every pin pair is a valid chord. A minimum chord length prevents short, nearly tangential lines that add density without contributing to the image. Given a minimum chord fraction \(m\) (as a proportion of the diameter), the minimum pin skip is:</p>
+
+            \[\text{skip}_{\min} = \left\lceil \frac{n}{2\pi} \cdot 2\arcsin(m) \right\rceil\]
+
+            <p>This comes from the chord length formula \(\ell = 2r\sin(\Delta\theta/2)\): solving for the angular separation that gives \(\ell \geq 2rm\) and converting to pin count. A ban window of approximately 7% of \(n\) further prevents the thread from backtracking to recently visited pins.</p>
+
+            <h2>Residual model</h2>
+
+            <p>The solver maintains a residual field \(R\) over the 700x700 pixel grid. Initially, \(R\) equals the preprocessed luminance image \(I\), where \(R_{xy} \in [0, 1]\) represents brightness still needed at pixel \((x, y)\). The physical model is dark wood canvas plus light thread: each chord adds brightness to the pixels it crosses, reducing the residual.</p>
+
+            <p>When a chord is drawn between pins \(\mathbf{p}_a\) and \(\mathbf{p}_b\), the residual updates as:</p>
+
+            \[R_{xy} \leftarrow \max\!\bigl(0,\; R_{xy} - \alpha \cdot C_{xy}\bigr)\]
+
+            <p>where \(\alpha \in [0.05, 0.5]\) is the thread opacity (derived from the ratio of physical thread diameter to pixel size) and \(C_{xy} \in [0, 1]\) is the antialiased coverage of pixel \((x, y)\) by the chord. The \(\max\) clamp prevents negative residuals from oversaturated regions.</p>
+
+            <h2>Antialiased rasterization</h2>
+
+            <p>Coverage \(C_{xy}\) is computed by <a href="https://en.wikipedia.org/wiki/Xiaolin_Wu%27s_line_algorithm">Xiaolin Wu's line algorithm</a>, which assigns sub-pixel coverage to each pixel the chord touches. For a line with gradient \(g = \Delta y / \Delta x\), the algorithm steps along the major axis and computes the fractional position along the minor axis at each step. Two pixels are lit per step:</p>
+
+            \[C_{\lfloor y \rfloor} = 1 - \operatorname{frac}(y), \qquad C_{\lfloor y \rfloor + 1} = \operatorname{frac}(y)\]
+
+            <p>where \(\operatorname{frac}(y) = y - \lfloor y \rfloor\). The coverage weights sum to 1 at each step, distributing the chord's opacity smoothly across the pixel grid. This avoids the aliasing artifacts that would result from Bresenham rasterization, which matters because thousands of overlapping aliased lines would produce visible moire patterns.</p>
+
+            <h2>Chord scoring</h2>
+
+            <p>At each step, the solver evaluates every candidate chord \((\mathbf{p}_{\text{current}}, \mathbf{p}_j)\) and scores it by how much residual it would fulfill, weighted by an optional importance map \(W\):</p>
+
+            \[\text{score}(j) = \frac{\displaystyle\sum_{(x,y) \in \text{chord}} R_{xy} \cdot C_{xy} \cdot W_{xy}}{\displaystyle\sum_{(x,y) \in \text{chord}} C_{xy} \cdot W_{xy}}\]
+
+            <p>This is a weighted average of the residual along the chord, normalized by total weighted coverage. A chord through a bright region of the residual (where the image still needs density) scores high. A chord through an already-saturated region scores near zero. The normalization ensures that long chords and short chords are compared fairly.</p>
+
+            <h2>Boltzmann sampling</h2>
+
+            <p>Rather than always choosing the highest-scoring chord (pure greedy), the solver samples the next pin from a <a href="https://en.wikipedia.org/wiki/Boltzmann_distribution">Boltzmann distribution</a> over candidate scores. Let \(s_j = \text{score}(j)\) and \(s^* = \max_j s_j\). The selection probability for pin \(j\) is:</p>
+
+            \[P(j) = \frac{\exp\!\bigl((s_j - s^*) / T\bigr)}{\displaystyle\sum_k \exp\!\bigl((s_k - s^*) / T\bigr)}\]
+
+            <p>This is a softmax with temperature \(T\). The subtraction of \(s^*\) is for numerical stability (prevents overflow). The temperature follows a linear annealing schedule:</p>
+
+            \[T(t) = T_0 + (T_1 - T_0) \cdot \frac{t}{L}\]
+
+            <p>where \(t\) is the current step, \(L\) is the line budget, \(T_0 = 0.008\), and \(T_1 = 0.0008\). At \(T_0\), the distribution is broad: multiple high-scoring chords have comparable probability, so the solver explores. As \(T \to T_1\), the distribution sharpens toward the argmax and the solver exploits. This is <a href="https://en.wikipedia.org/wiki/Simulated_annealing">simulated annealing</a> applied to a sequential construction problem.</p>
+
+            <figure class="small">
+                <img decoding="async" src="img/cc/simulated-annealing.gif" alt="Simulated annealing vs hill climbing" loading="lazy">
+                <figcaption>Simulated annealing exploring a cost landscape. The temperature (top-left) decreases over time. Early on, the search accepts worse states freely; as it cools, it settles into a minimum. <a href="https://commons.wikimedia.org/wiki/File:Hill_Climbing_with_Simulated_Annealing.gif">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <p>The stochasticity has a practical effect on the output. Pure greedy solving produces images with visible banding (the solver gets locked into locally optimal but globally repetitive patterns). Annealing breaks these patterns by occasionally choosing a slightly suboptimal chord that opens up better options later. The PRNG is <a href="https://en.wikipedia.org/wiki/Salsa20#ChaCha_variant">ChaCha8</a>, seeded deterministically so identical parameters always produce identical output.</p>
+
+            <h2>Face-weighted importance</h2>
+
+            <p>Portraits need more detail in the face than in the background. The solver supports an optional importance map \(W_{xy}\) that biases chord selection toward regions of interest. Given a detected face bounding box with center \((c_x, c_y)\) and half-dimensions \((\sigma_x, \sigma_y)\), the weight field is a 2D anisotropic Gaussian:</p>
+
+            \[W_{xy} = 1 + \beta \cdot \exp\!\left(-\frac{1}{2}\left(\frac{(x - c_x)^2}{\sigma_x^2} + \frac{(y - c_y)^2}{\sigma_y^2}\right)\right)\]
+
+            <p>where \(\beta = 1.5\) is the face emphasis strength and \(\sigma_x = 1.2 \cdot w_{\text{face}}/2\), \(\sigma_y = 1.2 \cdot h_{\text{face}}/2\). Outside the face, \(W \approx 1\) (no bias). At the face center, \(W = 1 + \beta = 2.5\), giving face pixels 2.5x the influence in chord scoring. The smooth Gaussian falloff avoids hard edges in the transition.</p>
+
+            <h2>Image preprocessing</h2>
+
+            <p>Before solving, the input image passes through a six-stage pipeline, all running in Rust/WASM:</p>
+
+            <p><strong>1. Luminance.</strong> RGB to grayscale using <a href="https://en.wikipedia.org/wiki/Rec._709">Rec. 709</a> coefficients:</p>
+
+            \[L = 0.2126\,R + 0.7152\,G + 0.0722\,B\]
+
+            <p><strong>2. Circular mask.</strong> A soft-edge circular mask with 1-pixel antialiased falloff maps the square image to the circular pin layout.</p>
+
+            <p><strong>3. Bilateral filter.</strong> An edge-preserving <a href="https://en.wikipedia.org/wiki/Bilateral_filter">bilateral filter</a> smooths noise while retaining sharp transitions. For center pixel \(L_c\), the filtered value is:</p>
+
+            \[L'_c = \frac{\sum_{\mathbf{q}} L_{\mathbf{q}} \cdot \exp\!\left(-\frac{|\mathbf{q} - \mathbf{c}|^2}{2\sigma_s^2}\right) \exp\!\left(-\frac{(L_{\mathbf{q}} - L_c)^2}{2\sigma_r^2}\right)}{\sum_{\mathbf{q}} \exp\!\left(-\frac{|\mathbf{q} - \mathbf{c}|^2}{2\sigma_s^2}\right) \exp\!\left(-\frac{(L_{\mathbf{q}} - L_c)^2}{2\sigma_r^2}\right)}\]
+
+            <p>with spatial sigma \(\sigma_s = 3.0\) pixels and range sigma \(\sigma_r = 20/255 \approx 0.078\). The spatial Gaussian weights nearby pixels higher; the range Gaussian downweights pixels with dissimilar luminance, preserving edges.</p>
+
+            <figure class="small">
+                <img decoding="async" src="img/cc/histogram-equalization.webp" alt="Histogram equalization example" loading="lazy">
+                <figcaption>Histogram equalization redistributes pixel intensities to span the full dynamic range. CLAHE applies this locally within tiles and interpolates between them for adaptive contrast enhancement. <a href="https://commons.wikimedia.org/wiki/File:Histogrammeinebnung.png">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <p><strong>4. CLAHE.</strong> <a href="https://en.wikipedia.org/wiki/Adaptive_histogram_equalization#Contrast_Limited_AHE">Contrast-limited adaptive histogram equalization</a> divides the image into tiles and equalizes each tile's histogram independently, clipping bin counts above a threshold to prevent noise amplification. The clip limit \(\lambda\) is multiplied by the mean bin count: \(\text{clip} = \max(1, \lambda \cdot N_{\text{tile}} / 256)\). Excess counts are redistributed uniformly across all bins. At each pixel, the equalized value is bilinearly interpolated from the four surrounding tile CDFs, preventing tile boundary artifacts. Disabled by default.</p>
+
+            <p><strong>5. Unsharp mask.</strong> High-pass sharpening: \(L_{\text{out}} = L + a(L - G_\sigma * L)\), where \(G_\sigma\) is a Gaussian blur with \(\sigma = 1.0\) and \(a = 0.25\) is the boost factor.</p>
+
+            <p><strong>6. Gamma.</strong> Power-law correction \(L_{\text{out}} = L^{\gamma}\) with default \(\gamma = 1.0\) (identity).</p>
+
+            <h2>Thread opacity from physical parameters</h2>
+
+            <p>The opacity \(\alpha\) is not a free parameter. It derives from the physical thread and board:</p>
+
+            \[\alpha = \operatorname{clamp}\!\left(\frac{d_{\text{thread}}}{d_{\text{board}} / s}, \; 0.05, \; 0.5\right)\]
+
+            <p>where \(d_{\text{thread}}\) is the thread diameter in mm, \(d_{\text{board}}\) is the board diameter in mm, and \(s = 700\) is the solver resolution. The ratio \(d_{\text{thread}} / (d_{\text{board}} / s)\) is the thread width in pixels. Clamping to \([0.05, 0.5]\) ensures convergence: too-thin threads need too many passes, and too-thick threads oversaturate in few passes. The solver ships material presets (polyester at 0.2 mm, embroidery floss at 0.3 mm, crochet cotton at 0.4 mm) matched to standard board sizes (12" to 24").</p>
+
+            <h2>Implementation</h2>
+
+            <p>The solver is written in Rust, compiled to WebAssembly, and runs in a Web Worker. The preprocessing pipeline and solver are separate crates with their own test suites. The frontend is React 19 with PixiJS v8 for WebGL rendering of the line canvas. The build guide computes exact thread length from the pin sequence (summing Euclidean distances between consecutive pins, scaled to physical units, with a 10% buffer), spool count, and estimated build time. The app deploys to <a href="https://pages.cloudflare.com/">Cloudflare Pages</a> as a PWA.</p>
+        </article>
+
+    </div>
+</main>
+<footer class="site-footer">
+  <div class="site-footer-links">
+    <a href="https://github.com/sean-reid">GitHub</a>
+    <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
+    <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
+    <a href="https://socrates-of-athens.github.io">Poetry</a>
+    <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
+  </div>
+</footer>
+<script src="/nav.js"></script>
+</body>
+</html>

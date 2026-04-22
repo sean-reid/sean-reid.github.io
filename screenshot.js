@@ -329,6 +329,21 @@ const interactions = {
     await page.evaluate(() => window.scrollBy(0, 600));
     await new Promise(r => setTimeout(r, 2000));
   },
+  'string': async (page) => {
+    await new Promise(r => setTimeout(r, 3000));
+    // Click first sample photo
+    await page.evaluate(() => {
+      const imgs = document.querySelectorAll('img');
+      for (const img of imgs) {
+        if (img.naturalWidth > 50 && img.closest('button, [role="button"], a, [class*="sample"]')) {
+          img.click();
+          break;
+        }
+      }
+    });
+    // Wait for solve to run
+    await new Promise(r => setTimeout(r, 15000));
+  },
   'severed': async (page) => {
     // Wait for globe and data to load, then click a scenario
     await new Promise(r => setTimeout(r, 6000));
@@ -379,6 +394,7 @@ const sites = [
   { name: 'bananas-for-scale-entry', url: 'https://sean-reid.github.io/bananas-for-scale/thing/giraffe/' },
   { name: 'deconflict', url: 'https://deconflict.app/' },
   { name: 'mastery', url: 'https://sean-reid.github.io/mastery/' },
+  { name: 'string', url: 'https://string-loom.pages.dev/' },
 ];
 
 const filter = process.argv.slice(2);
