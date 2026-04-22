@@ -34,7 +34,7 @@
         <article>
             <figure>
                 <img decoding="async" fetchpriority="high" src="img/string.webp" alt="Screenshot of String showing a portrait rendered as string art with the parameters panel">
-                <figcaption>A portrait rendered as string art: thousands of straight lines between pins on a circle, approximating a photograph. The parameters panel controls pin count, line budget, thread opacity, and annealing temperature.</figcaption>
+                <figcaption>A portrait rendered as string art: thousands of straight lines between pins on a circle, approximating a photograph. The two user-facing parameters are nail count and line budget.</figcaption>
             </figure>
 
             <p>String art is a constrained approximation problem. You have \(n\) pins arranged uniformly on a circle and a single thread. The thread runs from pin to pin in straight chords. Each chord darkens the pixels it crosses. The goal is to find a sequence of chords that, when superimposed, approximates a target grayscale image. This is a combinatorial optimization problem: the search space is the set of all pin sequences of length \(L\) (the line budget), which is \(O(n^L)\). Exhaustive search is impossible, so the solver uses a stochastic greedy algorithm with Boltzmann sampling.</p>
