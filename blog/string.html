@@ -55,7 +55,7 @@
 
             <h2>Residual model</h2>
 
-            <p>The solver maintains a residual field \(R\) over the 700x700 pixel grid. Initially, \(R\) equals the preprocessed luminance image \(I\), where \(R_{xy} \in [0, 1]\) represents brightness still needed at pixel \((x, y)\). The physical model is dark wood canvas plus light thread: each chord adds brightness to the pixels it crosses, reducing the residual.</p>
+            <p>The solver maintains a residual field \(R\) over the 700x700 pixel grid. Initially, \(R\) equals the preprocessed luminance image \(I\), where \(R_{xy} \in [0, 1]\) represents darkness still needed at pixel \((x, y)\). The physical model is cream board plus dark thread: each chord darkens the pixels it crosses, reducing the residual.</p>
 
             <p>When a chord is drawn between pins \(\mathbf{p}_a\) and \(\mathbf{p}_b\), the residual updates as:</p>
 
@@ -135,11 +135,15 @@
 
             <h2>Thread opacity from physical parameters</h2>
 
-            <p>The opacity \(\alpha\) is not a free parameter. It derives from the physical thread and board:</p>
+            <p>The per-crossing opacity \(\alpha\) is not a free parameter. It derives from the physical thread and board in two steps. First, the geometric coverage is the thread's pixel width:</p>
 
-            \[\alpha = \operatorname{clamp}\!\left(\frac{d_{\text{thread}}}{d_{\text{board}} / s}, \; 0.05, \; 0.5\right)\]
+            \[\alpha_{\text{geo}} = \operatorname{clamp}\!\left(\frac{d_{\text{thread}}}{d_{\text{board}} / s}, \; 0.05, \; 0.5\right)\]
 
-            <p>where \(d_{\text{thread}}\) is the thread diameter in mm, \(d_{\text{board}}\) is the board diameter in mm, and \(s = 700\) is the solver resolution. The ratio \(d_{\text{thread}} / (d_{\text{board}} / s)\) is the thread width in pixels. Clamping to \([0.05, 0.5]\) ensures convergence: too-thin threads need too many passes, and too-thick threads oversaturate in few passes. The solver ships material presets (polyester at 0.2 mm, embroidery floss at 0.3 mm, crochet cotton at 0.4 mm) matched to standard board sizes (12" to 24").</p>
+            <p>where \(d_{\text{thread}}\) is thread diameter in mm, \(d_{\text{board}}\) is board diameter in mm, and \(s = 700\) is solver resolution. This is then attenuated by a factor \(\kappa = 0.2\) to model the fact that a single thread crossing is partially transparent:</p>
+
+            \[\alpha = \kappa \cdot \alpha_{\text{geo}}\]
+
+            <p>This puts effective per-crossing opacity in the 0.03-0.05 range, matching empirical values from reference string-art algorithms. At a default budget of 4,000 chords, this allows the solver to build up darkness gradually through many overlapping crossings without saturating too early. The solver ships material presets (polyester at 0.2 mm, embroidery floss at 0.3 mm, crochet cotton at 0.4 mm) matched to standard board sizes (12" to 24").</p>
 
             <h2>Implementation</h2>
 
