@@ -330,19 +330,135 @@ const interactions = {
     await new Promise(r => setTimeout(r, 2000));
   },
   'string': async (page) => {
+    // Helpers scoped to this interaction. The palette picker only
+    // renders the [+] / swatch / × controls when the solver isn't
+    // running, so we use the [+] button's presence as a proxy for
+    // "solve is finished and the rail is interactive again."
+    const waitForSolveDone = async (timeoutMs) => {
+      const deadline = Date.now() + timeoutMs;
+      while (Date.now() < deadline) {
+        const ready = await page.evaluate(() => {
+          const btn = document.querySelector('[aria-label="Add thread color"]');
+          return !!btn && !btn.disabled;
+        });
+        if (ready) return true;
+        await new Promise(r => setTimeout(r, 500));
+      }
+      return false;
+    };
+
+    const findCanvasContainer = () => page.evaluateHandle(() => {
+      const canvases = document.querySelectorAll('canvas');
+      if (canvases.length === 0) return null;
+      let el = canvases[0];
+      while (el && el.parentElement) {
+        if (el.classList && el.classList.contains('aspect-square')) return el;
+        el = el.parentElement;
+      }
+      return canvases[0].parentElement;
+    });
+
     await new Promise(r => setTimeout(r, 3000));
-    // Click first sample photo
+
+    // Click the third sample photo (default palette is mono).
     await page.evaluate(() => {
       const imgs = document.querySelectorAll('img');
+      const samples = [];
       for (const img of imgs) {
         if (img.naturalWidth > 50 && img.closest('button, [role="button"], a, [class*="sample"]')) {
-          img.click();
-          break;
+          samples.push(img);
+        }
+      }
+      const target = samples[2] ?? samples[samples.length - 1];
+      if (target) target.click();
+    });
+
+    // Give the solver a moment to actually start so we don't race
+    // through waitForSolveDone before it has flipped to running.
+    await new Promise(r => setTimeout(r, 2000));
+    if (!await waitForSolveDone(90000)) {
+      console.log('  warning: mono solve did not complete in 90s');
+    }
+    // Brief settle so the final batch paints to the canvas.
+    await new Promise(r => setTimeout(r, 1000));
+
+    // Capture canvas-only mono result.
+    const monoEl = await findCanvasContainer();
+    if (monoEl && monoEl.asElement()) {
+      await monoEl.asElement().screenshot({
+        path: path.join(outDir, 'string-mono.png'),
+      });
+      console.log('  saved string-mono.png');
+    }
+
+    // Grow the palette from 1 to 4 via the [+] button. setPhysical
+    // alone doesn't restart the solver - we have to click Generate
+    // afterwards. Each click here calls suggestNextColor, which is
+    // an async WASM round-trip, so leave it a beat to settle.
+    for (let i = 0; i < 3; i++) {
+      const clicked = await page.evaluate(() => {
+        const btn = document.querySelector('[aria-label="Add thread color"]');
+        if (btn && !btn.disabled) {
+          btn.click();
+          return true;
+        }
+        return false;
+      });
+      if (!clicked) {
+        console.log(`  warning: add-color click ${i + 1} did not register`);
+        break;
+      }
+      await new Promise(r => setTimeout(r, 1500));
+    }
+
+    // Auto-pick replaces all four slots with OKLab-extracted colors
+    // chosen for gamut diversity on this specific image, instead of
+    // the per-slot suggestions accumulated by [+].
+    await page.evaluate(() => {
+      const btns = document.querySelectorAll('button');
+      for (const b of btns) {
+        const t = (b.textContent || '').trim();
+        if (t === 'Auto-pick all' && !b.disabled) {
+          b.click();
+          return;
         }
       }
     });
-    // Wait for solve to run
-    await new Promise(r => setTimeout(r, 15000));
+    await new Promise(r => setTimeout(r, 4000));
+
+    // Trigger the color solve. The Generate button text flips to
+    // "Generate again" once a mono solve has completed.
+    const generateClicked = await page.evaluate(() => {
+      const btns = document.querySelectorAll('button');
+      for (const b of btns) {
+        const t = (b.textContent || '').trim();
+        if ((t === 'Generate again' || t === 'Generate') && !b.disabled) {
+          b.click();
+          return true;
+        }
+      }
+      return false;
+    });
+    if (!generateClicked) {
+      console.log('  warning: Generate button click did not register');
+    }
+
+    // Color solves are 3-channel + per-step joint candidate scoring
+    // and run on a larger default line budget than mono. Give the
+    // worker generous time to finish.
+    await new Promise(r => setTimeout(r, 3000));
+    if (!await waitForSolveDone(180000)) {
+      console.log('  warning: color solve did not complete in 180s');
+    }
+    await new Promise(r => setTimeout(r, 1500));
+
+    const colorEl = await findCanvasContainer();
+    if (colorEl && colorEl.asElement()) {
+      await colorEl.asElement().screenshot({
+        path: path.join(outDir, 'string-color.png'),
+      });
+      console.log('  saved string-color.png');
+    }
   },
   'severed': async (page) => {
     // Wait for globe and data to load, then click a scenario

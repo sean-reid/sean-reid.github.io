@@ -37,7 +37,7 @@
                 <figcaption>A portrait rendered as string art: thousands of straight lines between pins on a circle, approximating a photograph. The two user-facing parameters are nail count and line budget.</figcaption>
             </figure>
 
-            <p>String art is a constrained approximation problem. You have \(n\) pins arranged uniformly on a circle and a single thread. The thread runs from pin to pin in straight chords. Each chord darkens the pixels it crosses. The goal is to find a sequence of chords that, when superimposed, approximates a target grayscale image. This is a combinatorial optimization problem: the search space is the set of all pin sequences of length \(L\) (the line budget), which is \(O(n^L)\). Exhaustive search is impossible, so the solver uses a stochastic greedy algorithm with Boltzmann sampling.</p>
+            <p>String art is a constrained approximation problem. You have \(n\) pins arranged uniformly on a cream circular board and a palette of \(K\) threads, each darker than the board. The thread runs from pin to pin in straight chords; each chord darkens the pixels it crosses. The goal is to find a sequence of \((\text{pin}, \text{thread color})\) tuples that approximates a target image when superimposed on the bare board. The search space has size \(O((nK)^L)\), where \(L\) is the line budget. Exhaustive search is impossible, so the solver uses a stochastic greedy algorithm with Boltzmann sampling. The cream-board / dark-thread substrate convention follows the original physical setup of <a href="http://artof01.com/vrellis/works/knit.html">Petros Vrellis</a>: every crossing subtracts a little light, never adds it. Mono mode runs with \(K = 1\) (a single near-black thread); color mode supports up to six.</p>
 
             <h2>Pin geometry</h2>
 
@@ -55,7 +55,7 @@
 
             <h2>Residual model</h2>
 
-            <p>The solver maintains a residual field \(R\) over the 700x700 pixel grid. Initially, \(R\) equals the preprocessed luminance image \(I\), where \(R_{xy} \in [0, 1]\) represents darkness still needed at pixel \((x, y)\). The physical model is cream board plus dark thread: each chord darkens the pixels it crosses, reducing the residual.</p>
+            <p>In mono mode, the solver maintains a scalar residual field \(R\) over the 700x700 pixel grid. Initially, \(R\) equals the preprocessed luminance image \(I\) subtracted from the board's luminance, so \(R_{xy} \in [0, 1]\) represents the darkness still needed at pixel \((x, y)\). The physical model is cream board plus dark thread: each chord darkens the pixels it crosses, reducing the residual. Color mode replaces this scalar with a 3-channel linear-RGB target/canvas/delta triple - covered later.</p>
 
             <p>When a chord is drawn between pins \(\mathbf{p}_a\) and \(\mathbf{p}_b\), the residual updates as:</p>
 
@@ -106,6 +106,121 @@
 
             <p>where \(\beta = 1.5\) is the face emphasis strength and \(\sigma_x = 1.2 \cdot w_{\text{face}}/2\), \(\sigma_y = 1.2 \cdot h_{\text{face}}/2\). Outside the face, \(W \approx 1\) (no bias). At the face center, \(W = 1 + \beta = 2.5\), giving face pixels 2.5x the influence in chord scoring. The smooth Gaussian falloff avoids hard edges in the transition.</p>
 
+            <h2>Color mode: 3-channel residual</h2>
+
+            <figure class="compare">
+                <img decoding="async" src="img/string-mono.webp" alt="Mono solve: a portrait reconstructed with a single near-black thread" loading="lazy">
+                <img decoding="async" src="img/string-color.webp" alt="Color solve: the same portrait reconstructed with four threads" loading="lazy">
+                <figcaption>Same portrait, same line budget, same seed. Left: mono mode with one near-black thread. Right: color mode with four threads picked by the OKLab extractor. The mono solver only has darkness to work with; the color solver can place a saturated thread where the residual is chromatic, so warm and cool regions read distinctly instead of collapsing to a luminance average.</figcaption>
+            </figure>
+
+            <p>In color mode the solver picks both a chord and a thread color at each step. The scalar luminance residual is replaced by a 3-channel <a href="https://en.wikipedia.org/wiki/SRGB#Transformation">linear-RGB</a> model with three buffers per pixel:</p>
+
+            <ul>
+                <li>The target \(\mathbf{T}_{xy}\), the user's image in linear RGB, clipped per channel at the cream-board color so pixels brighter than the substrate contribute no demand (a thread can only darken).</li>
+                <li>The simulated canvas \(\mathbf{C}_{xy}\), initialized to the board color and updated by alpha-over compositing each time a chord is deposited.</li>
+                <li>The delta \(\boldsymbol{\Delta}_{xy} = \max(\mathbf{C}_{xy} - \mathbf{T}_{xy},\, 0)\), the per-channel darkening still owed at each pixel.</li>
+            </ul>
+
+            <p>A chord drawn between pins \(\mathbf{p}_a\) and \(\mathbf{p}_b\) with thread color \(\mathbf{t}\) updates the canvas via classic <a href="https://en.wikipedia.org/wiki/Alpha_compositing">alpha-over</a> compositing in linear RGB:</p>
+
+            \[\mathbf{C}_{xy} \leftarrow \mathbf{C}_{xy} + (\alpha\, C_{xy})\,(\mathbf{t} - \mathbf{C}_{xy})\]
+
+            <p>where \(C_{xy} \in [0, 1]\) is Wu's antialiased coverage at pixel \((x, y)\). The delta refreshes in the same chord walk, so the score loop only ever reads one buffer.</p>
+
+            <figure class="small">
+                <img decoding="async" src="img/cc/alpha-compositing.svg" alt="Porter-Duff alpha-compositing operators" loading="lazy">
+                <figcaption>The Porter-Duff compositing operators. The solver uses the "over" operator (top-left): each chord lays its thread color on top of the existing canvas with coverage-modulated opacity. <a href="https://commons.wikimedia.org/wiki/File:Alpha_compositing.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <p>Each thread \(k\) has a fixed darkening basis</p>
+
+            \[\mathbf{b}_k = \max(\mathbf{board} - \mathbf{t}_k,\, 0)\]
+
+            <p>in linear RGB. The basis points along the directions thread \(k\) pulls the canvas when deposited on bare board. A near-black thread has a basis pointing equally along all three channels; a saturated red thread has a basis dominated by the green and blue components - red is what it preserves, so green and blue are what it darkens.</p>
+
+            <h2>Joint-greedy chord scoring</h2>
+
+            <p>For each candidate pin \(j\), the solver walks the chord once and accumulates a saliency-weighted mean delta vector:</p>
+
+            \[\mathbf{a}_j = \frac{\displaystyle\sum_{(x,y) \in \text{chord}} W_{xy}\, C_{xy}\, \boldsymbol{\Delta}_{xy}}{\displaystyle\sum_{(x,y) \in \text{chord}} W_{xy}\, C_{xy}}\]
+
+            <p>This is the per-channel demand still owed along that chord. For each thread \(k\) the raw score is the projection of demand onto the thread's darkening direction:</p>
+
+            \[s(j, k) = \mathbf{a}_j \cdot \mathbf{b}_k\]
+
+            <p>A red-demand chord scores high with a red thread and near-zero with a green one. A pure-shadow chord (every channel equally over-bright) scores roughly equally across the palette, and the darkest thread tends to win because its basis vector has the largest magnitude. The chord rasterization cost amortizes over all \(K\) palette colors: one geometric walk per pin produces \(K\) scores, so adding colors is linear, not quadratic, in the inner loop.</p>
+
+            <p>The Boltzmann sampler picks the winning \((j, k)\) pair from the joint distribution rather than two independent marginals. This is the joint-greedy formulation in Birsak et al.'s <em>String Art: Towards Computational Fabrication of String Images</em> (Eurographics 2018) and follow-up work; it discriminates a red-demand region from a green-demand region even at equal luminance, which a scalar-luminance score followed by post-hoc color classification cannot.</p>
+
+            <h2>Switch cost and per-color budgets</h2>
+
+            <p>Two multipliers shape the joint-greedy score before the Boltzmann sampler sees it.</p>
+
+            <p><strong>Switch cost.</strong> A multiplier \((1 - \sigma)\) is applied to any candidate \((j, k)\) where \(k\) differs from the most recently deposited color. \(\sigma = 0\) leaves the solver freely interleaving; \(\sigma \approx 0.3\) produces near-sequential per-color builds. The default \(\sigma = 0.15\) is the empirically right setting for a hand-built loom: long enough runs that a builder isn't constantly changing spools, short enough that image quality doesn't collapse to a sequence of independent single-color passes.</p>
+
+            <p><strong>Soft per-color budgets.</strong> Each thread \(k\) carries a budget \(B_k\), the number of chords it should ideally consume. Once usage \(u_k\) crosses \((1 - h) B_k\) with headroom \(h = 0.2\), the score is multiplied by</p>
+
+            \[\mu_k = \mu_{\min} + (1 - \mu_{\min}) \cdot \min\!\left(1,\, \frac{B_k - u_k}{h B_k}\right)\]
+
+            <p>which ramps linearly from 1 down to \(\mu_{\min} = 0.1\) at the budget boundary, then holds at \(\mu_{\min}\) past it. The floor is intentional. A hard cap (multiplier 0) starves uniquely-explanatory colors: if red is the only thread that can darken a sunset's warm pixels, the soft cap lets it overshoot rather than abandon the region.</p>
+
+            <p>The budgets themselves are derived from the image, not the user. For a palette \(P = \{\mathbf{t}_1, \ldots, \mathbf{t}_K\}\) the solver computes each color's <em>explanatory share</em> by softly assigning each saliency-weighted image sample to the palette entries closest to it in <a href="https://bottosson.github.io/posts/oklab/">OKLab</a> distance:</p>
+
+            \[\pi_k = \frac{1}{Z} \sum_{\text{samples } s} w_s \cdot \frac{e^{-d(s, \mathbf{t}_k)/\tau}}{\displaystyle\sum_{k'} e^{-d(s, \mathbf{t}_{k'})/\tau}}\]
+
+            <p>with temperature \(\tau = 0.08\). That value sits between the intra-swatch distance (~0.02) and inter-palette distance (~0.15-0.30), so the dominant thread for each pixel takes most of its mass while a meaningfully close runner-up still gets non-trivial share. Each share is floored at 0.05 (so a weakly represented color isn't starved to literal zero) and renormalized; the budgets \(B_k = \pi_k L\) use largest-remainder rounding so they sum to the line budget exactly.</p>
+
+            <p>Perceptual OKLab distance, rather than linear-RGB projection, is the right signal here: a red pixel projects almost as well onto black's darkening basis as onto red's (black can darken any channel), but perceptually it's far closer to a red thread. The budget is a preference signal for the solver, not a physical deposit calculation.</p>
+
+            <h2>Palette extraction in OKLab</h2>
+
+            <p>The user can paint the palette directly, but the default is auto-extraction. Slot 0 is always the near-black shadow anchor: every Vrellis-style build needs it, and black has the most darkening reach of any thread. Slots 1 through \(k - 1\) are data-driven.</p>
+
+            <p>The pipeline runs in OKLab, Björn Ottosson's perceptually uniform color space. Linear RGB transforms to OKLab via a 3x3 matrix, a per-channel cube root, and a second 3x3:</p>
+
+            \[\begin{pmatrix} l \\ m \\ s \end{pmatrix} = M_1 \begin{pmatrix} R \\ G \\ B \end{pmatrix}, \qquad \begin{pmatrix} L \\ a \\ b \end{pmatrix} = M_2 \begin{pmatrix} l^{1/3} \\ m^{1/3} \\ s^{1/3} \end{pmatrix}\]
+
+            <p>Lightness lives in \(L\); chroma is \(\sqrt{a^2 + b^2}\), the perceptual analogue of saturation.</p>
+
+            <p>The image is downsampled to roughly \(96 \times 96\) tiles. Each tile is averaged in linear RGB, converted to OKLab, and weighted by a face-saliency multiplier identical to the solver's. Black-equivalent samples (within OKLab distance 0.15 of slot 0) are filtered out so the chromatic clustering doesn't waste a centroid on shadow.</p>
+
+            <p>Saliency-weighted <a href="https://en.wikipedia.org/wiki/K-means%2B%2B">k-means++</a> with \(k - 1\) chromatic clusters runs on the remainder. Each centroid is then replaced by the highest-chroma sample within OKLab distance 0.12 of it - the tip of the cluster, not its centroid - since on cream board the saturated end of a cluster is what's actually distinguishable from the substrate.</p>
+
+            <figure class="small">
+                <img decoding="async" src="img/cc/kmeans-convergence.gif" alt="k-means clustering converging on a 2D dataset" loading="lazy">
+                <figcaption>K-means converging on a 2D dataset. Centroids drift toward dense regions over a few iterations. The palette extractor runs the same algorithm in 3D OKLab, with sample weights from the saliency map and k-means++ for deterministic seeding. <a href="https://commons.wikimedia.org/wiki/File:K-means_convergence.gif">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <p>Three rejection rules apply:</p>
+
+            <ol>
+                <li><strong>Muddy chroma.</strong> Centroids with chroma below 0.14 are dropped. Browns and warm-neutrals sit around 0.04-0.08 chroma; saturated thread primaries sit at 0.12-0.30. A muddy thread on cream board reads as cream board at viewing distance.</li>
+                <li><strong>Board-bright.</strong> Centroids whose Rec. 709 luminance exceeds 95% of the board's are dropped. A thread lighter than the substrate cannot darken anything.</li>
+                <li><strong>Gamut-redundant.</strong> Centroids within OKLab distance 0.18 of an already-selected color are skipped. Below that distance the perceptual difference at Vrellis crossing densities is unreliable, and the palette spends a slot on what reads as a duplicate.</li>
+            </ol>
+
+            <p>Surviving centroids merge into a candidate pool that also includes a curated vocabulary of saturated chromatic thread primaries (real embroidery colors at roughly even hue intervals). A greedy maxmin selector seeds with the highest-chroma image-attracted candidate, then iteratively adds whichever pool entry maximizes the minimum OKLab distance to the already-chosen set, ties broken by chroma and saliency mass. The result spans the wheel even on monochromatic images: the canonical-primary half of the pool always supplies a complementary cool option when the image's content lives in one warm hue lane.</p>
+
+            <p>The UI's <code>[+]</code> button asks a related question: among the canonical primaries, which one most improves the image's per-sample minimum OKLab distance to the existing palette? The winning primary is the one that opens up the most uncovered gamut.</p>
+
+            <h2>Eulerian regrouping for the build</h2>
+
+            <p>The solver's emitted sequence interleaves colors freely - that's the right signal for image reconstruction, but it's painful at the loom: a builder doesn't want to swap spools every few chords. Regrouping rewrites the sequence into per-color runs without changing the chord set.</p>
+
+            <p>For each color \(k\), the chords drawn with thread \(k\) form a multigraph \(G_k\) on the pin set: vertices are pins, edges are chords. A continuous unbroken winding for thread \(k\) corresponds to an <a href="https://en.wikipedia.org/wiki/Eulerian_path">Eulerian trail</a> in \(G_k\). Eulerian trails exist exactly when (within the edge set) the graph is connected and has 0 or 2 odd-degree vertices.</p>
+
+            <figure class="small">
+                <img decoding="async" src="img/cc/konigsberg-bridges.svg" alt="Seven Bridges of Königsberg multigraph with odd-degree vertices marked" loading="lazy">
+                <figcaption>The Seven Bridges of Königsberg as a multigraph (Euler's original counterexample). Odd-degree vertices are highlighted; with four of them, no Eulerian trail exists. A typical color subgraph from the solver looks similar - too many odd-degree pins for a single continuous walk - so T-join augmentation pairs them up before Hierholzer's algorithm runs. <a href="https://commons.wikimedia.org/wiki/File:Comparison_7_bridges_of_Konigsberg_5_room_puzzle_graphs.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <p>In general \(G_k\) has neither property: dozens of odd-degree vertices, possibly multiple connected components. The fix is a <a href="https://en.wikipedia.org/wiki/T-join">T-join</a> augmentation. For each component, the odd-degree vertices are sorted by pin index and paired up greedily, and a synthetic bridge edge is inserted for each pair (leaving one pair unpaired so the trail can open between them). Greedy index-pairing is a cheap approximation to the true minimum-weight matching; <a href="https://en.wikipedia.org/wiki/Blossom_algorithm">Edmonds' blossom</a> is overkill for the 10-40 odd vertices a typical color subgraph contains. After augmentation, each component has at most 2 odd vertices, so <a href="https://en.wikipedia.org/wiki/Eulerian_path#Hierholzer's_algorithm">Hierholzer's algorithm</a> covers it in a single trail.</p>
+
+            <p>Hierholzer's runs in \(O(|E|)\) with a per-vertex cursor into its adjacency list, so already-skipped entries aren't rescanned on dense graphs. It produces one walk per connected component. The output is the original sequence reordered so that all of color 0's runs come first, then color 1's, and so on. Bridges between walks carry a sentinel color the renderer skips visually, but the printed builder's instructions treat them as "cut and start a new run at pin \(N\)."</p>
+
+            <p>The cost is a few extra synthetic chords per color, paid once at sequence-generation time. The benefit is that a builder winds each spool in long, continuous arcs - typically 50-200 chords per arc - rather than swapping every step.</p>
+
             <h2>Image preprocessing</h2>
 
             <p>Before solving, the input image passes through a six-stage pipeline, all running in Rust/WASM:</p>
@@ -147,7 +262,7 @@
 
             <h2>Implementation</h2>
 
-            <p>The solver is written in Rust, compiled to WebAssembly, and runs in a Web Worker. The preprocessing pipeline and solver are separate crates with their own test suites. The frontend is React 19 with PixiJS v8 for WebGL rendering of the line canvas. The build guide computes exact thread length from the pin sequence (summing Euclidean distances between consecutive pins, scaled to physical units, with a 10% buffer), spool count, and estimated build time. The app deploys to <a href="https://pages.cloudflare.com/">Cloudflare Pages</a> as a PWA.</p>
+            <p>The solver is written in Rust, compiled to WebAssembly, and runs in a Web Worker. The preprocessing pipeline, palette extractor, and solver are separate modules with their own test suites. Mono and color modes share the chord rasterizer, the Boltzmann sampler, the temperature schedule, and the face-weighted saliency map; only the residual representation and per-step scoring differ. The frontend is React 19 with PixiJS v8 for WebGL rendering. The build guide runs the Eulerian regrouping over the emitted sequence, computes exact thread length per spool from the regrouped pin walks (summing Euclidean distances between consecutive pins, scaled to physical units, with a 10% buffer), spool count, and estimated build time, and renders a per-color step-by-step printable PDF. The app deploys to <a href="https://pages.cloudflare.com/">Cloudflare Pages</a> as a PWA.</p>
         </article>
 
     </div>
