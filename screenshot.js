@@ -460,6 +460,16 @@ const interactions = {
       console.log('  saved string-color.png');
     }
   },
+  'blotter': async (page) => {
+    // Type a broad time range to load events, then wait for map pins
+    const input = await page.$('input[type="text"]');
+    if (input) {
+      await input.click({ clickCount: 3 });
+      await input.type('last 24 hours', { delay: 30 });
+      await page.keyboard.press('Enter');
+    }
+    await new Promise(r => setTimeout(r, 5000));
+  },
   'severed': async (page) => {
     // Wait for globe and data to load, then click a scenario
     await new Promise(r => setTimeout(r, 6000));
@@ -511,6 +521,7 @@ const sites = [
   { name: 'deconflict', url: 'https://deconflict.app/' },
   { name: 'mastery', url: 'https://sean-reid.github.io/mastery/' },
   { name: 'string', url: 'https://string-loom.pages.dev/' },
+  { name: 'blotter', url: 'https://blotter.fm' },
 ];
 
 const filter = process.argv.slice(2);
