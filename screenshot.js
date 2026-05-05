@@ -460,6 +460,51 @@ const interactions = {
       console.log('  saved string-color.png');
     }
   },
+  'fourier': async (page) => {
+    // Upload banana and dog images
+    const dropzones = await page.$$('input[type="file"]');
+    if (dropzones.length >= 2) {
+      await dropzones[0].uploadFile('/Users/seanreid/Downloads/banana-7h4m9.webp');
+      await new Promise(r => setTimeout(r, 1000));
+      await dropzones[1].uploadFile('/Users/seanreid/Downloads/dog-puppy-on-garden-royalty-free-image-1586966191.jpg.avif');
+      await new Promise(r => setTimeout(r, 2000));
+    } else {
+      // Try clicking dropzones and using file chooser
+      const zones = await page.$$('[class*="drop"], [class*="zone"], [class*="upload"]');
+      if (zones.length >= 2) {
+        const [fileChooser1] = await Promise.all([
+          page.waitForFileChooser(),
+          zones[0].click(),
+        ]);
+        await fileChooser1.accept(['/Users/seanreid/Downloads/banana-7h4m9.webp']);
+        await new Promise(r => setTimeout(r, 1000));
+        const [fileChooser2] = await Promise.all([
+          page.waitForFileChooser(),
+          zones[1].click(),
+        ]);
+        await fileChooser2.accept(['/Users/seanreid/Downloads/dog-puppy-on-garden-royalty-free-image-1586966191.jpg.avif']);
+      }
+    }
+    // Wait for processing (200 iterations)
+    await new Promise(r => setTimeout(r, 30000));
+    // Click through to reveal phase spectra
+    await page.evaluate(() => {
+      const btns = document.querySelectorAll('button');
+      for (const b of btns) {
+        if (b.textContent && (b.textContent.includes('Next') || b.textContent.includes('Continue') || b.textContent.includes('Reveal'))) {
+          b.click();
+          break;
+        }
+      }
+    });
+    await new Promise(r => setTimeout(r, 2000));
+    // Click an amplitude spectrum to trigger the reveal
+    const canvases = await page.$$('canvas');
+    if (canvases.length > 2) {
+      await canvases[2].click();
+      await new Promise(r => setTimeout(r, 2000));
+    }
+  },
   'blotter': async (page) => {
     // Type a broad time range to load events, then wait for map pins
     const input = await page.$('input[type="text"]');
@@ -522,6 +567,7 @@ const sites = [
   { name: 'mastery', url: 'https://sean-reid.github.io/mastery/' },
   { name: 'string', url: 'https://string-loom.pages.dev/' },
   { name: 'blotter', url: 'https://blotter.fm' },
+  { name: 'fourier', url: 'https://sean-reid.github.io/fourier/' },
 ];
 
 const filter = process.argv.slice(2);
