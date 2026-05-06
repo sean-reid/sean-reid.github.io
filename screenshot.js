@@ -505,6 +505,20 @@ const interactions = {
       await new Promise(r => setTimeout(r, 2000));
     }
   },
+  'sounds': async (page) => {
+    // Click to trigger pointer lock and start audio context
+    await page.mouse.click(640, 400);
+    await new Promise(r => setTimeout(r, 2000));
+    // Walk forward a bit to get into the world
+    await page.keyboard.down('w');
+    await new Promise(r => setTimeout(r, 4000));
+    await page.keyboard.up('w');
+    // Look around slightly
+    await page.mouse.move(700, 380);
+    await new Promise(r => setTimeout(r, 1000));
+    // Let the scene settle
+    await new Promise(r => setTimeout(r, 3000));
+  },
   'blotter': async (page) => {
     // Type a broad time range to load events, then wait for map pins
     const input = await page.$('input[type="text"]');
@@ -568,6 +582,7 @@ const sites = [
   { name: 'string', url: 'https://string-loom.pages.dev/' },
   { name: 'blotter', url: 'https://blotter.fm' },
   { name: 'fourier', url: 'https://sean-reid.github.io/fourier/' },
+  { name: 'sounds', url: 'https://sean-reid.github.io/sounds/' },
 ];
 
 const filter = process.argv.slice(2);
