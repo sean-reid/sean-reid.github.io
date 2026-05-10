@@ -200,6 +200,11 @@
 
             <p>The broadband bandpass amplifies everything in the 0.67-3.33 Hz range, including noise. Once the Kalman filter has converged on a heart rate estimate, the system crossfades to a phase-coherent amplification path that acts as a narrowband matched filter locked to the cardiac frequency. This is analogous to <a href="https://en.wikipedia.org/wiki/Lock-in_amplifier">lock-in amplification</a>: multiply each pixel's signal by a reference phasor at the cardiac frequency, then low-pass filter. Only the component coherent with the heartbeat survives; everything else averages to zero.</p>
 
+            <figure class="small">
+                <img decoding="async" src="img/cc/lock-in-amplifier-block-diagram.svg" alt="Block diagram of a lock-in amplifier showing signal multiplied by reference then low-pass filtered" loading="lazy">
+                <figcaption>Block diagram of a lock-in amplifier. A noisy input signal is multiplied by a phase-shifted reference, then integrated by a low-pass filter to extract the coherent DC component. The cardiac beamforming path applies this same principle per-pixel: the reference is a phasor at the detected heart rate, and the integrator is a 4-second IIR filter. <a href="https://commons.wikimedia.org/wiki/File:Lock-In-Amplifier-En.svg">Wikimedia Commons, CC BY-SA 3.0, Zelbear/Gearat</a></figcaption>
+            </figure>
+
             <p>The frame loop maintains a cardiac phase oscillator that advances each frame:</p>
 
             \[\varphi(t) = \varphi(t-1) + \frac{2\pi \cdot \text{bpm}}{60 \cdot f_s}\]
