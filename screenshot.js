@@ -583,18 +583,44 @@ const sites = [
   { name: 'blotter', url: 'https://blotter.fm' },
   { name: 'fourier', url: 'https://sean-reid.github.io/fourier/' },
   { name: 'sounds', url: 'https://sean-reid.github.io/sounds/' },
+  { name: 'pulse', url: 'https://sean-reid.github.io/pulse/', interactive: true },
 ];
+
+const readline = require('readline');
 
 const filter = process.argv.slice(2);
 
-(async () => {
-  const browser = await puppeteer.launch({ headless: true });
-  const page = await browser.newPage();
-  await page.setViewport({ width: 1280, height: 800, deviceScaleFactor: 2 });
+function waitForEnter(prompt) {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  return new Promise(resolve => {
+    rl.question(prompt, () => { rl.close(); resolve(); });
+  });
+}
 
+(async () => {
   const targets = filter.length > 0
     ? sites.filter(s => filter.includes(s.name))
     : sites;
+
+  const hasInteractive = targets.some(s => s.interactive);
+
+  const browser = await puppeteer.launch({
+    headless: hasInteractive ? false : true,
+    args: hasInteractive ? [
+      '--use-fake-ui-for-media-stream',
+      '--enable-usermedia-screen-capturing',
+    ] : [],
+  });
+  const page = await browser.newPage();
+  await page.setViewport({ width: 1280, height: 800, deviceScaleFactor: 2 });
+
+  const context = browser.defaultBrowserContext();
+  for (const site of targets) {
+    if (site.interactive) {
+      const origin = new URL(site.url).origin;
+      await context.overridePermissions(origin, ['camera', 'microphone']);
+    }
+  }
 
   for (const site of targets) {
     try {
@@ -603,8 +629,10 @@ const filter = process.argv.slice(2);
       await page.goto(site.url, { waitUntil: waitStrategy, timeout: 30000 });
       await new Promise(r => setTimeout(r, 2000));
 
-      // Run interaction if defined
-      if (interactions[site.name]) {
+      if (site.interactive) {
+        console.log(`  Interactive mode: arrange the page, then press Enter to capture.`);
+        await waitForEnter('  Press Enter to take screenshot...');
+      } else if (interactions[site.name]) {
         console.log(`  interacting...`);
         await interactions[site.name](page);
       } else {
