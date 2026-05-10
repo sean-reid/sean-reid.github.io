@@ -48,7 +48,7 @@
 
             <p>The signal pipeline begins with <a href="https://developers.google.com/mediapipe/solutions/vision/face_landmarker">MediaPipe FaceLandmarker</a>, which provides 478 facial landmarks per frame using a float16 model running on the GPU. Three regions of interest are constructed from landmark subsets: a <strong>forehead</strong> ROI (landmarks 10, 67, 69, 104, 108, 151, 284, 298, 299, 337), a <strong>left cheek</strong> ROI (123, 147, 187, 205, 206, 216), and a <strong>right cheek</strong> ROI (352, 376, 411, 425, 426, 436). Each ROI is the axis-aligned bounding box of its landmarks, padded by 4 pixels.</p>
 
-            <p>Face detection runs every 3 frames to limit computational cost. Each ROI is downsampled to \(32 \times 32\) pixels, and the mean R, G, B values are computed across all pixels that pass a skin-tone classifier. The classifier operates in normalized chrominance space:</p>
+            <p>Face detection runs every 3 frames to limit computational cost. Each ROI is downsampled to \(32 \times 32\) pixels, and a weighted mean of R, G, B values is computed across all pixels that pass a skin-tone classifier, with per-pixel weights provided by the <a href="#spatial-beamforming">spatial beamformer</a> described below. The classifier operates in normalized chrominance space:</p>
 
             \[r_n = \frac{R}{R + G + B}, \qquad g_n = \frac{G}{R + G + B}\]
 
@@ -84,6 +84,28 @@
             \[p(t) \mathrel{+}= \frac{H(t) - \bar{S}_1}{\max\bigl(\sigma(S_1),\, 10^{-10}\bigr)} \cdot \frac{1}{L}\]
 
             <p>The overlap-add with \(1/L\) normalization smooths discontinuities at window boundaries and produces a continuous pulse waveform stored in a 256-sample ring buffer.</p>
+
+            <h2 id="spatial-beamforming">Spatial beamforming</h2>
+
+            <p>Not all skin pixels carry the pulse signal equally. Specular highlights, shadow boundaries, and occluded regions add noise that dilutes the blood volume pulse in the spatial average. Once a heart rate estimate is available, a spatial beamformer refines the averaging by upweighting pixels whose green-channel time series correlates with the cardiac frequency.</p>
+
+            <p>The beamformer records the green channel of each pixel in the forehead ROI (\(32 \times 32 = 1024\) pixels) into a ring buffer of 64 frames. After a minimum of 30 frames have accumulated, it correlates each pixel's time series with a sinusoidal reference at the detected heart rate:</p>
+
+            \[r(t) = \sin\!\left(\frac{2\pi \cdot \text{bpm}}{60 \cdot f_s} \cdot t\right)\]
+
+            <p>For each pixel \(p\), the Pearson correlation with the reference is computed from the mean-subtracted green-channel history \(\tilde{g}_p(t) = g_p(t) - \bar{g}_p\):</p>
+
+            \[\rho_p = \frac{\sum_t \tilde{g}_p(t)\, r(t)}{\sqrt{\sum_t \tilde{g}_p(t)^2 \;\cdot\; \sum_t r(t)^2}}\]
+
+            <p>Pixels whose green channel oscillates in phase with the heartbeat produce \(\rho_p \approx 1\); pixels dominated by noise or motion artifacts produce \(\rho_p \approx 0\). The correlation is clamped to non-negative values and mapped to a weight with a floor of 0.1:</p>
+
+            \[w_p = 0.1 + 0.9 \cdot \max(0,\, \rho_p)\]
+
+            <p>The floor ensures that no pixel is fully silenced, preserving the ability to detect rate changes even when the beamformer's reference is slightly off. The weighted spatial mean replaces the uniform mean in the POS input:</p>
+
+            \[\bar{C} = \frac{\sum_p w_p \cdot C_p}{\sum_p w_p}, \qquad C \in \{R, G, B\}\]
+
+            <p>This creates a feedback loop: the POS algorithm produces a BPM estimate, which feeds the beamformer, which produces better pixel weights, which yield a cleaner POS signal. Before the first BPM estimate is available, all weights default to 1 (uniform averaging).</p>
 
             <h2>Spectral peak detection</h2>
 
@@ -174,70 +196,61 @@
 
             <h2>Motion amplification</h2>
 
-            <p>Every pixel in the video feed has a time series of RGB values across frames. Some of those changes are too small to see: the slight color shift when blood pulses through capillaries, the tiny displacement of the chest during breathing. Motion amplification makes these invisible changes visible by isolating the temporal frequency band of interest, amplifying it, and adding it back to the original frame.</p>
+            <p>The vital signs extracted above are invisible in the raw video feed. Motion amplification makes them visible by applying physiologically-motivated visual effects synchronized to the detected signals: a multiplicative skin flush for the cardiac cycle and geometric coordinate warping for respiration. Rather than amplifying raw per-pixel temporal variation (as in <a href="https://en.wikipedia.org/wiki/Eulerian_video_magnification">Eulerian Video Magnification</a>), this approach drives the visualization directly from the estimated vital signals, producing cleaner output without spatial filtering.</p>
 
-            <p>The temporal bandpass is implemented as the difference of two first-order IIR low-pass filters, running per-pixel on the GPU. Each filter has the recurrence:</p>
+            <p>The rendering pipeline runs in a single WebGL2 fragment shader with <a href="https://registry.khronos.org/webgl/specs/latest/2.0/#3.7.11">multiple render targets</a> (MRT), writing six textures per frame. Double-buffered ping-pong framebuffers prevent read-write hazards. Two pairs of first-order IIR low-pass filters run per-pixel on the GPU, maintaining temporal state for the pulse band \([0.667, 3.333]\) Hz and the breathing band \([0.1, 0.6]\) Hz:</p>
 
-            \[L_\text{new}(x, y) = L(x, y) + \alpha \bigl(I(x, y, t) - L(x, y)\bigr)\]
+            \[L_\text{new}(x, y) = L(x, y) + \alpha \bigl(I(x, y, t) - L(x, y)\bigr), \qquad \alpha = 1 - e^{-2\pi f_c / f_s}\]
 
-            <p>where \(I(x, y, t)\) is the current frame, \(L(x, y)\) is the filter state, and the smoothing coefficient is derived from the cutoff frequency:</p>
+            <p>A smaller \(\alpha\) produces a slower-moving average (lower cutoff); a larger \(\alpha\) tracks the input more closely (higher cutoff). Two such filters with cutoffs \(f_\text{low}\) and \(f_\text{high}\) produce a temporal bandpass. These filter states are updated each frame to preserve continuity, but the amplified display is driven by the cardiac oscillator and landmark displacement signals described below.</p>
 
-            \[\alpha = 1 - e^{-2\pi f_c / f_s}\]
+            <h3>Dual-channel mask</h3>
 
-            <p>A smaller \(\alpha\) produces a slower-moving average (lower cutoff); a larger \(\alpha\) tracks the input more closely (higher cutoff). Two such filters with cutoffs \(f_\text{low}\) and \(f_\text{high}\) produce a temporal bandpass via subtraction. Two bandpass pairs run in parallel: a <strong>pulse band</strong> spanning \([0.667, 3.333]\) Hz (40-200 bpm) and a <strong>breathing band</strong> spanning \([0.1, 0.6]\) Hz (6-36 breaths/min). The entire operation runs in a single fragment shader with <a href="https://registry.khronos.org/webgl/specs/latest/2.0/#3.7.11">multiple render targets</a> (MRT), writing six textures per pass: the amplified display output, four IIR filter state textures, and a complex correlation state texture for cardiac beamforming. Double-buffered ping-pong framebuffers prevent read-write hazards.</p>
+            <p>A low-resolution \(80 \times 60\) mask encodes two spatial regions in separate color channels. The <strong>red channel</strong> contains two cheek ellipses, positioned relative to the nose tip at a vertical offset of \(0.15 h_f\) below the nose and a lateral offset of \(\pm 0.45 h_f\), with semi-axes \(r_x = 0.25 h_f\) and \(r_y = 0.2 h_f\) (where \(h_f\) is the distance from nose tip to chin). The <strong>green channel</strong> contains a body trapezoid anchored below the face oval: the neck (\(0.6 \times\) face width) tapers outward to the shoulders (\(2.2 \times\) face width), extending to the bottom of the frame. On the GPU, the body mask is composited to exclude the face region:</p>
 
-            <p>This shares the temporal filtering principle with <a href="https://en.wikipedia.org/wiki/Eulerian_video_magnification">Eulerian Video Magnification</a> (Wu et al., 2012), but the full EVM pipeline decomposes each frame into a Laplacian spatial pyramid and applies the temporal filter at each resolution level independently. That lets it amplify fine detail differently from coarse structure, and each pyramid level is spatially smoothed by construction. We skip the pyramid and instead operate at full resolution, using a post-hoc two-pass separable Gaussian blur (9-tap kernel, \(\sigma \approx 2.5\), weights \([0.172, 0.158, 0.125, 0.084, 0.048]\)) to suppress spatial noise in the amplified output.</p>
+            \[\text{faceMask} = M_R, \qquad \text{bodyMask} = M_G \cdot (1 - M_R)\]
 
-            <h3>Broadband pulse amplification</h3>
+            <h3>Cardiac flush</h3>
 
-            <p>Before a heart rate estimate is available, the pulse band is amplified with a broadband approach. The temporal bandpass signal is first decomposed into luminance and chrominance using <a href="https://en.wikipedia.org/wiki/Rec._601">BT.601</a> luma weights:</p>
-
-            \[Y = 0.299R + 0.587G + 0.114B, \qquad \mathbf{C} = \mathbf{B}_\text{pulse} - Y\mathbf{1}\]
-
-            <p>Only the chrominance component \(\mathbf{C}\) is amplified, since the blood volume pulse manifests as a color shift (green absorption by hemoglobin) rather than a brightness change. Amplifying luminance would produce distracting edge ghosts. A warm tint \((1.3, 0.85, 0.85)\) shifts the amplified flush toward red, matching the natural appearance of blood perfusion. The broadband signal is masked to the face (36-point oval from MediaPipe landmarks, expanded 1.2\(\times\) from the centroid, rasterized to an \(80 \times 60\) binary mask) at \(15\times\) gain.</p>
-
-            <h3>Phase-coherent cardiac beamforming</h3>
-
-            <p>The broadband bandpass amplifies everything in the 0.67-3.33 Hz range, including noise. Once the Kalman filter has converged on a heart rate estimate, the system crossfades to a phase-coherent amplification path that acts as a narrowband matched filter locked to the cardiac frequency. This is analogous to <a href="https://en.wikipedia.org/wiki/Lock-in_amplifier">lock-in amplification</a>: multiply each pixel's signal by a reference phasor at the cardiac frequency, then low-pass filter. Only the component coherent with the heartbeat survives; everything else averages to zero.</p>
-
-            <figure class="small">
-                <img decoding="async" src="img/cc/lock-in-amplifier-block-diagram.svg" alt="Block diagram of a lock-in amplifier showing signal multiplied by reference then low-pass filtered" loading="lazy">
-                <figcaption>Block diagram of a lock-in amplifier. A noisy input signal is multiplied by a phase-shifted reference, then integrated by a low-pass filter to extract the coherent DC component. The cardiac beamforming path applies this same principle per-pixel: the reference is a phasor at the detected heart rate, and the integrator is a 4-second IIR filter. <a href="https://commons.wikimedia.org/wiki/File:Lock-In-Amplifier-En.svg">Wikimedia Commons, CC BY-SA 3.0, Zelbear/Gearat</a></figcaption>
-            </figure>
-
-            <p>The frame loop maintains a cardiac phase oscillator that advances each frame:</p>
+            <p>Once the Kalman filter has converged on a heart rate estimate, a global cardiac oscillator tracks the phase of the heartbeat:</p>
 
             \[\varphi(t) = \varphi(t-1) + \frac{2\pi \cdot \text{bpm}}{60 \cdot f_s}\]
 
-            <p>The reference phasor is \(p(t) = e^{i\varphi(t)} = [\cos\varphi,\, \sin\varphi]\). For each pixel, the tinted chrominance is projected onto a scalar along the normalized tint direction \(\hat{\mathbf{w}} = \text{normalize}(1.3, 0.85, 0.85)\):</p>
+            <p>The oscillator's output is gated by a blend factor that ramps smoothly as the BPM estimate stabilizes, driven by the Kalman filter's confidence \(c\):</p>
 
-            \[s(t) = \mathbf{C}_\text{tinted} \cdot \hat{\mathbf{w}}\]
+            \[\beta_\text{target} = \min(1,\; 1.5c), \qquad \beta(t) = \beta(t-1) + \frac{\beta_\text{target} - \beta(t-1)}{3 f_s}\]
 
-            <p>This scalar is multiplied by the conjugate of the cardiac phasor and fed into an IIR correlation accumulator:</p>
+            <p>If the BPM estimate is lost, \(\beta\) decays to zero over 1 second. The combined pulse signal \(s_p = \sin(\varphi) \cdot \beta\) is a scalar that oscillates at the cardiac frequency with amplitude proportional to detection confidence. On the GPU, this scalar is multiplied by the cheek mask to produce a per-pixel flush intensity, which drives a multiplicative color shift that mimics the spectral signature of hemoglobin perfusion:</p>
 
-            \[\mathbf{z}(t) = \mathbf{z}(t-1) + \alpha_\text{corr} \bigl(s(t) \cdot \overline{p(t)} - \mathbf{z}(t-1)\bigr)\]
+            \[\text{flush} = s_p \cdot \text{faceMask}\]
 
-            <p>where \(\mathbf{z} = [z_r, z_i]\) is a complex correlation state and \(\alpha_\text{corr} = 1 - e^{-1/(\tau \cdot f_s)}\) with time constant \(\tau = 4\) seconds. This IIR integrator is effectively a narrowband filter centered on the cardiac frequency: signals coherent with the heartbeat accumulate constructively in \(\mathbf{z}\), while noise at other frequencies gets averaged away over the 4-second window.</p>
+            \[\mathbf{p}_\text{out} = \mathbf{p}_\text{in} \odot \begin{bmatrix} 1 + 0.40 \cdot \text{flush} \\ 1 - 0.12 \cdot \text{flush} \\ 1 - 0.14 \cdot \text{flush} \end{bmatrix}\]
 
-            <p>The coherent signal is recovered by demodulating the correlation state back to the current phase:</p>
+            <p>The asymmetric coefficients (+40% red, -12% green, -14% blue) approximate the spectral effect of oxygenated hemoglobin: red reflectance increases during systole as blood volume peaks in the capillary bed, while green and blue reflectance decreases due to hemoglobin absorption in those bands. The multiplicative formulation preserves the underlying skin texture and shading, unlike additive approaches that wash out detail.</p>
 
-            \[g(t) = \operatorname{Re}\!\bigl(\mathbf{z}(t) \cdot p(t)\bigr) = z_r \cos\varphi - z_i \sin\varphi\]
+            <h3>Respiratory displacement</h3>
 
-            <p>The demodulated signal \(g(t)\) drives the amplification along the tint direction at \(30\times\) gain (twice the broadband path), which is feasible because the phase-coherent filtering has removed most of the noise that would otherwise produce visual artifacts.</p>
+            <p>The breathing visualization uses geometric coordinate warping rather than color manipulation, matching the physical nature of respiration: the chest expands and contracts, producing spatial displacement rather than color change. The breathing signal originates from facial landmark tracking. The mean \(y\)-coordinate of landmarks 4 (nose tip), 6 (nose bridge), and 152 (chin) is tracked at each face detection step. A slow-adapting baseline removes postural drift:</p>
 
-            <p>The system crossfades between the two paths based on whether a BPM estimate is available. The blend factor \(\beta\) ramps linearly from 0 to 1 over 3 seconds once a heart rate is detected, and decays back to 0 over 1 second if the estimate is lost:</p>
+            \[b(t) = b(t-1) + 0.02\bigl(y(t) - b(t-1)\bigr)\]
 
-            \[\text{pulse}_\text{final} = (1 - \beta) \cdot \text{broadband} + \beta \cdot \text{guided}\]
+            <p>The displacement is normalized by video height, inverted (downward landmark movement corresponds to inhalation), and scaled:</p>
 
-            <h3>Breathing amplification</h3>
+            \[d(t) = -\frac{y(t) - b(t)}{H} \times 80\]
 
-            <p>The breathing band amplifies full RGB motion at \(15 \times (1 - 0.5m)\), where \(m\) is the face mask value, so respiratory motion is amplified more strongly on the body (where chest movement is visible) and suppressed on the face.</p>
+            <p>A single-pole smoothing filter with \(\alpha = 0.5\) removes jitter before the signal reaches the GPU:</p>
 
-            <p>Both pulse and breathing deltas pass through a soft saturation function that adapts to signal strength:</p>
+            \[s_b(t) = s_b(t-1) + 0.5\bigl(d(t) - s_b(t-1)\bigr)\]
 
-            \[\mathbf{d}_\text{out} = \mathbf{d} \cdot \frac{\ell \cdot \tanh(\|\mathbf{d}\| / \ell)}{\|\mathbf{d}\|}\]
+            <p>On the GPU, the breathing signal drives horizontal coordinate warping centered on the tracked body position (midpoint of the chest ROI, normalized to \([0,1]\)). A vertical taper concentrates the effect at chest level using a <a href="https://registry.khronos.org/OpenGL-Refpages/gl4/html/smoothstep.xhtml">smoothstep</a> falloff:</p>
 
-            <p>where \(\ell\) is a per-band limit (0.10 for pulse, 0.15 for breathing). Weak signals receive nearly full gain; strong signals are smoothly compressed toward the limit, avoiding the hard clipping artifacts that would result from clamping.</p>
+            \[\text{taper} = 1 - \text{smoothstep}\bigl(0,\; 0.2,\; |v - v_\text{center}|\bigr)\]
+
+            \[e = \max(0,\; s_b) \cdot \text{bodyMask} \cdot \text{taper} \cdot 0.30\]
+
+            \[u' = u_\text{center} + \frac{u - u_\text{center}}{1 + e}\]
+
+            <p>where \((u, v)\) are texture coordinates and \((u_\text{center}, v_\text{center})\) is the tracked body center. The factor \(1/(1 + e)\) contracts the texture-space distance from the centerline, which pushes the rendered pixels outward, creating a visible lateral expansion that mirrors the physical expansion of the ribcage. Only positive values of \(s_b\) (inhalation) produce displacement; exhalation returns smoothly to the neutral position as the signal decays. The final pixel color is clamped to \([0, 1]\) after both effects are applied.</p>
 
             <h2>Heart rate variability</h2>
 
@@ -255,7 +268,7 @@
 
             <h2>Implementation</h2>
 
-            <p>The application is built with <a href="https://svelte.dev/">Svelte 5</a> and <a href="https://vite.dev/">Vite</a>, deployed to <a href="https://pages.github.com/">GitHub Pages</a>. The camera captures at 640\(\times\)480 at 30 fps. The main frame loop runs via <code>requestAnimationFrame</code>, with face detection every 3 frames and vitals computation every 60 frames. A 150-frame calibration period stabilizes the IIR filter states before measurements begin. Face tracking has a 500 ms grace period before clearing ROIs on momentary detection drops. If the face is lost for more than 10 seconds, all signal buffers, filter states, and the cardiac phase oscillator are reset and calibration restarts.</p>
+            <p>The application is built with <a href="https://svelte.dev/">Svelte 5</a> and <a href="https://vite.dev/">Vite</a>, deployed to <a href="https://pages.github.com/">GitHub Pages</a>. The camera captures at 640\(\times\)480 targeting 30 fps; the actual frame rate is measured at runtime via an exponentially weighted moving average (\(\alpha = 0.05\)) and used as the sample rate for all spectral analysis, so the pipeline adapts to devices that cannot sustain 30 fps. The main frame loop runs via <code>requestAnimationFrame</code>, with face detection every 3 frames and vitals computation every 60 frames. A 150-frame calibration period stabilizes the IIR filter states and allows the spatial beamformer to accumulate its initial correlation history before measurements begin. Face tracking has a 500 ms grace period before clearing ROIs on momentary detection drops. If the face is lost for more than 10 seconds, all signal buffers, filter states, beamformer weights, and the cardiac phase oscillator are reset and calibration restarts.</p>
 
             <p>The WebGL2 renderer uses <code>RGBA8</code> textures with <code>LINEAR</code> filtering and <code>CLAMP_TO_EDGE</code> wrapping. The video frame is uploaded to a texture each frame via <code>texImage2D</code>. All signal processing (POS, FFT, peak detection, Kalman filter) runs on the main thread in pure TypeScript with <code>Float64Array</code> arithmetic. The FFT uses in-place Cooley-Tukey with bit-reversal permutation, and the bandpass filter operates in the frequency domain (forward FFT, zero out-of-band bins, inverse FFT). No external signal processing libraries are used.</p>
         </article>
