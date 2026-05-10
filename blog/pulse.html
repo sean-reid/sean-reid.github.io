@@ -141,15 +141,19 @@
 
             <p>Breathing rate is estimated from three independent sources, each capturing a different physical manifestation of respiration.</p>
 
-            <p><strong>Chest motion.</strong> A chest ROI is placed below the face, anchored to the nose tip (landmark 1) and chin (landmark 152). Its vertical position starts 0.3 face-heights below the chin, with width 1.6 and height 1.2 times the face height. The ROI is downsampled to \(32 \times 32\) pixels, and the frame-to-frame motion energy is computed as the RMS of green-channel pixel differences:</p>
+            <p><strong>Chest motion.</strong> A chest ROI is placed below the face, anchored to the nose tip (landmark 1) and chin (landmark 152). Its vertical position starts 0.3 face-heights below the chin, with width 1.6 and height 1.2 times the face height. The ROI is downsampled to \(32 \times 32\) pixels, and the mean signed green-channel difference between consecutive frames is computed:</p>
 
-            \[E(t) = \sqrt{\frac{1}{N_\text{px}}\sum_{i=1}^{N_\text{px}} \bigl(G_i(t) - G_i(t-1)\bigr)^2}\]
+            \[E(t) = \frac{1}{N_\text{px}}\sum_{i=1}^{N_\text{px}} \bigl(G_i(t) - G_i(t-1)\bigr)\]
 
-            <p>The green channel is used because it has the highest signal-to-noise ratio for physiological signals. The motion energy time series oscillates at the breathing frequency as the chest rises and falls. It is processed through the same pipeline as the pulse signal: detrend (window size 150) \(\to\) bandpass \([0.1, 0.6]\) Hz (6-36 breaths/min) \(\to\) Hamming window \(\to\) FFT with 4\(\times\) zero-padding \(\to\) peak detection. The buffer holds 900 samples (30 seconds at 30 fps), and a minimum of 240 samples (8 seconds) is required.</p>
+            <p>The signed mean (rather than RMS) preserves the polarity of the brightness change, avoiding frequency doubling that would occur if the signal were squared. The green channel is used because it has the highest signal-to-noise ratio for physiological signals. The motion signal oscillates at the breathing frequency as the chest rises and falls. It is processed through a three-stage pipeline: detrend (window size 150) \(\to\) bandpass \([0.1, 0.6]\) Hz (6-36 breaths/min) \(\to\) <a href="https://en.wikipedia.org/wiki/Autocorrelation">autocorrelation</a> peak detection. The autocorrelation computes the normalized self-similarity at each lag \(\tau\) in the range \([f_s / f_\text{max},\; f_s / f_\text{min}]\):</p>
 
-            <p><strong>Facial landmark displacement.</strong> Breathing causes subtle vertical oscillation of the face. The average \(y\)-coordinate of three MediaPipe landmarks (4: nose tip, 6: nose bridge, 152: chin) is tracked at every face detection step, producing a time series sampled at \(30/3 = 10\) Hz. This signal undergoes the same spectral pipeline with a detrend window of 50 and a minimum of 80 samples. Because the sample rate differs from the camera frame rate, the FFT frequency bins are scaled accordingly.</p>
+            \[R(\tau) = \frac{\sum_{t} x(t)\, x(t + \tau)}{\sum_{t} x(t)^2}\]
 
-            <p><strong>Respiratory sinus arrhythmia.</strong> Heart rate is not constant within a breath cycle. It accelerates during inhalation and decelerates during exhalation, a phenomenon called <a href="https://en.wikipedia.org/wiki/Respiratory_sinus_arrhythmia">respiratory sinus arrhythmia</a> (RSA). This modulation encodes the breathing frequency within the heart rate signal itself. To extract it, beat-to-beat RR intervals are computed from the peaks detected in the filtered rPPG signal (with a minimum peak distance of \(\lfloor f_s \cdot 60 / \text{BPM}_\text{max}\rfloor\) samples). Only intervals between \(60/\text{BPM}_\text{max} = 0.3\) s and \(60/\text{BPM}_\text{min} = 1.5\) s are retained. When at least 15 beats are available, the irregular RR interval series is resampled to a uniform 4 Hz tachogram via linear interpolation, then processed through the same spectral pipeline (detrend, bandpass \([0.1, 0.6]\) Hz, Hamming, 4\(\times\) zero-padded FFT, peak detection). The resulting confidence is discounted by a factor of 0.8 to reflect the indirect nature of RSA-derived breathing estimates.</p>
+            <p>The lag with the highest positive autocorrelation is refined via parabolic interpolation, and the breathing frequency is \(f = f_s / \hat{\tau}\). Autocorrelation is more robust than FFT-based peak detection for the low-frequency, short-duration breathing signal, where spectral leakage and limited frequency resolution can produce spurious peaks. Estimates with confidence (the autocorrelation value) below 0.12 are discarded. The buffer holds 900 samples (30 seconds at 30 fps), and a minimum of 240 samples (8 seconds) is required.</p>
+
+            <p><strong>Facial landmark displacement.</strong> Breathing causes subtle vertical oscillation of the face. The average \(y\)-coordinate of three MediaPipe landmarks (4: nose tip, 6: nose bridge, 152: chin) is tracked at every face detection step. The raw landmark position is smoothed with a single-pole low-pass filter (\(\alpha = 0.5\)) before buffering to reduce detection jitter, producing a time series sampled at \(30/3 = 10\) Hz. This signal undergoes the same detrend-bandpass-autocorrelation pipeline with a detrend window of 50 and a minimum of 80 samples. Because the sample rate differs from the camera frame rate, the autocorrelation lag range is scaled accordingly.</p>
+
+            <p><strong>Respiratory sinus arrhythmia.</strong> Heart rate is not constant within a breath cycle. It accelerates during inhalation and decelerates during exhalation, a phenomenon called <a href="https://en.wikipedia.org/wiki/Respiratory_sinus_arrhythmia">respiratory sinus arrhythmia</a> (RSA). This modulation encodes the breathing frequency within the heart rate signal itself. To extract it, beat-to-beat RR intervals are computed from the peaks detected in the filtered rPPG signal (with a minimum peak distance of \(\lfloor f_s \cdot 60 / \text{BPM}_\text{max}\rfloor\) samples). Only intervals between \(60/\text{BPM}_\text{max} = 0.3\) s and \(60/\text{BPM}_\text{min} = 1.5\) s are retained. When at least 15 beats are available, the irregular RR interval series is resampled to a uniform 4 Hz tachogram via linear interpolation, then processed through an FFT-based spectral pipeline: detrend, bandpass \([0.1, 0.6]\) Hz, Hamming window, 4\(\times\) zero-padded FFT, and peak detection. (RSA uses FFT rather than autocorrelation because the uniform 4 Hz resampling produces a clean, well-conditioned spectrum.) The resulting confidence is discounted by a factor of 0.8 to reflect the indirect nature of RSA-derived breathing estimates.</p>
 
             <h2>Sensor fusion</h2>
 
@@ -188,7 +192,7 @@
                 <tr><td style="padding: 0.25rem 1rem;"><strong>Source</strong></td><td style="padding: 0.25rem 1rem;">\(R_0\)</td><td style="padding: 0.25rem 1rem;"><strong>Interpretation</strong></td></tr>
                 <tr><td style="padding: 0.25rem 1rem;">Heart rate (POS spectral)</td><td style="padding: 0.25rem 1rem;">4</td><td style="padding: 0.25rem 1rem;">\(\pm 2\) bpm at peak confidence</td></tr>
                 <tr><td style="padding: 0.25rem 1rem;">Breathing (landmark)</td><td style="padding: 0.25rem 1rem;">4</td><td style="padding: 0.25rem 1rem;">\(\pm 2\) br/min</td></tr>
-                <tr><td style="padding: 0.25rem 1rem;">Breathing (chest motion)</td><td style="padding: 0.25rem 1rem;">9</td><td style="padding: 0.25rem 1rem;">\(\pm 3\) br/min</td></tr>
+                <tr><td style="padding: 0.25rem 1rem;">Breathing (chest motion)</td><td style="padding: 0.25rem 1rem;">20</td><td style="padding: 0.25rem 1rem;">\(\pm 4.5\) br/min</td></tr>
                 <tr><td style="padding: 0.25rem 1rem;">Breathing (RSA)</td><td style="padding: 0.25rem 1rem;">12</td><td style="padding: 0.25rem 1rem;">\(\pm 3.5\) br/min</td></tr>
             </table>
 
@@ -214,13 +218,13 @@
 
             <p>Once the Kalman filter has converged on a heart rate estimate, a global cardiac oscillator tracks the phase of the heartbeat:</p>
 
-            \[\varphi(t) = \varphi(t-1) + \frac{2\pi \cdot \text{bpm}}{60 \cdot f_s}\]
+            \[\varphi(t) = \varphi(t-1) + \frac{2\pi \cdot \text{bpm} \cdot \Delta t}{60}\]
 
-            <p>The oscillator's output is gated by a blend factor that ramps smoothly as the BPM estimate stabilizes, driven by the Kalman filter's confidence \(c\):</p>
+            <p>The phase increment is proportional to the actual frame interval \(\Delta t\) rather than a fixed frame rate, so the oscillator stays locked to the cardiac frequency regardless of rendering jitter. Its output is gated by a blend factor that ramps smoothly as the BPM estimate stabilizes, driven by the Kalman filter's confidence \(c\):</p>
 
-            \[\beta_\text{target} = \min(1,\; 1.5c), \qquad \beta(t) = \beta(t-1) + \frac{\beta_\text{target} - \beta(t-1)}{3 f_s}\]
+            \[\beta_\text{target} = \min(1,\; 1.5c), \qquad \beta(t) = \beta(t-1) + (\beta_\text{target} - \beta(t-1)) \cdot \min\!\left(1,\; \frac{\Delta t}{3}\right)\]
 
-            <p>If the BPM estimate is lost, \(\beta\) decays to zero over 1 second. The combined pulse signal \(s_p = \sin(\varphi) \cdot \beta\) is a scalar that oscillates at the cardiac frequency with amplitude proportional to detection confidence. On the GPU, this scalar is multiplied by the cheek mask to produce a per-pixel flush intensity, which drives a multiplicative color shift that mimics the spectral signature of hemoglobin perfusion:</p>
+            <p>If the BPM estimate is lost, \(\beta\) decays linearly to zero over 1 second: \(\beta(t) = \max(0,\, \beta(t-1) - \Delta t)\). The combined pulse signal \(s_p = \sin(\varphi) \cdot \beta\) is a scalar that oscillates at the cardiac frequency with amplitude proportional to detection confidence. On the GPU, this scalar is multiplied by the cheek mask to produce a per-pixel flush intensity, which drives a multiplicative color shift that mimics the spectral signature of hemoglobin perfusion:</p>
 
             \[\text{flush} = s_p \cdot \text{faceMask}\]
 
@@ -238,9 +242,9 @@
 
             \[d(t) = -\frac{y(t) - b(t)}{H} \times 80\]
 
-            <p>A single-pole smoothing filter with \(\alpha = 0.5\) removes jitter before the signal reaches the GPU:</p>
+            <p>A frame-rate-independent smoothing filter removes jitter before the signal reaches the GPU:</p>
 
-            \[s_b(t) = s_b(t-1) + 0.5\bigl(d(t) - s_b(t-1)\bigr)\]
+            \[s_b(t) = s_b(t-1) + \bigl(d(t) - s_b(t-1)\bigr) \cdot \min(1,\; 15\Delta t)\]
 
             <p>On the GPU, the breathing signal drives horizontal coordinate warping centered on the tracked body position (midpoint of the chest ROI, normalized to \([0,1]\)). A vertical taper concentrates the effect at chest level using a <a href="https://registry.khronos.org/OpenGL-Refpages/gl4/html/smoothstep.xhtml">smoothstep</a> falloff:</p>
 
@@ -268,9 +272,9 @@
 
             <h2>Implementation</h2>
 
-            <p>The application is built with <a href="https://svelte.dev/">Svelte 5</a> and <a href="https://vite.dev/">Vite</a>, deployed to <a href="https://pages.github.com/">GitHub Pages</a>. The camera captures at 640\(\times\)480 targeting 30 fps; the actual frame rate is measured at runtime via an exponentially weighted moving average (\(\alpha = 0.05\)) and used as the sample rate for all spectral analysis, so the pipeline adapts to devices that cannot sustain 30 fps. The main frame loop runs via <code>requestAnimationFrame</code>, with face detection every 3 frames and vitals computation every 60 frames. A 150-frame calibration period stabilizes the IIR filter states and allows the spatial beamformer to accumulate its initial correlation history before measurements begin. Face tracking has a 500 ms grace period before clearing ROIs on momentary detection drops. If the face is lost for more than 10 seconds, all signal buffers, filter states, beamformer weights, and the cardiac phase oscillator are reset and calibration restarts.</p>
+            <p>The application is built with <a href="https://svelte.dev/">Svelte 5</a> and <a href="https://vite.dev/">Vite</a>, deployed to <a href="https://pages.github.com/">GitHub Pages</a>. The camera captures at 640\(\times\)480 targeting 30 fps; the actual frame interval is measured from <code>video.currentTime</code> deltas and smoothed via an exponentially weighted moving average (\(\alpha = 0.05\)) of \(\Delta t\), then inverted to obtain the effective frame rate. Smoothing the interval rather than the reciprocal avoids the bias from <a href="https://en.wikipedia.org/wiki/Jensen%27s_inequality">Jensen's inequality</a> (\(E[1/X] \neq 1/E[X]\)). This measured rate is used as the sample rate for all spectral analysis, and all animation timing (cardiac oscillator, blend ramps, breath smoothing) uses per-frame \(\Delta t\) directly, so the pipeline adapts to devices that cannot sustain a constant frame rate. The main frame loop runs via <code>requestAnimationFrame</code>, with face detection every 3 frames and vitals computation every 60 frames. A 150-frame calibration period stabilizes the IIR filter states and allows the spatial beamformer to accumulate its initial correlation history before measurements begin. Face tracking has a 500 ms grace period before clearing ROIs on momentary detection drops. If the face is lost for more than 10 seconds, all signal buffers, filter states, beamformer weights, and the cardiac phase oscillator are reset and calibration restarts.</p>
 
-            <p>The WebGL2 renderer uses <code>RGBA8</code> textures with <code>LINEAR</code> filtering and <code>CLAMP_TO_EDGE</code> wrapping. The video frame is uploaded to a texture each frame via <code>texImage2D</code>. All signal processing (POS, FFT, peak detection, Kalman filter) runs on the main thread in pure TypeScript with <code>Float64Array</code> arithmetic. The FFT uses in-place Cooley-Tukey with bit-reversal permutation, and the bandpass filter operates in the frequency domain (forward FFT, zero out-of-band bins, inverse FFT). No external signal processing libraries are used.</p>
+            <p>The WebGL2 renderer uses <code>RGBA8</code> textures with <code>LINEAR</code> filtering and <code>CLAMP_TO_EDGE</code> wrapping. The video frame is uploaded to a texture each frame via <code>texImage2D</code>. All signal processing (POS, FFT, autocorrelation, peak detection, Kalman filter, spatial beamforming) runs on the main thread in pure TypeScript with <code>Float64Array</code> arithmetic. The FFT uses in-place Cooley-Tukey with bit-reversal permutation, and the bandpass filter operates in the frequency domain (forward FFT, zero out-of-band bins, inverse FFT). Heart rate peak detection uses FFT-based spectral analysis; breathing rate uses time-domain autocorrelation, which is more robust at the lower frequencies and shorter signal durations involved. No external signal processing libraries are used.</p>
         </article>
 
     </div>
