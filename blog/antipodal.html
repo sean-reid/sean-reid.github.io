@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+    <title>Antipodal - Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/antipodal.webp">
+    <link rel="stylesheet" href="/nav.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="/" class="site-nav-name">Sean Reid</a>
+    <div class="site-nav-controls">
+      <div class="site-nav-search-wrap"><input type="text" class="site-nav-search" placeholder="Search..." autocomplete="off"><span class="site-nav-search-hint">/</span></div>
+      <a class="site-nav-random">&rarr; Random</a>
+      <div class="search-dropdown"></div>
+    </div>
+  </div>
+</nav>
+<main class="site-content">
+    <div class="container">
+        <header>
+            <h1>Antipodal</h1>
+            <p class="meta">Borsuk-Ulam weather explorer with Fibonacci sphere sampling, haversine geodesics, and inverse distance weighting over 85 years of ERA5 reanalysis data</p>
+            <p class="links-row">
+                <a href="https://antipodal.pages.dev">Live Demo</a>
+                <a href="https://github.com/sean-reid/antipodal">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <figure>
+                <img decoding="async" fetchpriority="high" src="img/antipodal.webp" alt="Screenshot of Antipodal showing a 3D globe with weather data points">
+                <figcaption>The Antipodal explorer. Pick a point on Earth, see the weather at its exact opposite, and find dates where the Borsuk-Ulam theorem's guarantee comes closest to being realized.</figcaption>
+            </figure>
+
+            <p>The <a href="https://en.wikipedia.org/wiki/Borsuk%E2%80%93Ulam_theorem">Borsuk-Ulam theorem</a> says that for any continuous function from the surface of a sphere to the plane, there exists a pair of antipodal points where the function takes the same value. For \(f: S^2 \to \mathbb{R}^2\), there is always some point \(\mathbf{x}\) on the sphere such that \(f(\mathbf{x}) = f(-\mathbf{x})\). Applied to Earth with temperature and pressure as the two real-valued functions, this means there must always be a pair of diametrically opposite points on the planet with identical temperature and identical pressure, simultaneously. This project lets you explore that phenomenon with real data.</p>
+
+            <figure class="small">
+                <img decoding="async" src="img/cc/great-circle.svg" alt="Great-circle distance on a sphere" loading="lazy">
+                <figcaption>Great-circle distance between two points on a sphere. The shortest path follows an arc of the great circle connecting them, and antipodal points are the special case where this arc spans a full semicircle. <a href="https://commons.wikimedia.org/wiki/File:Illustration_of_great-circle_distance.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <h2>Antipodal geometry</h2>
+
+            <p>The antipodal point of a position at latitude \(\varphi\) and longitude \(\lambda\) is straightforward: negate the latitude and shift the longitude by 180 degrees.</p>
+
+            \[\varphi' = -\varphi, \qquad \lambda' = \begin{cases} \lambda + 180° & \text{if } \lambda + 180° \leq 180° \\ \lambda - 180° & \text{otherwise} \end{cases}\]
+
+            <p>Most of the Earth's land mass has ocean at its antipode. Australia sits opposite the Atlantic, most of South America is opposite Southeast Asia, and nearly all of North America is antipodal to the Indian Ocean. There are only a handful of land-to-land antipodal pairs: parts of Spain and New Zealand, Argentina and China, the Philippines and Brazil. This matters because weather stations are sparse over oceans, so observing the Borsuk-Ulam guarantee directly from station data is hard. You need a gridded reanalysis product.</p>
+
+            <h2>Fibonacci sphere sampling</h2>
+
+            <p>Distributing points uniformly on a sphere is a harder problem than it sounds. A naive latitude-longitude grid clusters points at the poles and spaces them out at the equator. The <a href="https://en.wikipedia.org/wiki/Fibonacci_sphere">Fibonacci sphere</a> solves this by placing \(n\) points using the golden angle \(\phi = \pi(3 - \sqrt{5})\), the irrational-number analog of the golden ratio applied to angular spacing.</p>
+
+            <figure class="small">
+                <img decoding="async" src="img/cc/fibonacci-spiral.svg" alt="Fibonacci spiral" loading="lazy">
+                <figcaption>The Fibonacci spiral. The same golden-angle spacing that produces sunflower seed patterns generates near-uniform point distributions when projected onto a sphere. <a href="https://commons.wikimedia.org/wiki/File:Fibonacci_spiral.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <p>For the \(i\)-th point out of \(n\), compute the vertical position as a linear interpolation from pole to pole, then wrap the azimuthal angle by the golden angle:</p>
+
+            \[y_i = 1 - \frac{2i}{n - 1}, \qquad r_i = \sqrt{1 - y_i^2}, \qquad \theta_i = \phi \cdot i\]
+
+            <p>The latitude and longitude follow from converting these Cartesian-on-the-unit-sphere coordinates:</p>
+
+            \[\text{lat}_i = \frac{180}{\pi} \arcsin(y_i), \qquad \text{lng}_i = \frac{180}{\pi}\,\theta_i \pmod{360}\]
+
+            <p>The key property is that no two consecutive points share similar longitude, so the spiral never bunches up. With \(n = 500\) points the grid covers Earth at roughly 250 km resolution, dense enough to interpolate weather at any query location while keeping the dataset small enough to precompute and store cheaply.</p>
+
+            <h2>Haversine distance</h2>
+
+            <p>Querying weather at an arbitrary point requires finding the nearest grid points, which means computing great-circle distances. The <a href="https://en.wikipedia.org/wiki/Haversine_formula">haversine formula</a> gives the shortest path between two points on a sphere of radius \(R\):</p>
+
+            \[a = \sin^2\!\left(\frac{\Delta\varphi}{2}\right) + \cos\varphi_1 \cos\varphi_2 \sin^2\!\left(\frac{\Delta\lambda}{2}\right)\]
+
+            \[d = 2R \arctan\!\left(\frac{\sqrt{a}}{\sqrt{1 - a}}\right)\]
+
+            <p>with \(R = 6{,}371\) km for Earth. The haversine is numerically stable for small distances (unlike the spherical law of cosines) and avoids the computational cost of Vincenty's formulae for ellipsoidal geodesy. For weather interpolation at hundred-kilometer scales, the spherical approximation is more than adequate.</p>
+
+            <h2>Inverse distance weighting</h2>
+
+            <p>Given the \(k = 3\) nearest grid points and their recorded values, the weather at the query point is estimated by <a href="https://en.wikipedia.org/wiki/Inverse_distance_weighting">inverse distance weighting</a> (IDW). Each neighbor contributes in proportion to the inverse of its distance raised to a power \(p\):</p>
+
+            \[w_i = \frac{1}{d_i^p}, \qquad \hat{v} = \frac{\sum_{i=1}^k w_i \, v_i}{\sum_{i=1}^k w_i}\]
+
+            <p>With \(p = 2\) (the default), nearer points dominate sharply. If a query point falls exactly on a grid node (\(d_i = 0\)), the interpolation short-circuits and returns that node's value directly, avoiding division by zero. IDW is a reasonable choice here because the underlying fields (temperature, pressure) are smooth at the spatial scales involved. It won't capture sharp frontal boundaries, but it gives plausible values everywhere on the globe without requiring a full geostatistical model.</p>
+
+            <h2>The scanner</h2>
+
+            <p>The scanner mode searches all 500 grid points on a given date to find the location where the Borsuk-Ulam guarantee comes closest to being realized: the pair of antipodal points with the smallest combined difference in temperature and pressure. The scoring function normalizes both variables so neither dominates:</p>
+
+            \[\text{score}_i = \frac{|\Delta T_i| - \min|\Delta T|}{\max|\Delta T| - \min|\Delta T|} + \frac{|\Delta P_i| - \min|\Delta P|}{\max|\Delta P| - \min|\Delta P|}\]
+
+            <p>where \(\Delta T_i = T_i - T_i'\) and \(\Delta P_i = P_i - P_i'\) are the temperature and pressure differences between each grid point and its antipode. The grid point with the lowest score is the closest empirical approximation to the guaranteed zero of the Borsuk-Ulam mapping for that day. In practice, you can usually find pairs with temperature differences under 1 degree C and pressure differences under 2 hPa, even though the overall ranges span tens of degrees and tens of hectopascals.</p>
+
+            <h2>Data pipeline</h2>
+
+            <p>The weather data comes from <a href="https://www.ecmwf.int/en/forecasts/dataset/ecmwf-reanalysis-v5">ERA5</a>, ECMWF's fifth-generation reanalysis product, accessed through the <a href="https://open-meteo.com/en/docs/historical-weather-api">Open-Meteo archive API</a>. For each of the 500 grid points and their 500 antipodal counterparts, the pipeline fetches daily mean 2-meter temperature and mean sea-level pressure. The date range spans 1940 through 2024, broken into 5-year chunks to stay within API rate limits (10 locations per batch, 6-second delays between requests, a budget of 5,000 total requests per run).</p>
+
+            <p>The raw data is transformed into monthly files and stored in <a href="https://developers.cloudflare.com/r2/">Cloudflare R2</a>, served by a <a href="https://workers.cloudflare.com/">Cloudflare Worker</a> that handles the interpolation and scanning queries. The grid coordinates are precomputed and stored alongside the data, so the API only needs to do a nearest-neighbor lookup and IDW interpolation per request, not regenerate the Fibonacci sphere.</p>
+
+            <h2>The front end</h2>
+
+            <p>The UI is built with React 19 and <a href="https://github.com/vasturiano/react-globe.gl">react-globe.gl</a>, which renders a WebGL globe via Three.js. State management uses <a href="https://zustand-demo.pmnd.rs/">Zustand</a>. You click a point on the globe, the app computes its antipode, queries both locations' weather for the selected date, and draws arcs connecting the pair. The scanner mode renders all 500 grid points as colored markers, with the Borsuk-Ulam-closest pair highlighted.</p>
+        </article>
+
+    </div>
+</main>
+<footer class="site-footer">
+  <div class="site-footer-links">
+    <a href="https://github.com/sean-reid">GitHub</a>
+    <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
+    <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
+    <a href="https://socrates-of-athens.github.io">Poetry</a>
+    <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
+  </div>
+</footer>
+    <script src="/nav.js"></script>
+</body>
+</html>
