@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+    <title>Voting - Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/voting.webp">
+    <link rel="stylesheet" href="/nav.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="/" class="site-nav-name">Sean Reid</a>
+    <div class="site-nav-controls">
+      <div class="site-nav-search-wrap"><input type="text" class="site-nav-search" placeholder="Search..." autocomplete="off"><span class="site-nav-search-hint">/</span></div>
+      <a class="site-nav-random">&rarr; Random</a>
+      <div class="search-dropdown"></div>
+    </div>
+  </div>
+</nav>
+<main class="site-content">
+    <div class="container">
+        <header>
+            <h1>Voting</h1>
+            <p class="meta">Arrow's impossibility theorem demonstrated through five voting algorithms, four fairness criteria, and exhaustive profile enumeration</p>
+            <p class="links-row">
+                <a href="https://sean-reid.github.io/voting/">Live Demo</a>
+                <a href="https://github.com/sean-reid/voting">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <figure>
+                <img decoding="async" fetchpriority="high" src="img/voting.webp" alt="Screenshot of the Voting app">
+                <figcaption>The interactive explorer walks through Arrow's theorem in seven chapters, letting you drag preference orderings and watch voting outcomes shift in real time.</figcaption>
+            </figure>
+
+            <p><a href="https://en.wikipedia.org/wiki/Arrow%27s_impossibility_theorem">Arrow's impossibility theorem</a> (1951) proves that no ranked voting system with three or more candidates can simultaneously satisfy four reasonable fairness criteria. Every system that handles unrestricted preferences and respects unanimity must either depend on irrelevant alternatives or concentrate all power in a single voter. This project lets you verify that claim yourself by running five real voting algorithms against all four criteria and watching each one fail.</p>
+
+            <figure class="small">
+                <img decoding="async" src="img/cc/preferential-ballot.svg" alt="A preferential ballot showing ranked candidate choices" loading="lazy">
+                <figcaption>A preferential ballot. Voters rank candidates in order of preference, and the resulting profile is the input to every social welfare function Arrow's theorem constrains. <a href="https://commons.wikimedia.org/wiki/File:Preferential_ballot.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <h2>The four criteria</h2>
+
+            <p>A <a href="https://en.wikipedia.org/wiki/Social_welfare_function">social welfare function</a> \(f\) takes a preference profile (a list of voter rankings over candidates) and produces a single social ranking. Arrow's theorem requires four properties:</p>
+
+            <p><strong>Unrestricted domain.</strong> \(f\) must accept any possible preference profile. No voter's ranking is forbidden.</p>
+
+            <p><strong>Pareto optimality.</strong> If every voter ranks \(A\) above \(B\), the social ranking must also place \(A\) above \(B\). Unanimous preference is respected.</p>
+
+            <p><strong>Independence of irrelevant alternatives (IIA).</strong> The social ranking of \(A\) versus \(B\) depends only on voters' pairwise preferences between \(A\) and \(B\). Introducing or removing a third candidate \(C\) cannot change whether the group prefers \(A\) to \(B\).</p>
+
+            <p><strong>Non-dictatorship.</strong> There is no voter \(i\) such that the social ranking always equals voter \(i\)'s ranking, regardless of everyone else's preferences.</p>
+
+            <p>Arrow's theorem states that for \(|\text{candidates}| \geq 3\), no \(f\) satisfies all four. The app proves this empirically by exhaustively checking each criterion against each voting method.</p>
+
+            <h2>Five voting methods</h2>
+
+            <p><strong>Plurality</strong> counts first-place votes. The candidate who is ranked first by the most voters wins. Simple, but notoriously vulnerable to <a href="https://en.wikipedia.org/wiki/Vote_splitting">vote splitting</a>: it violates IIA because adding a similar candidate can siphon first-place votes from a frontrunner.</p>
+
+            <p><strong>Borda count</strong> assigns positional scores. With \(m\) candidates, a candidate ranked at position \(i\) (0-indexed) on a ballot receives \(m - 1 - i\) points. The total score for candidate \(c\) across all ballots is:</p>
+
+            \[\text{score}(c) = \sum_{j=1}^{n} (m - 1 - \text{pos}_j(c))\]
+
+            <p>Borda satisfies Pareto optimality but fails IIA: the relative score between two candidates changes when a third candidate's position shifts on some ballots.</p>
+
+            <p><strong>Instant runoff (IRV)</strong> iteratively eliminates the candidate with the fewest first-place votes and redistributes their ballots to the next surviving choice. A candidate wins immediately upon receiving more than half the votes. IRV satisfies non-dictatorship and unrestricted domain but fails both IIA and, in some edge cases, Pareto optimality.</p>
+
+            <p><strong>Condorcet</strong> builds a <a href="https://en.wikipedia.org/wiki/Condorcet_method">pairwise comparison matrix</a>: for each pair \((A, B)\), count how many voters rank \(A\) above \(B\). A candidate who wins every pairwise matchup is the Condorcet winner. Candidates are ranked by total pairwise wins. The method satisfies IIA on the pairs it can resolve, but <a href="https://en.wikipedia.org/wiki/Condorcet_paradox">Condorcet cycles</a> (\(A > B > C > A\)) can make it impossible to produce a consistent ranking, violating unrestricted domain.</p>
+
+            <p><strong>Approval</strong> lets each voter approve their top \(\lceil m/2 \rceil\) candidates. The candidate with the most approvals wins. Approval voting sidesteps Arrow's theorem somewhat because it doesn't use strict rankings as input, but the app maps ranked preferences to approval ballots to compare it on equal footing.</p>
+
+            <h2>Checking criteria by enumeration</h2>
+
+            <p>With 3 candidates and 3 voters, each voter can submit one of \(3! = 6\) possible rankings. The total number of distinct preference profiles is \(6^3 = 216\). This is small enough to enumerate exhaustively, and the app does exactly that for each criterion check.</p>
+
+            <p>The IIA checker, for instance, iterates over all pairs of profiles that agree on the pairwise ordering of candidates \(A\) and \(B\) for every voter, then verifies that the social ranking of \(A\) versus \(B\) is consistent across both profiles. If the social welfare function ranks \(A > B\) under one profile but \(B > A\) under another, despite identical pairwise voter preferences between \(A\) and \(B\), IIA is violated and the checker returns both profiles as a counterexample.</p>
+
+            <p>For more than 3 candidates the profile space explodes (\(4!^3 = 13{,}824\); \(5!^3 = 1{,}728{,}000\)), so the checkers switch to random sampling (200-300 profiles depending on the criterion). This means a "satisfied" result for 4+ candidates is probabilistic, not exhaustive, but in practice the violations surface quickly.</p>
+        </article>
+
+    </div>
+</main>
+<footer class="site-footer">
+  <div class="site-footer-links">
+    <a href="https://github.com/sean-reid">GitHub</a>
+    <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
+    <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
+    <a href="https://socrates-of-athens.github.io">Poetry</a>
+    <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
+  </div>
+</footer>
+    <script src="/nav.js"></script>
+</body>
+</html>
