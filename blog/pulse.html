@@ -206,7 +206,7 @@
 
             \[L_\text{new}(x, y) = L(x, y) + \alpha \bigl(I(x, y, t) - L(x, y)\bigr), \qquad \alpha = 1 - e^{-2\pi f_c / f_s}\]
 
-            <p>A smaller \(\alpha\) produces a slower-moving average (lower cutoff); a larger \(\alpha\) tracks the input more closely (higher cutoff). Two such filters with cutoffs \(f_\text{low}\) and \(f_\text{high}\) produce a temporal bandpass. These filter states are updated each frame to preserve continuity, but the amplified display is driven by the cardiac oscillator and landmark displacement signals described below.</p>
+            <p>A smaller \(\alpha\) produces a slower-moving average (lower cutoff); a larger \(\alpha\) tracks the input more closely (higher cutoff). Two such filters with cutoffs \(f_\text{low}\) and \(f_\text{high}\) produce a temporal bandpass. These filter states are updated each frame to preserve continuity, but the amplified display is driven by the cardiac and breathing phase oscillators described below.</p>
 
             <h3>Dual-channel mask</h3>
 
@@ -234,27 +234,29 @@
 
             <h3>Respiratory displacement</h3>
 
-            <p>The breathing visualization uses geometric coordinate warping rather than color manipulation, matching the physical nature of respiration: the chest expands and contracts, producing spatial displacement rather than color change. The breathing signal originates from facial landmark tracking. The mean \(y\)-coordinate of landmarks 4 (nose tip), 6 (nose bridge), and 152 (chin) is tracked at each face detection step. A slow-adapting baseline removes postural drift:</p>
+            <p>The breathing visualization uses geometric coordinate warping rather than color manipulation, matching the physical nature of respiration: the upper torso expands and lifts, producing spatial displacement rather than color change. Like the cardiac flush, the effect is synthesized from a phase oscillator at the detected rate rather than driven directly from raw measurements. An earlier version warped the frame using facial-landmark vertical displacement, but that signal tracked head motion as much as breathing: jittery, one-sided, and independent of the estimated rate. Driving the display from a clean sinusoid at the fused breathing rate decouples the visual effect from frame-to-frame landmark noise.</p>
 
-            \[b(t) = b(t-1) + 0.02\bigl(y(t) - b(t-1)\bigr)\]
+            <p>A breathing oscillator accumulates phase at the detected rate, with the increment proportional to the actual frame interval:</p>
 
-            <p>The displacement is normalized by video height, inverted (downward landmark movement corresponds to inhalation), and scaled:</p>
+            \[\varphi_b(t) = \varphi_b(t-1) + \frac{2\pi \cdot \text{rate} \cdot \Delta t}{60} \pmod{2\pi}\]
 
-            \[d(t) = -\frac{y(t) - b(t)}{H} \times 80\]
+            <p>As with the cardiac drive, the oscillator is gated by a confidence-ramped blend factor. The target follows the breathing estimate's fused confidence \(c_b\), and the blend eases toward it over a 3-second time constant:</p>
 
-            <p>A frame-rate-independent smoothing filter removes jitter before the signal reaches the GPU:</p>
+            \[\beta_\text{target} = \min(1,\; 1.5\,c_b), \qquad \beta(t) = \beta(t-1) + \bigl(\beta_\text{target} - \beta(t-1)\bigr) \cdot \min\!\left(1,\; \frac{\Delta t}{3}\right)\]
 
-            \[s_b(t) = s_b(t-1) + \bigl(d(t) - s_b(t-1)\bigr) \cdot \min(1,\; 15\Delta t)\]
+            <p>If the breathing estimate is lost, \(\beta\) decays linearly to zero over 1 second. The displayed breathing signal is the signed product \(s_b = \sin(\varphi_b) \cdot \beta\), which swings symmetrically through inhalation and exhalation rather than the previous one-sided bulge.</p>
 
-            <p>On the GPU, the breathing signal drives horizontal coordinate warping centered on the tracked body position (midpoint of the chest ROI, normalized to \([0,1]\)). A vertical taper concentrates the effect at chest level using a <a href="https://registry.khronos.org/OpenGL-Refpages/gl4/html/smoothstep.xhtml">smoothstep</a> falloff:</p>
+            <p>On the GPU, the signal drives a combined vertical lift and horizontal widen, enveloped so the motion concentrates on the upper torso while the bottom of the frame stays anchored. The envelope multiplies the body mask by a vertical <a href="https://registry.khronos.org/OpenGL-Refpages/gl4/html/smoothstep.xhtml">smoothstep</a> that falls off toward the lower edge of the frame:</p>
 
-            \[\text{taper} = 1 - \text{smoothstep}\bigl(0,\; 0.2,\; |v - v_\text{center}|\bigr)\]
+            \[\text{env} = \text{bodyMask} \cdot \text{smoothstep}(1.0,\; 0.55,\; v), \qquad b = s_b \cdot \text{env}\]
 
-            \[e = \max(0,\; s_b) \cdot \text{bodyMask} \cdot \text{taper} \cdot 0.30\]
+            <p>The vertical lift dominates, since the shoulders rise on inhalation, and the horizontal expansion is a subtler secondary cue:</p>
 
-            \[u' = u_\text{center} + \frac{u - u_\text{center}}{1 + e}\]
+            \[\text{lift} = 0.022\,b, \qquad \text{expand} = 0.05\,b\]
 
-            <p>where \((u, v)\) are texture coordinates and \((u_\text{center}, v_\text{center})\) is the tracked body center. The factor \(1/(1 + e)\) contracts the texture-space distance from the centerline, which pushes the rendered pixels outward, creating a visible lateral expansion that mirrors the physical expansion of the ribcage. Only positive values of \(s_b\) (inhalation) produce displacement; exhalation returns smoothly to the neutral position as the signal decays. The final pixel color is clamped to \([0, 1]\) after both effects are applied.</p>
+            \[(u', v') = \left(u_\text{center} + \frac{u - u_\text{center}}{1 + \text{expand}},\;\; v + \text{lift}\right)\]
+
+            <p>where \((u, v)\) are texture coordinates and \(u_\text{center}\) is the tracked body center (midpoint of the chest ROI, normalized to \([0,1]\)). Because \(s_b\) is signed, inhalation lifts and widens the shoulders while exhalation settles them back below the neutral line, producing a continuous breathing motion locked to the detected rate. The final pixel color is clamped to \([0, 1]\) after both effects are applied.</p>
 
             <h2>Heart rate variability</h2>
 
@@ -272,7 +274,7 @@
 
             <h2>Implementation</h2>
 
-            <p>The application is built with <a href="https://svelte.dev/">Svelte 5</a> and <a href="https://vite.dev/">Vite</a>, deployed to <a href="https://pages.github.com/">GitHub Pages</a>. The camera captures at 640\(\times\)480 targeting 30 fps; the actual frame interval is measured from <code>video.currentTime</code> deltas and smoothed via an exponentially weighted moving average (\(\alpha = 0.05\)) of \(\Delta t\), then inverted to obtain the effective frame rate. Smoothing the interval rather than the reciprocal avoids the bias from <a href="https://en.wikipedia.org/wiki/Jensen%27s_inequality">Jensen's inequality</a> (\(E[1/X] \neq 1/E[X]\)). This measured rate is used as the sample rate for all spectral analysis, and all animation timing (cardiac oscillator, blend ramps, breath smoothing) uses per-frame \(\Delta t\) directly, so the pipeline adapts to devices that cannot sustain a constant frame rate. The main frame loop runs via <code>requestAnimationFrame</code>, with face detection every 3 frames and vitals computation every 60 frames. A 150-frame calibration period stabilizes the IIR filter states and allows the spatial beamformer to accumulate its initial correlation history before measurements begin. Face tracking has a 500 ms grace period before clearing ROIs on momentary detection drops. If the face is lost for more than 10 seconds, all signal buffers, filter states, beamformer weights, and the cardiac phase oscillator are reset and calibration restarts. A camera shake detector tracks the forehead ROI centroid between detection steps: the frame-to-frame displacement (in normalized coordinates) is smoothed with \(\alpha = 0.15\), and if the smoothed jitter exceeds 1.2% of the frame dimension, vital sign readouts are hidden until the camera stabilizes.</p>
+            <p>The application is built with <a href="https://svelte.dev/">Svelte 5</a> and <a href="https://vite.dev/">Vite</a>, deployed to <a href="https://pages.github.com/">GitHub Pages</a>. The camera captures at 640\(\times\)480 targeting 30 fps; the actual frame interval is measured from <code>video.currentTime</code> deltas and smoothed via an exponentially weighted moving average (\(\alpha = 0.05\)) of \(\Delta t\), then inverted to obtain the effective frame rate. Smoothing the interval rather than the reciprocal avoids the bias from <a href="https://en.wikipedia.org/wiki/Jensen%27s_inequality">Jensen's inequality</a> (\(E[1/X] \neq 1/E[X]\)). This measured rate is used as the sample rate for all spectral analysis, and all animation timing (cardiac and breathing oscillators, blend ramps) uses per-frame \(\Delta t\) directly, so the pipeline adapts to devices that cannot sustain a constant frame rate. The main frame loop runs via <code>requestAnimationFrame</code>, with face detection every 3 frames and vitals computation every 60 frames. A 150-frame calibration period stabilizes the IIR filter states and allows the spatial beamformer to accumulate its initial correlation history before measurements begin. Face tracking has a 500 ms grace period before clearing ROIs on momentary detection drops. If the face is lost for more than 10 seconds, all signal buffers, filter states, beamformer weights, and the cardiac phase oscillator are reset and calibration restarts. A camera shake detector tracks the forehead ROI centroid between detection steps: the frame-to-frame displacement (in normalized coordinates) is smoothed with \(\alpha = 0.15\), and if the smoothed jitter exceeds 1.2% of the frame dimension, vital sign readouts are hidden until the camera stabilizes.</p>
 
             <p>The WebGL2 renderer uses <code>RGBA8</code> textures with <code>LINEAR</code> filtering and <code>CLAMP_TO_EDGE</code> wrapping. The video frame is uploaded to a texture each frame via <code>texImage2D</code>. All signal processing (POS, FFT, autocorrelation, peak detection, Kalman filter, spatial beamforming) runs on the main thread in pure TypeScript with <code>Float64Array</code> arithmetic. The FFT uses in-place Cooley-Tukey with bit-reversal permutation, and the bandpass filter operates in the frequency domain (forward FFT, zero out-of-band bins, inverse FFT). Both heart rate and breathing rate use a dual-estimator approach, running FFT spectral analysis and time-domain autocorrelation in parallel and fusing the results by agreement. No external signal processing libraries are used.</p>
         </article>
