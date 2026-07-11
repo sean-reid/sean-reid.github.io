@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+    <title>Movie Quotes - Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/movie-quotes.webp">
+    <link rel="stylesheet" href="/nav.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="/" class="site-nav-name">Sean Reid</a>
+    <div class="site-nav-controls">
+      <div class="site-nav-search-wrap"><input type="text" class="site-nav-search" placeholder="Search..." autocomplete="off"><span class="site-nav-search-hint">/</span></div>
+      <a class="site-nav-random">&rarr; Random</a>
+      <div class="search-dropdown"></div>
+    </div>
+  </div>
+</nav>
+<main class="site-content">
+    <div class="container">
+        <header>
+            <h1>Movie Quotes</h1>
+            <p class="meta">Film transcript mining, embedding-ranked decoys, and adaptive difficulty in a three-choice quote game served from Cloudflare's edge</p>
+            <p class="links-row">
+                <a href="https://quotes.dwainosaur.com">Live Demo</a>
+                <a href="https://github.com/sean-reid/movie-quotes">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <figure>
+                <img decoding="async" fetchpriority="high" src="img/movie-quotes.webp" alt="Screenshot of Movie Quotes asking which of three lines is from Hocus Pocus 2 (2022)">
+                <figcaption>A round in progress. The game names the film and shows three lines; one was really spoken in it, the other two come from different movies.</figcaption>
+            </figure>
+
+            <p>Each round names a film and shows three lines of dialogue. One was actually spoken in that film. The other two are real quotes from other movies, chosen because they sound like they could belong. You pick, the answer is revealed along with which films the impostors came from, and the next round loads. A game is ten rounds.</p>
+
+            <p>The design premise is that a multiple-choice quiz is only as good as its wrong answers. A decoy that is obviously from a different genre or era gives itself away before you read it. So the decoys are selected by semantic similarity: how close a line reads to the real one, measured with sentence embeddings, blended with how similar its source film feels. That similarity score is also what sets the difficulty and the point value of each round.</p>
+
+            <h2>Building the corpus</h2>
+
+            <p>Films come from the <a href="https://www.themoviedb.org/">TMDb</a> discover API: English-language releases with at least 1,000 votes and a rating of 6.5 or higher, collected against per-decade quotas from the 1950s through the 2020s. The quotas total 5,000 films and reserve roughly 17% for pre-1980 releases, so the corpus is not just recent blockbusters. Each film also gets its TMDb genre and thematic keyword IDs, which matter later for picking decoys. The fetcher caches every response on disk, bounds concurrency, and backs off honoring <code>Retry-After</code>, so re-runs cost nothing and the API is never hammered.</p>
+
+            <h2>Dialogue, not screenplays</h2>
+
+            <p>The quotes themselves come from <a href="https://www.springfieldspringfield.co.uk/">Springfield! Springfield!</a>, which hosts dialogue-only transcripts. Titles are matched by normalized name, with the release year required to agree within one year to avoid pairing a remake with its original. The repo also contains a full <a href="https://imsdb.com/">IMSDb</a> screenplay source and a cue-based screenplay parser (a character cue is a short all-caps line that is not a scene heading or transition; the dialogue is everything until the next blank line or cue), but the fetch stage deliberately does not use it. Screenplays leak scene description into the quote pool, and "He walks slowly to the door" is not something anyone said on screen. Transcripts sidestep the problem by containing nothing but speech.</p>
+
+            <figure class="small">
+                <img decoding="async" src="img/cc/screenplay-example.svg" alt="A page of standard screenplay formatting with scene headings, action lines, and character cues" loading="lazy">
+                <figcaption>Standard screenplay format: scene headings, action lines, and all-caps character cues above dialogue. The parser for this format exists in the pipeline but lost out to dialogue-only transcripts. <a href="https://commons.wikimedia.org/wiki/File:Screenplay_example.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <h2>What counts as a quotable line</h2>
+
+            <p>Raw transcripts are noisy. Each one is split into sentences and scrubbed: bracketed sound cues and parentheticals are stripped, including orphaned halves left behind by subtitle line breaks, leading speaker labels are dropped, and common <a href="https://en.wikipedia.org/wiki/Optical_character_recognition">OCR</a> damage is repaired ("l'm" becomes "I'm", "wiII" becomes "will", <code>it"s</code> becomes <code>it's</code>).</p>
+
+            <p>A cleaned sentence then has to pass a battery of checks to become a candidate quote: 30 to 180 characters, at least four words, at least 60% letters, more lowercase than uppercase (which rejects credits and shouted stage text), a healthy unique-word ratio (which rejects song lyrics and chants), and a capital first letter. Most importantly, it has to read like speech: first or second person pronouns, a verb contraction, or a question or exclamation mark. Third-person narration has none of these signals. Each film contributes at most 100 quotes, sampled evenly across the transcript so a long film's quotes span its whole runtime.</p>
+
+            <h2>Decoys by nearest neighbor</h2>
+
+            <p>Every quote is embedded with <a href="https://huggingface.co/Xenova/bge-small-en-v1.5">bge-small-en-v1.5</a> running locally through <a href="https://huggingface.co/docs/transformers.js">Transformers.js</a>, mean-pooled and unit-normalized, so <a href="https://en.wikipedia.org/wiki/Cosine_similarity">cosine similarity</a> reduces to a dot product. The vectors are written as one flat <code>Float32Array</code> binary; JSON at this scale would be hundreds of megabytes.</p>
+
+            <p>Exhaustive <a href="https://en.wikipedia.org/wiki/Nearest_neighbor_search">nearest-neighbor search</a> over every quote pair is quadratic, so the search is restricted: each quote is only compared against quotes from its film's 60 most similar films. Film similarity is its own blend, \(0.5\) times the <a href="https://en.wikipedia.org/wiki/Jaccard_index">Jaccard index</a> over genres, \(0.2\) times decade proximity (decaying to zero at 40 years apart), and \(0.3\) times Jaccard over thematic keywords. The restriction is a speedup, but it is also a quality win: decoys come from adjacent-world films, so a noir line gets noir impostors.</p>
+
+            <figure class="small">
+                <img decoding="async" src="img/cc/tsne-word-embeddings.webp" alt="A t-SNE scatter plot of word embeddings from 19th century literature, colored by word class" loading="lazy">
+                <figcaption>A t-SNE projection of word embeddings from 19th century literature. Semantically related text lands near itself in embedding space, which is the property the decoy search exploits at sentence level. <a href="https://commons.wikimedia.org/wiki/File:T-SNE_visualisation_of_word_embeddings_generated_using_19th_century_literature.png">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <p>Each quote keeps its top 20 cross-film neighbors. Decoy hardness for a candidate is then \(0.7 \cdot \text{semantic} + 0.3 \cdot \text{film}\): a line that is both on-topic and from an adjacent film is the hardest to rule out. A round stores the answer plus a ranked pool of its eight hardest decoys, at most one per film, with a near-duplicate guard that drops any candidate whose token sets overlap the answer (or another kept decoy) with Jaccard at or above 0.8. Rounds that cannot fill the pool are skipped rather than padded, and the final pool is capped at 150,000 rounds.</p>
+
+            <h2>Difficulty and scoring</h2>
+
+            <p>Each round's average decoy similarity becomes its difficulty band, assigned by terciles over the whole pool rather than fixed thresholds, so easy, medium, and hard are always equally populated. The game starts easy and adapts: a correct answer steps the next round's band up, a wrong one steps it down, clamped at the ends.</p>
+
+            <p>A correct answer scores</p>
+
+            \[ \left( B + 50 \cdot \max\!\left(0,\ 1 - \tfrac{t}{10\,\text{s}}\right) \right) \cdot \min\!\left(1 + 0.1\,s,\ 2\right) \]
+
+            <p>where \(B\) is 30, 60, or 100 points by band, \(t\) is the answer time, and \(s\) is the streak of prior consecutive correct answers. The time bonus decays linearly to zero over ten seconds; the streak multiplier caps at 2. A wrong answer scores nothing and resets the streak. All of this is computed server-side; the client never learns the answer until it has committed a guess.</p>
+
+            <h2>Serving rounds from the edge</h2>
+
+            <p>The API is <a href="https://hono.dev/">Hono</a> on <a href="https://workers.cloudflare.com/">Cloudflare Workers</a> with the pre-generated rounds in <a href="https://developers.cloudflare.com/d1/">D1</a>, Cloudflare's edge-hosted <a href="https://www.sqlite.org/">SQLite</a>. Picking a uniformly random round without a full table scan uses a stored random key: every round carries a <code>rand</code> value in \([0, 1)\), the query draws a pivot and takes the first row with <code>rand &ge;</code> pivot on a <code>(band, rand)</code> index, wrapping to the start if nothing matches. That is an indexed seek instead of <code>ORDER BY RANDOM()</code>, and it stays uniform under difficulty, decade, and genre filters. The client sends the round and movie IDs it has already seen as exclusion lists, so a game avoids repeating rounds and films (the movie exclusion is dropped as a fallback if it would leave nothing to serve).</p>
+
+            <p>Choices are assembled per request from the ranked decoy pool and shuffled with <a href="https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle">Fisher-Yates</a> driven by <a href="https://gist.github.com/tommyettinger/46a874533244883189143505d203312c">mulberry32</a> seeded with the round ID. Deterministic shuffling matters for the share feature: finishing a game produces a <a href="https://www.nytimes.com/games/wordle/index.html">Wordle</a>-style result block plus a challenge link carrying the exact round IDs, and whoever opens it replays the same rounds with the choices in the same order.</p>
+
+            <h2>The client</h2>
+
+            <p>The front end is <a href="https://svelte.dev/docs/kit">SvelteKit</a> with Svelte 5 runes for game state, deployed on <a href="https://pages.cloudflare.com/">Cloudflare Pages</a>. While you read the reveal screen, the next round is already prefetched, so advancing is instant. Keys 1 through 3 answer, Enter advances, and personal stats (best score, best streak, games played) live in <a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage">localStorage</a>. There are no accounts and nothing is tracked server-side. A sibling project, <a href="/blog/unquote.html">unquote</a>, works the opposite direction: instead of quizzing you on film dialogue, it lets you search it.</p>
+        </article>
+
+    </div>
+</main>
+<footer class="site-footer">
+  <div class="site-footer-links">
+    <a href="https://github.com/sean-reid">GitHub</a>
+    <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
+    <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
+    <a href="https://socrates-of-athens.github.io">Poetry</a>
+    <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
+  </div>
+</footer>
+<script src="/nav.js"></script>
+</body>
+</html>

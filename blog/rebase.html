@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+    <title>Rebase - Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/rebase.webp">
+    <link rel="stylesheet" href="/nav.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="/" class="site-nav-name">Sean Reid</a>
+    <div class="site-nav-controls">
+      <div class="site-nav-search-wrap"><input type="text" class="site-nav-search" placeholder="Search..." autocomplete="off"><span class="site-nav-search-hint">/</span></div>
+      <a class="site-nav-random">&rarr; Random</a>
+      <div class="search-dropdown"></div>
+    </div>
+  </div>
+</nav>
+<main class="site-content">
+    <div class="container">
+        <header>
+            <h1>Rebase</h1>
+            <p class="meta">A daily deduction puzzle over positional notation in integer and irrational bases, with three guesses and Wordle-style feedback</p>
+            <p class="links-row">
+                <a href="https://sean-reid.github.io/rebase/">Live Demo</a>
+                <a href="https://github.com/sean-reid/rebase">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <figure>
+                <img decoding="async" fetchpriority="high" src="img/rebase.webp" alt="Rebase daily puzzle showing four digit-string cards, colored base chips, a rounded target sum, and feedback from a previous attempt">
+                <figcaption>Daily puzzle #192, a hard puzzle, on its second attempt. The first guess locked two cards green and revealed the rounded target.</figcaption>
+            </figure>
+
+            <p>Each Rebase puzzle deals four digit strings and four number bases. You assign one base to each string, every base used exactly once, and the four resulting values must add up to a target sum. Exactly one assignment works, and you get three attempts to find it, with <a href="https://www.nytimes.com/games/wordle/index.html">Wordle</a>-style feedback after each guess. The complication is the base pool: alongside 2, 3, 5, and 10 it contains \(\varphi\), \(\sqrt{2}\), \(e\), and \(\pi\), so the same digits mean wildly different things depending on where you drop them. The string 1110 is worth 1110 in base 10, 39 in base 3, 14 in base 2, and about 8.472 in base \(\varphi\).</p>
+
+            <figure class="small">
+                <img decoding="async" src="img/cc/babylonian-numerals.svg" alt="Chart of the 59 cuneiform digits used in Babylonian base-60 numerals" loading="lazy">
+                <figcaption>The 59 nonzero digits of Babylonian cuneiform, a <a href="https://en.wikipedia.org/wiki/Sexagesimal">sexagesimal</a> positional system. <a href="https://commons.wikimedia.org/wiki/File:Babylonian_numerals.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <h2>Digits in base &pi;</h2>
+
+            <p>A digit string \(d_{n-1}\,d_{n-2} \cdots d_0\) in base \(\beta\) evaluates to \(\sum_i d_i\,\beta^i\). Nothing in that formula requires \(\beta\) to be an integer, and <a href="https://en.wikipedia.org/wiki/Non-integer_base_of_numeration">non-integer positional notation</a> is a well-studied corner of number theory. The game's evaluation function is the same loop whether the base is 10 or \(\pi\): multiply each digit by the base raised to its positional power, and add.</p>
+
+            <p>What changes is the digit alphabet. Each digit must be smaller than the base, so base \(\varphi \approx 1.618\) and base \(\sqrt{2} \approx 1.414\) admit only 0 and 1, base \(e\) allows digits up to 2, and base \(\pi\) up to 3. That constraint is the first logical foothold: a card containing a 3 can only take base 5, 10, or \(\pi\). Magnitude is the second. Powers of \(\sqrt{2}\) grow slowly, so a long string assigned to a small base stays small, and a large target forces the big bases onto the long strings.</p>
+
+            <p>Irrational bases have stranger properties that the game gets to ignore. Since \(\varphi^2 = \varphi + 1\), the strings 100 and 011 denote the same number in <a href="https://en.wikipedia.org/wiki/Golden_ratio_base">base \(\varphi\)</a>, so representations are not unique. Rebase only ever evaluates a given string to a value, never writes a value back out as digits, so it sidesteps the whole question.</p>
+
+            <figure class="small">
+                <img decoding="async" src="img/cc/golden-ratio-line.svg" alt="Line segments illustrating the golden ratio: a+b is to a as a is to b" loading="lazy">
+                <figcaption>The golden ratio: \(a+b\) is to \(a\) as \(a\) is to \(b\). <a href="https://commons.wikimedia.org/wiki/File:Golden_ratio_line.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <h2>Three guesses, two colors</h2>
+
+            <p>You assign a base by dragging its chip onto a card, or tapping to pick up and place. The game computes each card's value live and shows the running sum, but the target itself is hidden on the first attempt. Your opening guess is guided only by digit constraints and the visible values. After the first guess the target appears rounded to the nearest integer, and the exact value, to three decimal places, arrives on the final attempt.</p>
+
+            <p>Feedback is per card. Green means the correct base is on this card, and the card locks for the rest of the game. Yellow means the base is wrong here, and since every base is used exactly once, wrong always means it belongs on one of the other cards. There is no gray. Solving on the first, second, or third attempt earns three, two, or one star, and the result exports as the usual grid of green and yellow squares, one row per attempt.</p>
+
+            <h2>Generation by rejection</h2>
+
+            <p>Puzzles come from a seeded generator: <a href="https://github.com/bryc/code/blob/master/jshash/PRNGs.md">mulberry32</a> supplies the random stream and <a href="https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle">Fisher-Yates</a> handles every shuffle, so a given seed always produces the same board. Around that sits a <a href="https://en.wikipedia.org/wiki/Rejection_sampling">rejection sampling</a> loop that discards candidate puzzles until one satisfies a set of fairness constraints, falling back to a direct construction only after 300 failures.</p>
+
+            <p>A candidate starts with four bases drawn from the difficulty's pool, then four digit strings. String generation is ceiling-aware: two or three of the cards use only digits valid in every selected base, and the rest may include digits that at least two of the bases can accept. Leading digits are never zero, and duplicate strings restart the attempt. Then comes the interesting check: the generator enumerates every assignment of bases to cards that is digit-legal and requires at least four of them to exist. With fewer, the digit constraints alone would give the puzzle away.</p>
+
+            <p>The target is chosen from the sums of those legal assignments. The generator walks them in shuffled order and picks one whose sum is unique among all legal assignments to within 0.0005, which guarantees exactly one correct answer even after rounding to three decimals. It also rejects any solution where two card values land within 0.05 of each other, so no two cards carry near-identical numbers.</p>
+
+            <p>Puzzle #192, the one in the screenshot, dealt the cards 1110, 1010, 111, and 10 against the bases 10, \(\varphi\), 3, and \(e\). The unique solution is \(1110_{10} + 1010_3 + 111_e + 10_\varphi = 1110 + 30 + 11.107 + 1.618 = 1152.725\).</p>
+
+            <h2>One seed per day</h2>
+
+            <p>The daily seed is the calendar date packed into an integer, YYYYMMDD, so everyone playing on the same date gets the same board, and it rolls over at local midnight. The puzzle number counts days from January 1, 2026. Difficulty follows the day of the week: Monday and Tuesday are easy, with integer bases only; Wednesday and Thursday are medium, with one irrational base joining three integers; Friday and Saturday are hard, with two of each; and Sunday is expert, with all four bases irrational and digit strings stretched to three and four digits.</p>
+
+            <p>Practice mode seeds a fresh puzzle from the current timestamp at whichever difficulty you pick. Challenge mode packs a seed and a difficulty index into a single number, \(4s + d\), rendered in <a href="https://en.wikipedia.org/wiki/Base36">base 36</a> as a six-character code you can send to a friend.</p>
+
+            <h2>One file</h2>
+
+            <p>The whole game is a single <code>index.html</code> with inline CSS and JavaScript, no framework, no build step, hosted on <a href="https://pages.github.com/">GitHub Pages</a>. Drag and drop is implemented by hand on raw mouse and touch events, with a ghost element following the pointer, so one code path serves both desktop and phones. State lives in <a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage">localStorage</a>: the in-progress daily board saves under a per-date key so a reload mid-game restores your attempts, while play counts, win percentage, streaks, and the star distribution accumulate under separate keys. A timer runs from your first interaction to your last guess and rides along in the share text.</p>
+        </article>
+
+    </div>
+</main>
+<footer class="site-footer">
+  <div class="site-footer-links">
+    <a href="https://github.com/sean-reid">GitHub</a>
+    <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
+    <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
+    <a href="https://socrates-of-athens.github.io">Poetry</a>
+    <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
+  </div>
+</footer>
+<script src="/nav.js"></script>
+</body>
+</html>

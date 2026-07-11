@@ -529,6 +529,57 @@ const interactions = {
     }
     await new Promise(r => setTimeout(r, 5000));
   },
+  'unquote': async (page) => {
+    // URL carries the query; just wait for results to render
+    await page.waitForSelector('.results', { timeout: 30000 });
+    await new Promise(r => setTimeout(r, 2500));
+  },
+  'randomify': async (page) => {
+    // The app spins on mount; wait for the result card and platform links
+    await page.waitForSelector('[data-testid="result"]', { timeout: 45000 });
+    await page.waitForSelector('[data-testid="links"] a', { timeout: 45000 });
+    await new Promise(r => setTimeout(r, 2500));
+  },
+  'rebase': async (page) => {
+    // Skip the first-visit help modal, then play into attempt 2
+    await page.evaluate(() => {
+      localStorage.clear();
+      localStorage.setItem('rebase-visited', '1');
+    });
+    await page.reload({ waitUntil: 'networkidle2' });
+    await page.waitForSelector('.card');
+    // First attempt: correct solution with two cards swapped -> 2 green, 2 yellow
+    await page.evaluate(() => {
+      const sol = state.puzzle.solution.slice();
+      const guess = sol.slice();
+      guess[0] = sol[1]; guess[1] = sol[0];
+      for (let i = 0; i < 4; i++) placeBase(guess[i], i);
+      renderGame();
+      checkAttempt();
+    });
+    await new Promise(r => setTimeout(r, 2500));
+    // Second attempt in progress: place one remaining base correctly
+    await page.evaluate(() => {
+      const sol = state.puzzle.solution;
+      for (let i = 0; i < 4; i++) {
+        if (!state.locked[i]) { placeBase(sol[i], i); break; }
+      }
+      renderGame();
+    });
+    await new Promise(r => setTimeout(r, 500));
+  },
+  'movie-quotes': async (page) => {
+    await page.waitForSelector('[data-testid="start-button"]', { timeout: 30000 });
+    await page.click('[data-testid="start-button"]');
+    await page.waitForSelector('[data-testid="choice"]', { timeout: 30000 });
+    await new Promise(r => setTimeout(r, 1000));
+  },
+  'eigencircuits': async (page) => {
+    // Paper IDs rotate through a 90-day window; if the pinned ID 404s,
+    // pick a fresh one from the homepage listing and edit the URL below
+    await page.waitForSelector('.paper .katex', { timeout: 30000 });
+    await new Promise(r => setTimeout(r, 1500));
+  },
   'severed': async (page) => {
     // Wait for globe and data to load, then click a scenario
     await new Promise(r => setTimeout(r, 6000));
@@ -584,6 +635,13 @@ const sites = [
   { name: 'fourier', url: 'https://sean-reid.github.io/fourier/' },
   { name: 'sounds', url: 'https://sean-reid.github.io/sounds/' },
   { name: 'pulse', url: 'https://sean-reid.github.io/pulse/', interactive: true },
+  { name: 'unquote', url: 'https://unquote.dwainosaur.com/?q=' + encodeURIComponent('i have a bad feeling about this') },
+  { name: 'randomify', url: 'https://randomify.net' },
+  { name: 'rebase', url: 'https://sean-reid.github.io/rebase/' },
+  { name: 'movie-quotes', url: 'https://quotes.dwainosaur.com' },
+  { name: 'miditool', url: 'https://sean-reid.github.io/miditool/' },
+  { name: 'eigencircuits', url: 'https://eigencircuits.seanreid.workers.dev/html/2607.00427' },
+  { name: 'clowns-and-mimes', url: 'https://sean-reid.github.io/clowns-and-mimes' },
 ];
 
 const readline = require('readline');

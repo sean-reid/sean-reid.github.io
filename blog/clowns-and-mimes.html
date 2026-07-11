@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+    <title>Clowns and Mimes - Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/clowns-and-mimes.webp">
+    <link rel="stylesheet" href="/nav.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="/" class="site-nav-name">Sean Reid</a>
+    <div class="site-nav-controls">
+      <div class="site-nav-search-wrap"><input type="text" class="site-nav-search" placeholder="Search..." autocomplete="off"><span class="site-nav-search-hint">/</span></div>
+      <a class="site-nav-random">&rarr; Random</a>
+      <div class="search-dropdown"></div>
+    </div>
+  </div>
+</nav>
+<main class="site-content">
+    <div class="container">
+        <header>
+            <h1>Clowns and Mimes</h1>
+            <p class="meta">Server-authoritative multiplayer tag in a dark labyrinth wrapped onto a torus, a M&ouml;bius strip, or a Klein bottle</p>
+            <p class="links-row">
+                <a href="https://sean-reid.github.io/clowns-and-mimes">Live Demo</a>
+                <a href="https://github.com/sean-reid/clowns-and-mimes">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <figure>
+                <img decoding="async" fetchpriority="high" src="img/clowns-and-mimes.webp" alt="Carnival-poster project site for Clowns and Mimes with mime and clown portraits and OS-specific download buttons">
+                <figcaption>The project site. The download buttons detect your OS and resolve to the latest GitHub release.</figcaption>
+            </figure>
+
+            <p>The full title is <em>Clowns and Mimes, on Miscellaneous Topological Spaces... IN THE DARK</em>. It is a team tag game for 4 to 16 players, humans and bots. Every player is either a mime or a clown. Turns alternate between the teams; whoever holds the turn freezes opponents by running into them or hitting them with a freeze shot, and frozen players stay frozen until a teammate touches them. A team wins when every opponent is frozen. The arena is a labyrinth, the labyrinth is barely lit, and the surface it is built on is chosen from a short list of <a href="https://en.wikipedia.org/wiki/Quotient_space_(topology)">quotient spaces</a>.</p>
+
+            <p>The client is a native desktop build: <a href="https://godotengine.org/">Godot 4</a> in GDScript, shipped as installers for Windows, macOS, and Linux. Matchmaking and match simulation run on <a href="https://developers.cloudflare.com/durable-objects/">Cloudflare Workers and Durable Objects</a> in TypeScript, one Durable Object per room, ticking at 60 Hz. The project is pre-alpha and being built in public.</p>
+
+            <h2>Four ground surfaces</h2>
+
+            <p>The playing field is a flat XZ plane with topology-specific wrap rules applied after every physics step, which buys the gameplay of a curved surface without rendering one. A host picks from four options. The plane is a plain 80&times;80 square with boundary walls. The <a href="https://en.wikipedia.org/wiki/Torus">torus</a> takes the same square and identifies opposite edges, so both coordinates wrap modulo the world width \(W\): walk off the east edge and you arrive at the west edge, no walls needed. The <a href="https://en.wikipedia.org/wiki/Klein_bottle">Klein bottle</a> uses the textbook identification \((x, z) \sim (x + W, -z)\) with \(z\) also periodic; the <a href="https://en.wikipedia.org/wiki/M%C3%B6bius_strip">M&ouml;bius strip</a> uses the same orientation-reversing x-identification but hard-bounds \(z\), since the strip has a boundary.</p>
+
+            <figure class="small">
+                <img decoding="async" src="img/cc/mobius-strip.webp" alt="A Möbius strip made from a paper ribbon" loading="lazy">
+                <figcaption>A M&ouml;bius strip. One of the four playing fields. <a href="https://commons.wikimedia.org/wiki/File:M%C3%B6bius_strip.jpg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <p>Each surface is a small adapter class exposing <code>wrap</code>, <code>distance</code>, and <code>delta</code>. Distance is the shortest path under the identification, not the Euclidean one, and everything downstream uses it: the server's tag check measures topology-aware distance, so a tag can land across a seam, and bot steering uses the wrapped delta so a bot near a seam chases the short way around instead of zigzagging back across the whole arena.</p>
+
+            <h2>The double cover</h2>
+
+            <p>The non-orientable surfaces have a rendering problem. Applying the Klein bottle's z-flip live at the seam means walls jump and the camera mirrors the instant you cross \(x = \pm W/2\). Instead, the game renders the <a href="https://en.wikipedia.org/wiki/Orientability#Orientable_double_cover">orientation double cover</a>: a \(2W \times W\) torus whose right half is the z-mirror of the left half. The flip is baked into the geometry rather than the wrap rule, so every seam crossing is a plain modular translation and the walls stay continuous. Walking the long way around the cover visits both sides of the underlying bottle. The M&ouml;bius strip gets the identical treatment as a cylindrical double cover, 160 units around and 40 tall, with the strip's single boundary loop becoming the cylinder's top and bottom walls. The same trick is used twice because the two surfaces differ only in whether \(z\) wraps.</p>
+
+            <figure class="small">
+                <img decoding="async" src="img/cc/klein-bottle-square.svg" alt="Fundamental polygon of the Klein bottle: a square with one edge pair identified directly and the other reversed" loading="lazy">
+                <figcaption>The Klein bottle's <a href="https://en.wikipedia.org/wiki/Fundamental_polygon">fundamental polygon</a>. One edge pair glues directly, the other with a flip. <a href="https://commons.wikimedia.org/wiki/File:KleinBottleAsSquare.svg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <p>The minimap folds the cover back down. A player standing on the mirrored half renders as a dimmed dot at the z-flipped position, and crossing the fold reads as the dot hopping the map edge with its facing mirrored.</p>
+
+            <h2>One maze, two runtimes</h2>
+
+            <p>The labyrinth is a spanning tree carved over a 10&times;10 grid of cells by seeded iterative <a href="https://en.wikipedia.org/wiki/Depth-first_search">depth-first search</a>, followed by a braiding pass that knocks a wall out of every dead end so the maze has loops. The neighbor function is where the topology lives: on the torus, cells wrap across both seams; on the Klein bottle, crossing the x-seam flips the row index; on the plane, out-of-bounds is solid. Wall segments that land on a wrap seam are dropped, because the identification folds both edges onto the same line and the wall would double up.</p>
+
+            <p>The generator is implemented twice, in GDScript for the client and TypeScript for the server, mirrored bit for bit: the same 32-bit <a href="https://en.wikipedia.org/wiki/Linear_congruential_generator">linear congruential generator</a>, the same fixed neighbor-traversal order. Both sides derive the wall list from the room seed alone, so the client bakes its meshes and the server runs collision and line-of-sight on identical geometry without ever sending mesh data. For the Klein bottle the generator first carves the fundamental 10&times;10 maze with the flip-row wrap, then unfolds it into the 20&times;10 cover, mirroring each cell's opening mask and swapping its north and south bits. The DFS has to run on the fundamental domain with the flip in its wrap rule: carve the cover with plain modular wraps instead and the openings at the middle seam land on mismatched rows, and the two halves can come out as unreachable islands.</p>
+
+            <h2>In the dark</h2>
+
+            <p>The arena's ambient light is turned down to almost nothing and volumetric fog carries its own emission to shorten sight lines further. What lighting exists is doing gameplay work: LED strips at the base of every wall glow in the active turn's team tint, warm for clowns and cool for mimes, so whose turn it is reads at a glance from anywhere in the maze. Bots are subject to the same darkness in spirit: their vision is gated by a distance threshold and a wall line-of-sight test, and a chasing bot that loses its target routes to the last seen position for three seconds before giving up. A radar power-up briefly reveals the enemy team on the minimap; a cloak hides your body from other clients for four seconds.</p>
+
+            <h2>The server holds the whistle</h2>
+
+            <p>Every freeze is decided by the Durable Object. A tag attempt is validated against the full rule list: correct turn phase, attacker not frozen, victim not just unfrozen, topology-aware distance under the contact radius, no wall crossing the line between the two players, and vertical overlap, so a well-timed jump literally puts you out of reach. Movement is client-predicted with full-replay <a href="https://en.wikipedia.org/wiki/Client-side_prediction">reconciliation</a>: the client replays its unacknowledged inputs from each authoritative snapshot through the same shared movement step the server runs. Remote players render at the wrap-equivalent position nearest the local camera, so an opponent crossing a seam appears at the continuation you can see rather than teleporting a world-width away. On a torus, someone is always closer than they appear.</p>
+        </article>
+
+    </div>
+</main>
+<footer class="site-footer">
+  <div class="site-footer-links">
+    <a href="https://github.com/sean-reid">GitHub</a>
+    <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
+    <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
+    <a href="https://socrates-of-athens.github.io">Poetry</a>
+    <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
+  </div>
+</footer>
+<script src="/nav.js"></script>
+</body>
+</html>
