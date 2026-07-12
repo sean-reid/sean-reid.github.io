@@ -24,7 +24,7 @@
     <div class="container">
         <header>
             <h1>How Will I Die</h1>
-            <p class="meta">Your top causes of death by location, age, and sex, based on global mortality data</p>
+            <p class="meta">The leading eventual causes of death by country, age, and sex, projected forward from WHO mortality data</p>
             <p class="links-row">
                 <a href="https://sean-reid.github.io/how-will-i-die/">Live Demo</a>
                 <a href="https://github.com/sean-reid/how-will-i-die">Source</a>
@@ -33,43 +33,71 @@
 
         <article>
             <figure>
-                <img decoding="async" fetchpriority="high" src="img/how-will-i-die.webp" alt="Screenshot of How Will I Die">
-                <figcaption>How Will I Die.</figcaption>
+                <img decoding="async" fetchpriority="high" src="img/how-will-i-die.webp" alt="Screenshot of How Will I Die showing the ranked causes of death for men aged 55 to 59 in Japan">
+                <figcaption>The ranking for men aged 55 to 59 in Japan. The waffle grid marks the share projected to die of the top cause; the list below ranks the rest.</figcaption>
             </figure>
 
-            <p>Mortality statistics are public, detailed, and kind of fascinating once you start digging into them. The <a href="https://www.healthdata.org/">Institute for Health Metrics and Evaluation</a> publishes the <a href="https://vizhub.healthdata.org/gbd-compare/">Global Burden of Disease</a> dataset, which breaks down causes of death by country, age group, sex, and year. This project makes that data queryable from a browser. Pick your location, enter your age, select your sex, and it tells you the ten things most likely to kill you, ranked by probability.</p>
+            <p>Pick a country, enter an age, choose a sex, and the site returns a ranked list of the causes of death most likely to eventually get you, with an approximate likelihood for each. The numbers come from the <a href="https://www.who.int/data/gho">World Health Organization</a>, cover about 185 countries, and are population statistics rather than a forecast about any one person. The interesting part is what sits behind that single list: two mismatched cause-of-death sources stitched onto a common survival model, trends fit and carried forward, and a competing-risks life table run over each cohort's remaining life so the shares add up to one.</p>
+
+            <p>The whole thing is a static site. Every projection is computed once at build time and baked into a small per-country lookup, so the page itself only reads JSON and renders it. There is no server, no database, and no request that touches a model.</p>
+
+            <h2>The question it answers</h2>
+
+            <p>The obvious version of this question is a snapshot: of everyone who dies at your exact age, what did they die of? That answer is misleading. A young adult is far more likely to die in a car crash this year than of heart disease, but over a whole lifetime the long-run diseases dominate, because most people survive youth. The snapshot describes who dies young; it says little about how a living 25-year-old eventually goes.</p>
+
+            <p>So the site answers the forward question instead. For a cohort alive at your age today, in your country, of your sex, what fraction will <em>eventually</em> die of each cause? Everyone dies of something, so those lifetime shares sum to one. That is a <a href="https://en.wikipedia.org/wiki/Survival_analysis#Competing_risks">competing-risks</a> quantity: each cause competes to be the one that gets you, and dying of one removes you from the pool for all the others.</p>
 
             <figure>
                 <img decoding="async" src="img/cc/social-determinants.webp" alt="Social determinants of health diagram" loading="lazy">
-                <figcaption>Social determinants of health (Whitehead and Dahlgren model). Mortality varies dramatically by location, age, and sex. <a href="https://commons.wikimedia.org/wiki/File:Social_determinants_of_health_visualization.png">Wikimedia Commons</a></figcaption>
+                <figcaption>Social determinants of health (Whitehead and Dahlgren model). The cause mix shifts sharply with country, age, and sex. <a href="https://commons.wikimedia.org/wiki/File:Social_determinants_of_health_visualization.png">Wikimedia Commons</a></figcaption>
             </figure>
 
-            <p>The results are sometimes surprising. Young men in the United States have a wildly different risk profile than older women in Japan. Car accidents and violence dominate in some demographics. Heart disease dominates in others. A few causes show up for almost everyone regardless of demographics (ischemic heart disease is hard to escape), while others are sharply concentrated in specific groups.</p>
+            <h2>Two data sources, one survival model</h2>
 
-            <h2>Data and computation</h2>
+            <p>Survival, meaning how likely you are to make it from one age to the next, comes from the <a href="https://www.who.int/data/gho">WHO Global Health Observatory</a> <a href="https://en.wikipedia.org/wiki/Life_table">life tables</a>, pulled from the GHO OData API. They exist for every member state on an abridged five-year grid (0, 1, 5, 10, ... 80, 85+) for years 2000 to 2021, and they supply the all-cause death rate that decides <em>when</em> a cohort dies.</p>
 
-            <p>The IHME dataset is large. Rather than querying a server on every request, the relevant mortality tables are pre-processed and compiled into a <a href="https://webassembly.org/">WebAssembly</a> module written in Rust. When you load the page, the WASM module initializes and exposes a prediction function to JavaScript. The location list is cached in <a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage">localStorage</a> after the first load so subsequent visits don't need to re-fetch it.</p>
+            <p>Deciding <em>what</em> it dies of needs a cause breakdown, and that comes from one of two sources depending on the country. The default is the <a href="https://platform.who.int/mortality">WHO Mortality Database</a>, national registrations of actual deaths coded in detailed <a href="https://icd.who.int/browse10">ICD-10</a> on fine five-year age bands. Around 101 countries have recent, near-complete registration and use it. The rest, roughly 84 countries, fall back to <a href="https://www.who.int/data/global-health-estimates">WHO Global Health Estimates</a> 2021 country files: modeled figures on seven coarse age bands (0-4, 5-14, 15-29, 30-49, 50-59, 60-69, 70+) with less cause detail. Those results are badged in the UI as a regional modeled estimate and are given wider uncertainty. The Mortality Database identifies countries by WHO numeric code, which is crosswalked to <a href="https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3">ISO 3166-1 alpha-3</a> so all three sources line up on the same country key.</p>
 
-            <p>Using WASM for this is partly about performance and partly about packaging. The mortality data and the lookup logic ship as a single binary blob that the browser can execute directly. No API server, no database, no backend infrastructure. The whole thing runs on GitHub Pages as a static site.</p>
+            <p>The two cause sources are reconciled onto one taxonomy: the GHE cause list. ICD-10 codes from the Mortality Database are mapped to GHE causes by matching each code to the most specific ICD-10 range it falls in, with umbrella ranges used only as a fallback. Coarse GHE bands never straddle a life-table band (every GHE boundary lands on the five-year grid), so a fine survival band always nests wholly inside one cause band and inherits that band's cause split unchanged.</p>
+
+            <h2>Redistributing garbage codes</h2>
+
+            <p>Death certificates are noisy. A meaningful share of them carry <a href="https://en.wikipedia.org/wiki/Garbage_code">ill-defined or "garbage" codes</a>: unspecified heart failure, cancer of unknown primary site, injury of undetermined intent, symptoms with no underlying cause named. Left alone these would distort the ranking, inflating a vague catch-all above real causes. Following the GHE methods, the pipeline redistributes each garbage code's deaths onto plausible real causes within the same demographic cell, in proportion to the deaths already there. Ill-defined codes spread across broad disease groups, unspecified cardiovascular deaths across cardiovascular causes, cancers of unknown site across the malignancies, and undetermined-intent injuries across the injury causes. The redistribution conserves the total death count exactly, checked at build time.</p>
+
+            <h2>Projecting the rates forward</h2>
+
+            <p>A lifetime projection cannot use today's rates frozen in place, because rates change. Both halves of the model are fit on the recent past and carried forward, with the pandemic years excluded as trend anchors.</p>
+
+            <p>The all-cause level uses <a href="https://en.wikipedia.org/wiki/Lee%E2%80%93Carter_model">Lee-Carter</a>, per country and sex. It factors the log death rate into an age profile and a single time index,</p>
+
+            \[\ln m(x,t) = a(x) + b(x)\,k(t),\]
+
+            <p>estimated from the first principal component of the centered log-rate matrix over 2000 to 2019. The time index \(k\) is forecast as a random walk with a damped drift (a per-year damping factor of 0.98), so a projection saturates over decades rather than extrapolating a straight line for eighty years, and projected rates are floored so they cannot overshoot toward zero.</p>
+
+            <p>The cause mix within each age band is itself a composition (the shares sum to one), so it is forecast in <a href="https://en.wikipedia.org/wiki/Compositional_data">compositional-data</a> terms. Each band's shares are moved into <a href="https://en.wikipedia.org/wiki/Compositional_data#Center_logratio_transform">centered-log-ratio</a> space, a trend is fit and shrunk toward zero for rare, noisy causes, and the forecast is damped and inverse-transformed back to shares. That keeps every forecast composition positive and summing to one, and keeps it near the recent observed mix rather than chasing a twenty-year slope across a lifetime.</p>
 
             <figure class="small">
                 <img decoding="async" src="img/cc/life-expectancy.svg" alt="Life expectancy by world region from 1770 to present" loading="lazy">
-                <figcaption>Life expectancy by world region, 1770 to present. <a href="https://commons.wikimedia.org/wiki/File:Life_expectancy_by_world_region,_OWID.svg">Wikimedia Commons</a></figcaption>
+                <figcaption>Life expectancy by world region, 1770 to present. The projection extends country-specific trends of this kind a few decades forward. <a href="https://commons.wikimedia.org/wiki/File:Life_expectancy_by_world_region,_OWID.svg">Wikimedia Commons</a></figcaption>
             </figure>
 
-            <h2>What the numbers mean</h2>
+            <h2>The cohort life table</h2>
 
-            <p>The output is a ranked list of causes of death for your demographic cell. The GBD provides cause-specific mortality rates \(\mu_c(a, s, \ell)\) per 100,000 population, stratified by age group \(a\), sex \(s\), and location \(\ell\). The ranking orders causes by descending \(\mu_c\): the cause with the highest rate for your cell appears first. The all-cause mortality rate \(\mu = \sum_c \mu_c\) determines life expectancy, and each cause's share of total mortality gives its <a href="https://en.wikipedia.org/wiki/Proportional_mortality_ratio">proportional mortality ratio</a>:</p>
+            <p>The two forecasts are combined on the cohort diagonal: a cohort alive at start age today experiences age \(x+k\) in calendar year now plus \(k\), so each future age band is evaluated on that year's projected rates. Marching forward band by band, the model accumulates each cause's lifetime cumulative incidence. Within a band the hazard is treated as constant, so the probability of dying in a band of width \(w\) given survival to it is \(q = 1 - e^{-w\,m}\). Writing \(S_b\) for survival from the start age to band \(b\) and \(f_c(b)\) for the projected share of band-\(b\) deaths due to cause \(c\), the lifetime share is</p>
 
-            \[\text{PMR}_c = \frac{\mu_c}{\sum_{c'} \mu_{c'}}\]
+            \[\pi_c = \sum_b S_b\,q_b\,f_c(b), \qquad \sum_c \pi_c = 1.\]
 
-            <p>This isn't quite the probability that cause \(c\) will be your actual cause of death (that would require a <a href="https://en.wikipedia.org/wiki/Competing_risks">competing risks</a> model), but it's a reasonable approximation when causes are approximately independent. The tool shows rankings rather than raw percentages because the absolute rates depend on time horizon, which the input doesn't specify.</p>
+            <p>The open terminal band (85+) is fully absorbing, so any cohort that survives that far is assigned there and nobody leaks out of the sum. Because each band's cause shares sum to one and the terminal band takes everyone left, the lifetime shares sum to one by construction; the build asserts it to nine decimal places. For men aged 55 to 59 in Japan the projection puts cancer first at about one in three, then lower respiratory infections, stroke, and other circulatory disease clustered near one in twelve. For men aged 40 to 44 in the United States cancer leads at roughly a fifth, with dementia and ischaemic heart disease just behind.</p>
 
-            <p>The interface is deliberately minimal. Three inputs, one button, one list. There's no attempt to soften the presentation or add disclaimers about how "everyone is unique." The data is what the data is. If you're a 35-year-old man in Brazil, the tool tells you what 35-year-old men in Brazil tend to die of, ranked by frequency. What you do with that information is your business.</p>
+            <h2>Uncertainty</h2>
 
-            <h2>Implementation</h2>
+            <p>A single lifetime share is a point on a wide distribution, so the site shows an interval, not just a number. Each cohort is run over 200 draws that perturb both the Lee-Carter drift and the cause-composition trends by their estimated sampling error. The drift uncertainty accumulates with the raw horizon like a random walk, so a projection reaching eighty years ahead is honestly wider than one reaching five. The 5th-to-95th-percentile band from the draws is then clamped to a readable relative half-width, and modeled GHE countries get a wider floor so they visibly carry more uncertainty than the registered ones. The interface leads with rank order and rounds to phrases like "about 1 in 3" precisely because the exact decimals are less trustworthy than the ordering.</p>
 
-            <p>The codebase splits roughly 54% JavaScript, 25% HTML, and 21% Rust. The Rust code handles the data storage, indexing, and lookup. It's compiled to WASM with standard <a href="https://rustwasm.github.io/docs/wasm-bindgen/">wasm-bindgen</a> tooling. The JavaScript side manages the form, calls into the WASM module on submit, and renders the results as a simple ordered list. No charting library, no D3, no fancy visualization. Just a numbered list of causes of death. Sometimes the most effective data visualization is plain text.</p>
+            <h2>The build and the site</h2>
+
+            <p>The pipeline is deliberately two-tier so the data stays reproducible. The heavy step, raw WHO downloads to a normalized intermediate snapshot, is run by hand and commits a versioned set of Parquet files plus a manifest of source URLs, file dates, and checksums. The light step, intermediate to projection to per-country JSON, is deterministic and byte-stable, so CI can rebuild the shards and a check step fails on any drift from what is committed.</p>
+
+            <p>That light step rolls the detailed causes up into curated display groups (so, for example, the various cancers rank as one row instead of fragmenting across a dozen sites) and writes one small JSON shard per country plus a shared index. Repeated strings, the group labels and cause definitions, live once in the index and are referenced by id, which keeps each shard tiny. The frontend is plain HTML, CSS, and JavaScript bundled with <a href="https://esbuild.github.io/">esbuild</a>, with no framework. It loads the index, lazy-loads one country shard on demand, and renders the ranking. The country picker is an accessible searchable combobox over the ~185 countries, the sex control is a segmented toggle, and the headline share is drawn as a hundred-figure waffle grid. Tapping a row expands it to the specific causes inside the group and, for suicide and interpersonal violence, a national crisis line for that country.</p>
         </article>
 
     </div>

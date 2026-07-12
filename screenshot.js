@@ -529,6 +529,21 @@ const interactions = {
     }
     await new Promise(r => setTimeout(r, 5000));
   },
+  'how-will-i-die': async (page) => {
+    // Pick a non-default country, set age and sex, submit, wait for the ranking
+    await page.waitForSelector('#query:not([hidden])', { timeout: 20000 });
+    await page.click('#country-input');
+    await page.evaluate(() => { document.getElementById('country-input').value = ''; });
+    await page.type('#country-input', 'Japan', { delay: 40 });
+    await page.waitForSelector('#country-list:not([hidden]) li');
+    await page.click('#country-list li');
+    await page.click('#age', { clickCount: 3 });
+    await page.type('#age', '55');
+    await page.click('input[name="sex"][value="male"]');
+    await page.click('button[type="submit"]');
+    await page.waitForSelector('.ranking li', { timeout: 10000 });
+    await new Promise(r => setTimeout(r, 800));
+  },
   'unquote': async (page) => {
     // URL carries the query; just wait for results to render
     await page.waitForSelector('.results', { timeout: 30000 });
