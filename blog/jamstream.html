@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+    <title>JamStream - Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/jamstream.webp">
+    <link rel="stylesheet" href="/nav.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="/" class="site-nav-name">Sean Reid</a>
+    <div class="site-nav-controls">
+      <div class="site-nav-search-wrap"><input type="text" class="site-nav-search" placeholder="Search..." autocomplete="off"><span class="site-nav-search-hint">/</span></div>
+      <a class="site-nav-random">&rarr; Random</a>
+      <div class="search-dropdown"></div>
+    </div>
+  </div>
+</nav>
+<main class="site-content">
+    <div class="container">
+        <header>
+            <h1>JamStream</h1>
+            <p class="meta">Self-destructing jam servers in your own cloud account, with a 2.5 ms mix tick, Noise-encrypted UDP audio, an adaptive jitter buffer, and single-encode restreaming to Twitch and YouTube</p>
+            <p class="links-row">
+                <a href="https://sean-reid.github.io/jamstream/">Downloads and Guide</a>
+                <a href="https://github.com/sean-reid/jamstream">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <figure>
+                <img decoding="async" fetchpriority="high" src="img/jamstream.webp" alt="JamStream session screen showing eight musician mixer strips with faders, a chat panel, a metronome, and a 7.9 ms mouth-to-ear latency readout">
+                <figcaption>Eight musicians in a session. Every musician gets their own fader in your personal monitor mix, ten listeners are along for the ride, and the number that matters sits in the corner: 7.9 ms from mouth to ear.</figcaption>
+            </figure>
+
+            <p>Sound travels about a foot per millisecond. Two musicians standing ten feet apart on a stage are already playing ten milliseconds in each other's past, and an orchestra spans several times that. Ensembles absorb this without noticing, up to a point: somewhere around 30 ms the delay stops being room acoustics and starts being lag, and by 65 ms you're not playing together anymore, you're taking turns. That's the whole engineering problem of playing music over the internet. A video call runs 150 to 300 ms mouth to ear and nobody minds, because conversation is turn-taking. Music is not.</p>
+
+            <p>JamStream is a desktop app for jamming over the internet at latencies you can actually play on. One musician hosts: the app launches a session server on their own computer or in their own cloud account, mints one invite link per seat, and everyone else pastes theirs. Up to ten musicians play, up to twenty listeners tune in, the session can stream live to Twitch and YouTube and record takes into the host's own bucket, and when the music stops the server deletes itself. There are no accounts and no servers of mine in the middle: your identity is your invite, and the only infrastructure is the machine your session rents for an evening.</p>
+
+            <figure class="small">
+                <img decoding="async" src="img/cc/symphony-orchestra-stage.webp" alt="Symphony orchestra on a wide concert hall stage" loading="lazy">
+                <figcaption>An orchestra already tolerates tens of milliseconds of acoustic delay across the stage. The back of the second violins hears the timpani late, and the music survives. <a href="https://commons.wikimedia.org/wiki/File:Seattle_Symphony_Orchestra_on_stage_in_Benaroya_Hall.jpg">Wikimedia Commons</a></figcaption>
+            </figure>
+
+            <h2>The latency budget</h2>
+
+            <p>The target is under 30 ms mouth to ear, and the budget is spent in four places: the sound card (a 2.5, 5, or 10 ms device buffer each way, with <a href="https://learn.microsoft.com/en-us/windows/win32/coreaudio/exclusive-mode-streams">WASAPI exclusive mode</a> on Windows buying back the 20 to 30 ms that shared mode costs), sample rate conversion when a device won't run at 48 kHz (about 3 ms per converted direction), the network, and the receive-side jitter buffer (2.5 to 60 ms, adaptive). Measured medians with real Opus and real encryption over a simulated network, at full capacity: 9.7 ms with everyone in the same city, 19.3 ms across a region, 64.8 ms coast to coast over DSL. Under about 30 ms it feels like standing on a stage together. At 65 ms it feels like a phone call. Those three numbers aren't marketing copy, they're CI gates; more on that below.</p>
+
+            <h2>A server that mixes</h2>
+
+            <p>The session server runs a mix tick every 2.5 ms: 120 samples at 48 kHz. Each tick it decodes every musician's uplink, builds one personal stereo mix per musician with that musician excluded (you monitor yourself locally through your own hardware, because a mix that includes your own signal ten milliseconds late is unplayable), applies that member's fader and constant-power pan settings, and encodes the result back down at 192 kbps. Listeners get a different path: a broadcast mix accumulated over eight ticks into 20 ms frames, run through a brickwall lookahead limiter (1 ms lookahead, -1 dBFS ceiling), and encoded <em>once</em> at 128 kbps, then sealed separately for each listener. Only the sequence number and the encryption seal differ per listener. Encoding it per listener was measured at 20 &times; 190 &micro;s inside a 2500 &micro;s tick, which is arithmetic that doesn't work; encoding it once brings the worst tick at full capacity to about a quarter of the deadline.</p>
+
+            <p>The metronome is mixed sample-accurately on the server, and deliberately left out of the listener mix. The host can flip their own monitor over to the broadcast mix to audition what the stream hears, still on musician-grade 2.5 ms frames.</p>
+
+            <h2>The wire</h2>
+
+            <p>The protocol is custom, over a single UDP socket, not QUIC and not WebRTC. The handshake is <a href="https://noiseprotocol.org/">Noise</a> IK with X25519, ChaCha20-Poly1305, and BLAKE2s. The IK pattern matters: your invite carries the server's static public key, so the server is authenticated on the very first packet with no certificates and no trust-on-first-use, and your identity is an <a href="https://en.wikipedia.org/wiki/EdDSA">Ed25519</a>-signed seat token minted on the host's machine before the server even exists. An invite is about 220 characters, admits exactly one person, and can be revoked mid-session.</p>
+
+            <p>Media frames get a hand-packed 14-byte header rather than a serialization library, because the hot path's layout is part of the protocol. When packet loss crosses 1%, each packet starts piggybacking the previous frame's payload, so any single loss is recovered from its successor; redundancy turns off only after ten consecutive loss reports below 0.2%, so a flapping link doesn't toggle doubled bandwidth every second. The loss figure comes from the server's view of your uplink, reported once a second, and it counts wire loss even when redundancy already papered over it.</p>
+
+            <figure class="small">
+                <img decoding="async" src="img/cc/opus-bitrate-latency.svg" alt="Chart comparing audio codecs by bitrate and algorithmic delay, with Opus covering the widest area at the lowest delay" loading="lazy">
+                <figcaption>Codec delay versus bitrate. <a href="https://opus-codec.org/">Opus</a> is the only mainstream codec that stays useful below 20 ms of algorithmic delay, which is why every low-latency music project ends up using it. <a href="https://commons.wikimedia.org/wiki/File:Opus_bitrate%2Blatency_comparison.svg">Wikimedia Commons, CC BY 3.0</a></figcaption>
+            </figure>
+
+            <p>Opus has a quirk here: frames under 10 ms force the CELT code path, and Opus's in-band forward error correction only exists in the SILK path. So the 2.5 ms musician frames rely entirely on the piggyback scheme, while the 10 and 20 ms listener frames get in-band FEC as well. Two loss-protection mechanisms in one system, selected by which codec internals the frame duration happens to force. Chat, rosters, avatars, and stream control ride a small reliable channel over the same socket, with cumulative acks plus a 32-bit selective-ack bitmap, and replay protection is <a href="https://www.wireguard.com/protocol/">WireGuard</a>'s sliding-window scheme.</p>
+
+            <p>The handshake path is also where the denial-of-service math lives, because reading a handshake init costs an X25519 operation on the same task that owes everyone 2.5 ms of audio every 2.5 ms. Above 24 inits per second the server switches to WireGuard-style stateless cookies, deliberately below the 32-per-second Diffie-Hellman budget so cookies engage before honest joins start being dropped. And there are amplification floors: a version reject is 21 bytes, so any init shorter than 48 bytes gets silence, because answering a 3-byte datagram with 21 bytes would make the server an amplifier.</p>
+
+            <h2>The jitter buffer's blind spot</h2>
+
+            <p>The jitter buffer is mostly textbook: <a href="https://datatracker.ietf.org/doc/html/rfc3550">RFC 3550</a> interarrival jitter smoothed with a 1/16 EWMA, target depth of three times that plus one, clamped between 1 and 24 frames. It grows by holding a tick and shrinks by dropping a frame after 16 consecutive over-target ticks, and it only shrinks above target <em>plus one</em>, because the piggybacked redundancy is only usable when a lost packet's successor has already arrived; a buffer that shrank to exactly its target would silently disable its own loss protection.</p>
+
+            <p>The interesting part is a failure mode between the ordinary recovery paths. If a packet arrives one frame behind the playout position and that pull was concealed, playout steps back a frame and stretches time by one tick. If arrivals jump 512 frames, that reads as a stream restart and the buffer resets. But between those two lies a hole: a persistent offset of 2 to 511 frames where every packet is slightly late, every pull conceals, and both escape hatches are out of reach, forever. The signature is precise (a concealed pull with nothing playable, on a tick that also dropped a late packet), and if it persists for 60 ticks the buffer abandons its playout position and re-anchors. The 60 is derived at both ends: the largest transient that heals itself (a full 24-frame buffer plus a hostile-wifi reorder spike) resolves within about 32 ticks, so 60 gives 2x margin against false positives, while 60 ticks of detection plus a worst-case refill is about 210 ms, inside the 250 ms audio-continuity gate the test suite enforces. There are negative controls: 5,000 ticks of 2% loss with deep reordering must never trip it.</p>
+
+            <h2>Nobody's clock is right</h2>
+
+            <p>Two sound cards both claiming 48 kHz differ by up to a couple hundred parts per million, which sounds negligible until you realize 200 ppm is 17 spurious frames per minute that have to go somewhere. Each direction runs a drift compensator: a resampler whose ratio is steered a few ppm at a time by a <a href="https://en.wikipedia.org/wiki/Proportional%E2%80%93integral%E2%80%93derivative_controller">PI controller</a> watching buffer depth, with &plusmn;500 ppm of authority and a slew limit of 1 ppm per frame. The subtle bit is the setpoint: it isn't fixed, it tracks a slow moving average of the depth itself, floored at target plus one. The controller's job is to null the <em>rate</em> mismatch, not to fight a jitter buffer whose own adaptive target just moved for its own reasons. The capture-side loop is steered from the server's once-a-second report of your uplink depth; the playout loop from the local buffer. A property test asserts zero heap allocations across 5,000 steering cycles, because this all runs adjacent to the audio callback.</p>
+
+            <p>Before any of that, the device has to get to 48 kHz at all, and how much you can trust a device is per-OS. The policy is a four-rung ladder: run natively at 48 kHz; set the device's clock to 48 kHz where the OS allows it (CoreAudio, disclosed to the user since it's visible to every other app); let the OS convert (WASAPI, PipeWire); or convert at the boundary and count the ~3.2 ms into the latency figure. The rung you can trust depends on whether the host API tells the truth: <a href="https://www.alsa-project.org/">ALSA</a> sets the nearest rate the hardware supports and never reads it back, so a 44.1 kHz card asked for 48 comes back looking successful and plays the whole session sharp and 8.8% fast. So ALSA (and any unrecognized host) is assumed lying and gets the converter. The one flat refusal: a Bluetooth headset microphone in hands-free mode is an 8 or 16 kHz telephony endpoint, and no resampler un-telephones it. The error says to use another microphone.</p>
+
+            <h2>Picking a region</h2>
+
+            <figure>
+                <img decoding="async" src="img/jamstream-region.webp" alt="Host wizard region picker showing nyc3 at 21 ms and sfo3 at 74 ms worst round trip, with hourly and egress prices" loading="lazy">
+                <figcaption>Regions ranked by the worst member's round trip, in 5 ms buckets, with price breaking ties inside a bucket.</figcaption>
+            </figure>
+
+            <p>Hosting in the cloud starts with a probe: the app sends UDP round trips to every candidate region and ranks them by the <em>worst</em> member's RTT, because the band is only as tight as its most delayed member. RTTs are bucketed into 5 ms steps with price breaking ties inside a bucket, so a 2 ms latency edge never beats a materially cheaper region. Anyone whose best RTT to anywhere exceeds 150 ms is on satellite or worse and gets excluded from the ranking, so one bandmate on a boat can't veto the region for everyone else. Supported providers: DigitalOcean, AWS, GCP, or just your own computer; local hosting is the default and costs nothing.</p>
+
+            <h2>The server deletes itself</h2>
+
+            <figure class="small">
+                <img decoding="async" src="img/cc/sifa-pedal.webp" alt="Driver's vigilance pedal in the floor of a locomotive cab" loading="lazy">
+                <figcaption>The Sifa pedal in a German locomotive cab. Release it long enough and the train concludes the driver is gone and stops on its own. <a href="https://commons.wikimedia.org/wiki/File:SIFA-Pedal.jpg">Wikimedia Commons, CC BY-SA 2.5, Sebastian Terfloth</a></figcaption>
+            </figure>
+
+            <p>A rented server that outlives the jam is a subscription you didn't sign up for, so teardown is a <a href="https://en.wikipedia.org/wiki/Dead_man%27s_switch">dead man's switch</a> that lives in the guest, not on your laptop. While musicians are connected, the server touches an activity file once a second; a systemd timer compares that file's age against the idle window (default 10 minutes) and the session's hard cap (default 12 hours). The guard measures both windows in <code>/proc/uptime</code> seconds and only ever compares the file's timestamp for equality, never subtraction, because a cloud VM routinely boots with a wrong hardware clock and takes a large NTP step a minute later; a wall-clock idle window would read that step as ten minutes of silence and destroy a server with musicians playing on it. An in-flight recording upload defers destruction, but never past 600 seconds: a VM that never dies costs more than a lost recording.</p>
+
+            <p>What "destroy" means is different on every provider, shaped by what each one can actually guarantee. On AWS, instances launch with shutdown behavior set to terminate, so the guard runs <code>shutdown -h now</code> and the box holds no credentials at all. On DigitalOcean, powered-off droplets still bill, so the droplet deletes itself through the API with a token scoped to that one droplet. On GCP, the instance carries no service account, so nothing on it <em>can</em> delete it; instead the launch sets a maximum run duration with a termination action of delete, and the guard is careful never to power the VM off, because Compute Engine clears the pending termination when an instance stops, and a powered-off instance would outlive its own cap and bill its disk forever. As a backstop, every launch of the app or CLI sweeps all configured providers for tagged machines that shouldn't exist.</p>
+
+            <figure>
+                <img decoding="async" src="img/jamstream-cost.webp" alt="Cost preview step showing idle exit, hard cap, recording options, and an estimated total of $0.08 for a three hour session" loading="lazy">
+                <figcaption>The cost preview. Three hours, four musicians, one small DigitalOcean droplet: eight cents, with the guardrails spelled out above the total.</figcaption>
+            </figure>
+
+            <p>The result is that a session is a line item, not a bill: three hours of a four-piece costs about $0.08, and the absolute worst case, every guardrail ignored for the full 12-hour cap, is around forty cents. The status bar shows the meter running during the session.</p>
+
+            <h2>One encode, every platform</h2>
+
+            <figure>
+                <img decoding="async" src="img/jamstream-destinations.webp" alt="Broadcast settings panel with independent stream mix faders and Twitch and YouTube Live destinations both live" loading="lazy">
+                <figcaption>The stream gets its own mix, separate from anyone's monitor. One 720p encode feeds every destination; Twitch and YouTube each get their own pusher process.</figcaption>
+            </figure>
+
+            <p>Streaming runs entirely on the session server: frames are rendered in-process (member cards, avatars, level meters, a pure function of the roster and the frame index), encoded once by <a href="https://www.ffmpeg.org/">ffmpeg</a> (720p30, x264 zerolatency, CBR 2500k, AAC 128k), published to a <a href="https://github.com/bluenviron/mediamtx">MediaMTX</a> relay on localhost, and then pushed to each destination by its own <code>ffmpeg -c copy</code> process with its own restart backoff. One process per destination instead of ffmpeg's tee muxer means Twitch falling over restarts one pusher while YouTube never drops a frame.</p>
+
+            <p>Audio is the master clock. At 30 fps a video frame is 1600 samples, which is 13&#8531; mix ticks, so there is no whole number of ticks per frame and any implementation that picks one drifts unboundedly (16 ticks per frame is exactly 25 fps wearing a 30 fps label). Instead the frame count due is a pure function of cumulative samples consumed, producing a repeating 13, 13, 14 tick pattern that lands exactly 3 frames every 100 ms. When the renderer falls behind, catch-up frames repeat the last picture rather than being skipped, because the frame count is what keeps video pinned to audio; repeats and drops are reported separately since one is a stutter and the other is loss.</p>
+
+            <p>Feeding ffmpeg two raw streams through pipes hides a structural deadlock: ffmpeg demuxes all inputs on one thread and reads whichever is behind, a raw 720p frame is 1,382,400 bytes, and a pipe holds 65,536 bytes on Linux but as little as 16,384 on macOS, so the same frame is 21 pipe-fulls on one machine and 84 on the next, which is exactly why the bug survives testing on one platform. A single thread feeding both pipes eventually waits on a pipe ffmpeg isn't reading. The fix is one writer thread per pipe with bounded queues, so no thread ever waits on two things: the video queue drops frames on overflow, and the audio queue never drops (a hole in the master clock is worse than a restart) and is bounded by a stall detector instead. Stream keys, meanwhile, never touch a command line: each key is written to a file created 0600, unlinked before the child even returns from spawn, and read by the pusher into an environment variable, with every URL in ffmpeg's stderr redacted before it can reach a log.</p>
+
+            <h2>Takes</h2>
+
+            <figure>
+                <img decoding="async" src="img/jamstream-takes.webp" alt="Takes screen listing recorded sessions with mix and stems download buttons, sizes, prices, and expiry countdowns" loading="lazy">
+                <figcaption>Takes land in your own bucket with a real lifecycle rule. The download price is on the button, because the egress fee is yours too.</figcaption>
+            </figure>
+
+            <p>Recording writes 16-bit 48 kHz <a href="https://xiph.org/flac/">FLAC</a>, the full mix and optionally one stem per musician, streamed during the session rather than assembled at the end: the FLAC header is written with the total sample count marked unknown, so multipart upload to the host's own S3, Spaces, or GCS bucket can run while the take is still being played. Retention is enforced as an actual bucket lifecycle rule, not an app-side promise, and the Takes screen prices each download's egress on the button. Each Record-to-Stop is one take.</p>
+
+            <h2>Testing on a fake internet</h2>
+
+            <p>The server and client cores are sans-io: they take a timestamp and datagrams in, and give datagrams and events out. The same code runs under the production server binary, the desktop app, and a deterministic simulation harness that drives a real server and up to thirty real clients, with real Opus and real Noise encryption, in one process on a hand-advanced virtual clock, through a seeded network simulator with per-link delay, jitter, loss, reordering, and duplication. Same seed, same bytes, every time. Networked bugs that would surface once a month on stage replay in milliseconds on a laptop.</p>
+
+            <p>That's where the latency table comes from, and each of those numbers is a CI gate: 15 ms for same-city fiber, 30 ms regional (the product promise), 65 ms for cross-country DSL, each with a lower bound too, since a measurement below the physical floor means the measurement is broken. A hostile-wifi scenario requires redundancy to close at least 75% of loss-induced gaps per member (measured 90 to 93%), per member rather than summed because summed, one healthy member covers for two broken ones. Clock drift is deliberately not a network parameter but a read-side remap of the virtual clock, so a 200 ppm skew composes with any network profile. The 2.5 ms tick budget is gated at p99 rather than the mean, because the deadline is per tick and a mean divides the expensive tick into the seven cheap ones; the timed gates run on their own CI runner after an experiment showed that contention barely moves the median but moves the p99 seventeen-fold. Hot paths (drift compensation, resampling, frame rendering) are asserted allocation-free with a counting allocator, and the protocol surface has eight fuzz targets, including the Opus decoder, since it parses network bytes on a publicly reachable machine.</p>
+
+            <h2>Implementation</h2>
+
+            <p>JamStream is a Rust workspace of eleven crates: the wire protocol, the DSP engine, the sans-io session cores, the server binary, the <a href="https://www.egui.rs/">egui</a> desktop app, the audio device layer (<a href="https://github.com/rustaudio/cpal">cpal</a> on macOS and Linux, native exclusive-mode WASAPI on Windows), cloud provisioning with hand-rolled request signing for all three providers, the streaming pipeline, the frame renderer, a CLI that shares session state with the app, and the harness. The app ships signed and notarized for macOS and as plain binaries for Windows and Linux, with the session server as a static musl build that cloud-init downloads and checksum-verifies at boot. It's in beta; downloads and the full guide are at <a href="https://sean-reid.github.io/jamstream/">sean-reid.github.io/jamstream</a>.</p>
+        </article>
+
+    </div>
+</main>
+<footer class="site-footer">
+  <div class="site-footer-links">
+    <a href="https://github.com/sean-reid">GitHub</a>
+    <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
+    <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
+    <a href="https://socrates-of-athens.github.io">Poetry</a>
+    <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
+  </div>
+</footer>
+<script src="/nav.js"></script>
+</body>
+</html>
