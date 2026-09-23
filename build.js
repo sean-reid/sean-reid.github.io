@@ -41,13 +41,6 @@ function text(html) {
     .trim();
 }
 
-function monthYear(date) {
-  const [y, m] = date.split('-').map(Number);
-  const names = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
-    'August', 'September', 'October', 'November', 'December'];
-  return `${names[m - 1]} ${y}`;
-}
-
 function imageSize(file) {
   let buf;
   try {
@@ -139,8 +132,6 @@ function renderPost(post, html) {
   out = out.replace(/<nav class="site-nav">[\s\S]*?<\/nav>/, nav);
   out = out.replace(/<footer class="site-footer">[\s\S]*?<\/footer>/, footer);
   out = out.replace(/\s*<p class="date">[\s\S]*?<\/p>/, '');
-  out = out.replace(/(<p class="meta">[\s\S]*?<\/p>)/,
-    `$1\n            <p class="date"><time datetime="${post.date}">${monthYear(post.date)}</time></p>`);
   out = out.replace(/<img([^>]*)>/g, (tag, attrs) => {
     const src = attr(tag, 'src');
     if (!src || /^https?:/.test(src) || /\.svg$/.test(src)) return tag;

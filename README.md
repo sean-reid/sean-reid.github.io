@@ -8,7 +8,7 @@ Personal site and project writeups, at [sean-reid.github.io](https://sean-reid.g
 site.json           Name, bio, links, project groups
 posts.json          One entry per post: slug, name, short line, group, date. Order is rank.
 build.js            Writes index.html, search.json, sitemap.xml, feed.xml, robots.txt, 404.html,
-                    and rewrites each post's head metadata, nav, footer, date line, and image sizes
+                    and rewrites each post's head metadata, nav, footer, and image sizes
 templates/          Nav and footer shared by every page
 home.css            Homepage styles
 nav.css, nav.js     Shared nav, search, random, KaTeX loading
