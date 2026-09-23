@@ -24,7 +24,7 @@
     <div class="container">
         <header>
             <h1>The Count of Monte Carlo</h1>
-            <p class="meta">Monte Carlo simulation converging random text into Dumas</p>
+            <p class="meta">I let random characters settle into the text of Dumas one letter at a time.</p>
             <p class="links-row">
                 <a href="https://sean-reid.github.io/the-count-of-monte-carlo/">Live Demo</a>
                 <a href="https://github.com/sean-reid/the-count-of-monte-carlo">Source</a>
@@ -34,42 +34,16 @@
         <article>
             <figure>
                 <img decoding="async" fetchpriority="high" src="img/the-count-of-monte-carlo.webp" alt="Screenshot of The Count of Monte Carlo">
-                <figcaption>Text converging from random characters into Dumas.</figcaption>
+                <figcaption>The first of 5,805 passages, complete after 440 frames.</figcaption>
             </figure>
 
-            <p><a href="https://en.wikipedia.org/wiki/The_Count_of_Monte_Cristo"><em>The Count of Monte Cristo</em></a> by Alexandre Dumas is a long novel. A <a href="https://en.wikipedia.org/wiki/Monte_Carlo_method">Monte Carlo simulation</a> is a process that uses randomness to converge toward a target. Put them together and you get a simulation that starts with gibberish and gradually, character by character, converges into the text of the novel.</p>
+            <p>The page loads <a href="https://en.wikipedia.org/wiki/The_Count_of_Monte_Cristo"><em>The Count of Monte Cristo</em></a> from a bundled copy of the <a href="https://www.gutenberg.org/ebooks/1184">Project Gutenberg</a> text, starting at "On the 24th of February", and cuts it into passages of about 100 words, breaking at a full stop where it can. Each passage starts as noise. Every letter, digit, and punctuation mark is replaced with a random character from a pool of 91. Spaces and line breaks stay where they are, so the paragraph keeps its shape while the words are gibberish.</p>
 
-            <figure class="small">
-                <img decoding="async" src="img/cc/dumas-portrait.webp" alt="Alexandre Dumas, photographed by Nadar in 1855" loading="lazy">
-                <figcaption>Alexandre Dumas, photographed by Nadar, 1855. <a href="https://commons.wikimedia.org/wiki/File:Alexander_Dumas_père_par_Nadar_-_Google_Art_Project.jpg">Wikimedia Commons</a></figcaption>
-            </figure>
+            <p>Then, on every animation frame, each wrong character gets a 3% chance to snap to its correct value. That's the whole mechanism. With \(n\) wrong characters left, the expected number still wrong after \(t\) more frames is \(n(0.97)^t\). From 100 wrong characters to 1 takes about \(\ln(0.01)/\ln(0.97) \approx 151\) frames, two and a half seconds at 60 fps. The last character on its own waits 33 frames on average, and the very end of every passage is a finished paragraph with one letter still flickering. That tail is the maximum of many independent waits, and it's the part I find most watchable.</p>
 
-            <h2>How it works</h2>
+            <p>The code is messier than that. The loop scans the passage in reading order and stops after five changes per frame, and the first couple of those are usually spent re-randomising a wrong character so the noise keeps moving. So a fresh passage resolves from the front in a wave, and the pure 3% behaviour only takes over once about a hundred characters remain. There's a comment in the code about randomising the scan order to avoid exactly this bias. The array under it is sequential. I've left it, because the wave looks fine.</p>
 
-            <p>The simulation fetches the full text of the novel from <a href="https://www.gutenberg.org/">Project Gutenberg</a>. It splits the text into passages of roughly 100 words each. For each passage, the display starts as random characters: every letter replaced by a uniformly random letter, every digit by a random digit. Spaces and newlines are preserved from the start so the text maintains its visual shape even when the content is scrambled.</p>
-
-            <p>Each animation frame, every incorrect character independently has probability \(p = 0.03\) of snapping to its correct value. The process is memoryless: on each frame, each of the \(n\) remaining wrong characters either resolves (with probability \(p\)) or stays wrong (with probability \(1-p\)). The number of wrong characters after \(t\) frames follows a <a href="https://en.wikipedia.org/wiki/Geometric_distribution">geometric decay</a>:</p>
-
-            \[\mathbb{E}[\text{wrong after } t] = n(1-p)^t\]
-
-            <p>For a 500-character passage with \(p = 0.03\), the expected time to 99% convergence is \(t_{99} = \log(0.01) / \log(0.97) \approx 151\) frames. The last few characters take disproportionately long: the expected time for the final character is \(1/p \approx 33\) frames after the second-to-last resolves. This produces the characteristic "almost done, one stubborn letter" pattern where an otherwise complete paragraph has a single wrong character holding out.</p>
-
-            <p>The connection to <a href="https://en.wikipedia.org/wiki/Monte_Carlo_method">Monte Carlo methods</a> is the use of independent random trials to converge on a known target. The algorithm doesn't march left to right. It randomizes which characters get checked on each frame, so the text resolves in a scattered, organic pattern. Some characters get lucky early (the <a href="https://en.wikipedia.org/wiki/Coupon_collector%27s_problem">coupon collector</a> effect means the first half converges much faster than the second half).</p>
-
-            <figure class="small">
-                <img decoding="async" src="img/cc/monte-carlo-pi.svg" alt="Monte Carlo method used to approximate pi by random sampling inside a square and circle" loading="lazy">
-                <figcaption>Estimating pi with the Monte Carlo method. Random points inside a square are tested against an inscribed circle. <a href="https://commons.wikimedia.org/wiki/File:Pi_monte_carlo_all.svg">Wikimedia Commons</a></figcaption>
-            </figure>
-
-            <h2>Visual design</h2>
-
-            <p>The interface leans into the literary theme. The background is dark brown. The text displays on a cream-colored panel with inset shadows that suggest aged paper. Typography uses <a href="https://en.wikipedia.org/wiki/Georgia_(typeface)">Georgia</a> and Garamond, both serif faces associated with book typesetting. A gradient progress bar tracks convergence percentage, and the stats box shows the current passage number and iteration count.</p>
-
-            <p>Watching the text resolve is the whole experience. The scrambled characters create a visual texture that's almost pleasant on its own, and then individual words start emerging from the noise. You'll recognize a character name before the sentence around it has finished converging. It's a small, idle thing, but it has a hypnotic quality that makes you want to watch at least a few passages all the way through.</p>
-
-            <h2>Implementation</h2>
-
-            <p>The entire project is a single HTML file plus the text file. No build step, no dependencies. The animation loop uses <a href="https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame">requestAnimationFrame</a> and the convergence logic is a few dozen lines of JavaScript. The heaviest thing the browser does is the initial fetch of the novel text, which is a few megabytes. After that, everything is string manipulation and DOM updates.</p>
+            <p>Words surface before their sentences do. A character's name appears, then the verb, then the rest of the line around them. The page updates the DOM every other frame, keeps a count of frames and a percentage of correct characters, and has previous, next, and skip buttons for moving through the passages. It's one HTML file and the text file, set in Georgia on a cream panel over dark brown.</p>
         </article>
 
     </div>
