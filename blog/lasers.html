@@ -24,7 +24,7 @@
     <div class="container">
         <header>
             <h1>Lasers</h1>
-            <p class="meta">A mirror puzzle game with laser physics</p>
+            <p class="meta">Place and rotate mirrors to bounce a laser around obstacles and into a target</p>
             <p class="links-row">
                 <a href="https://sean-reid.github.io/lasers/">Live Demo</a>
                 <a href="https://github.com/sean-reid/lasers">Source</a>
@@ -34,54 +34,24 @@
         <article>
             <figure>
                 <img decoding="async" fetchpriority="high" src="img/lasers.webp" alt="Screenshot of Lasers">
-                <figcaption>Lasers puzzle game.</figcaption>
+                <figcaption>A fresh level. The beam stops at the circle that always sits on the straight line to the target.</figcaption>
             </figure>
 
-            <p>The idea is old. A laser fires from one point on the board. A target sits somewhere else. Between them, circular obstacles block the direct path. You place mirrors to bounce the laser beam around the obstacles and into the target. The fewer mirrors you use, the better your score.</p>
+            <p>A laser fires from the left edge of an 800 by 600 board and a target sits on the right edge. Circles in between block the straight shot, and you place mirrors to bounce the beam around them. Fewer mirrors is a better score. I've seen this as a physical board game in toy shops. On a screen it gets unlimited levels for free.</p>
 
-            <figure class="small">
-                <img decoding="async" src="img/cc/reflection-angles.svg" alt="Angle of incidence equals angle of reflection" loading="lazy">
-                <figcaption>The law of reflection: angle of incidence equals angle of reflection. <a href="https://commons.wikimedia.org/wiki/File:Reflection_angles.svg">Wikimedia Commons</a></figcaption>
-            </figure>
+            <h2>Tracing the beam</h2>
 
-            <p>I've seen this puzzle in toy stores as a physical board game. The digital version has one advantage: you can generate an infinite number of levels.</p>
+            <p>The beam is a ray and each mirror is a 60-pixel segment. For every mirror I solve the <a href="https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection">ray-segment intersection</a> as a 2x2 linear system and keep the hit only if the ray parameter is positive and the segment parameter is between 0 and 1. For every circle, substituting the ray into \(|\mathbf{o} + t\,\mathbf{d} - \mathbf{c}|^2 = R^2\) gives a quadratic in \(t\), and a non-negative discriminant is a hit. The nearest hit wins. An obstacle or the board edge ends the beam. The target ends it with a win. A mirror with unit normal \(\hat{\mathbf{n}}\) reflects it,</p>
 
-            <h2>Reflection physics</h2>
+            \[\mathbf{d}' = \mathbf{d} - 2(\mathbf{d} \cdot \hat{\mathbf{n}})\,\hat{\mathbf{n}},\]
 
-            <p>The laser is a ray \(\mathbf{r}(t) = \mathbf{o} + t\,\mathbf{d}\) with origin \(\mathbf{o}\) and direction \(\mathbf{d}\). When it hits a mirror with unit normal \(\hat{\mathbf{n}}\), the reflected direction follows the <a href="https://en.wikipedia.org/wiki/Specular_reflection">law of specular reflection</a>:</p>
+            <p>and the trace carries on, up to 50 bounces so two facing mirrors can't hang the page. Mirrors rotate continuously rather than snapping to 45 degrees, and the whole path is retraced every frame while one is still being turned, so the beam sweeps across the board until it lands.</p>
 
-            \[\mathbf{d}' = \mathbf{d} - 2(\mathbf{d} \cdot \hat{\mathbf{n}})\,\hat{\mathbf{n}}\]
+            <h2>Levels</h2>
 
-            <p>This is the standard formula from optics: the component of \(\mathbf{d}\) perpendicular to the mirror surface reverses while the parallel component is preserved. The angle of incidence equals the angle of reflection, both measured from \(\hat{\mathbf{n}}\). The game recalculates the full beam path every time you place or adjust a mirror, so you get instant visual feedback as you rotate a mirror into position.</p>
+            <p>Each level is random rather than seeded. The first obstacle always goes on the straight line between laser and target, somewhere between 30 and 70 percent of the way across, offset by less than its own radius so the direct shot is blocked. Then 5 plus twice the level number more circles, 18 to 35 pixels in radius, land at random with at least 50 pixels of clearance around the laser and the target and 10 between each other. A circle that can't find a spot in 100 tries is dropped. The layout is base64-encoded into a <code>game</code> parameter in the URL, so a link to the page is a link to that exact puzzle and someone else can try to beat your mirror count on it.</p>
 
-            <p>Collision detection handles two kinds of geometry. For mirrors (line segments), it solves the <a href="https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection">ray-segment intersection</a>: parameterize the ray and the segment, solve the 2x2 linear system, and check that both parameters fall in their valid ranges (\(t > 0\) for the ray, \(u \in [0,1]\) for the segment). For circular obstacles, the ray-circle intersection reduces to a quadratic in \(t\):</p>
-
-            \[|\mathbf{o} + t\,\mathbf{d} - \mathbf{c}|^2 = R^2\]
-
-            <p>which has real solutions when the discriminant is non-negative (the ray passes within distance \(R\) of center \(\mathbf{c}\)). The beam terminates when it hits an obstacle, leaves the canvas bounds, or strikes the target.</p>
-
-            <h2>Placing mirrors</h2>
-
-            <p>Mirror placement is a two-step interaction. You click (or tap) to set the mirror's position, then move your mouse (or drag your finger) to rotate it. A yellow preview shows the mirror's orientation before you confirm. On desktop, moving the mouse smoothly rotates the preview; on mobile, dragging accomplishes the same thing. A second click or a finger release locks the mirror in place.</p>
-
-            <p>This interaction model matters because the rotation is continuous. You aren't snapping to 45-degree increments. The beam path changes continuously as you rotate, so you can watch the laser sweep across the board and land it precisely on the target. There's an undo button if you misplace a mirror, and a full reset if you want to start over.</p>
-
-            <figure class="small">
-                <img decoding="async" src="img/cc/laser-mirror.webp" alt="Laser beam reflecting off a mirror" loading="lazy">
-                <figcaption>A laser beam reflecting off a mirror. <a href="https://commons.wikimedia.org/wiki/File:Laser_mirror_reflection.jpg">Wikimedia Commons</a></figcaption>
-            </figure>
-
-            <h2>Level generation</h2>
-
-            <p>Each level is defined by the positions and sizes of its circular obstacles. The level number seeds a procedural generator that places progressively more obstacles as you advance. Early levels might have two or three small circles. Later levels pack the board with obstacles that force the beam through narrow gaps and around tight corners.</p>
-
-            <p>The obstacle configuration gets encoded into the URL. This means you can share a specific puzzle with someone by copying the link. They'll get the exact same layout you're looking at. It also means bookmarking a particularly tricky level works as you'd expect.</p>
-
-            <h2>Implementation</h2>
-
-            <p>The entire game is a single <code>index.html</code> file. No build step, no dependencies, no framework. Just <a href="https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API">HTML5 Canvas</a> and JavaScript. The rendering loop draws the dark background, the obstacles as filled gray circles, the mirrors as blue line segments with endpoint markers, and the laser beam as a glowing red line with a subtle bloom effect.</p>
-
-            <p>I kept the visual design dark and minimal. The laser glow is the most visually prominent element on the screen, which is right because it's the thing you're trying to control. The obstacles are muted gray. The mirrors are calm blue. The target pulses gently when the laser hasn't reached it yet, then turns green when it has. No score popups, no particle explosions. Just the satisfaction of watching the beam snap into place.</p>
+            <p>The whole game is one HTML file drawing to a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API">canvas</a>. The beam is the only bright thing on a dark board, and the target turns green when it's hit. There are no score popups and no particles.</p>
         </article>
 
     </div>
