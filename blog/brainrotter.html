@@ -24,7 +24,7 @@
     <div class="container">
         <header>
             <h1>BrainRotter</h1>
-            <p class="meta">Procedural generator for grammatically correct brainrot prose</p>
+            <p class="meta">Fills a page with grammatical brainrot from a weighted grammar and a 2,277-term lexicon.</p>
             <p class="links-row">
                 <a href="https://sean-reid.github.io/brainrotter/">Live Demo</a>
                 <a href="https://github.com/sean-reid/brainrotter">Source</a>
@@ -37,48 +37,27 @@
                 <figcaption>BrainRotter output.</figcaption>
             </figure>
 
-            <p>The internet has developed its own dialect. Words like "skibidi," "rizz," "sigma," and "sus" have their own grammar and usage patterns that are completely opaque to anyone over 25. I wanted to see what would happen if you fed that vocabulary into a proper <a href="https://en.wikipedia.org/wiki/Context-free_grammar">context-free grammar</a>. The result is BrainRotter: you press a button and it fills a page with paragraphs of grammatically structured, completely unhinged <a href="https://en.wikipedia.org/wiki/Brain_rot">brainrot</a> prose.</p>
-
-            <figure class="small">
-                <img decoding="async" src="img/cc/chomsky-hierarchy.svg" alt="Chomsky hierarchy of formal grammars" loading="lazy">
-                <figcaption>The Chomsky hierarchy of formal grammars. BrainRotter uses a weighted context-free grammar to generate text. <a href="https://commons.wikimedia.org/wiki/File:Chomsky-hierarchy.svg">Wikimedia Commons</a></figcaption>
-            </figure>
+            <p>The internet has a dialect. "Skibidi," "rizz," "sigma," and "sus" have their own grammar and usage, opaque to anyone over 25, and I wanted to see what happened when I fed that vocabulary into a proper <a href="https://en.wikipedia.org/wiki/Context-free_grammar">context-free grammar</a>. Press the button and BrainRotter fills the page with paragraphs of grammatically structured, completely unhinged <a href="https://en.wikipedia.org/wiki/Brain_rot">brainrot</a>.</p>
 
             <h2>The grammar</h2>
 
-            <p>The engine is a weighted <a href="https://en.wikipedia.org/wiki/Context-free_grammar">context-free grammar</a> (CFG) modeled after <a href="https://pdos.csail.mit.edu/archive/scigen/">SCIGen</a>. A CFG is a 4-tuple \(G = (V, \Sigma, R, S)\) where \(V\) is a set of non-terminal symbols, \(\Sigma\) is the terminal alphabet, \(R\) is a set of production rules \(A \to \alpha\), and \(S\) is the start symbol. In this case, productions are weighted: each rule \(A \to \alpha_i\) has a probability \(w_i\) with \(\sum_i w_i = 1\) for each non-terminal, making this technically a <a href="https://en.wikipedia.org/wiki/Probabilistic_context-free_grammar">PCFG</a>. Generation works by recursive expansion from the start symbol \(S\), choosing among alternative right-hand sides according to their weights.</p>
+            <p>The engine is a weighted context-free grammar in the style of <a href="https://pdos.csail.mit.edu/archive/scigen/">SCIgen</a>, 910 lines of plain JavaScript. There are 22 weighted sentence types: simple and compound clauses, relative clauses on the subject or the object, nested and compound-complex constructions, conditionals, comparatives, concessives, temporals, three kinds of question, dialogue, meta-commentary, escalation, negation, fake academic citations, enumerations, and callbacks. Simple and compound sentences carry weights of 10 and 9 and enumerations get 2, so the plain structures dominate and the elaborate ones show up often enough to keep the output from looping.</p>
 
-            <p>There are 22 sentence types: simple, compound, and complex clauses, nested and compound-complex constructions, conditionals, comparatives, concessives, temporals, three question forms, dialogue, meta-commentary, escalation, negation, academic citations, enumerations, and several narrative-specific types like character introductions, callbacks, and consequences. The weights are tuned so that simpler structures appear more often and the complex ones show up just frequently enough to keep the output from feeling repetitive.</p>
-
-            <figure class="small">
-                <img decoding="async" src="img/cc/markov-chain.svg" alt="A simple Markov chain state diagram" loading="lazy">
-                <figcaption>A Markov chain. While BrainRotter uses a context-free grammar (more powerful than Markov models), the weighted production rules define a probability distribution over derivations. <a href="https://commons.wikimedia.org/wiki/File:Markovkate_01.svg">Wikimedia Commons</a></figcaption>
-            </figure>
-
-            <p>The lexicon has over 2,100 terms organized into 13 categories: 347 entities (Skibidi Toilet, Bombardiro Crocodilo, Kai Cenat, Quandale Dingle), 195 transitive and 204 intransitive verbs ("rizzes up," "mogs," "is locked in"), 330 adjectives ("goated," "skibidi-coded," "looksmaxxed"), 139 adverbs, 165 prepositional phrases, 196 interjections, 78 question starters, 59 conjunctions, 55 relative clauses, 135 asides, 85 attributions, and 118 consequences. The vocabulary spans meme eras from Among Us through Italian internet culture.</p>
-
-            <figure class="small">
-                <img decoding="async" src="img/cc/parse-tree.svg" alt="A parse tree for the sentence 'John hit the ball'" loading="lazy">
-                <figcaption>A parse tree derived from a context-free grammar. <a href="https://commons.wikimedia.org/wiki/File:ParseTree.svg">Wikimedia Commons</a></figcaption>
-            </figure>
+            <p>The lexicon is 2,277 terms in 13 categories: 419 entities (Skibidi Toilet, Bombardiro Crocodilo, Kai Cenat, Quandale Dingle), 214 transitive and 224 intransitive verbs ("rizzes up," "mogs," "is locked in"), 366 adjectives ("goated," "skibidi-coded," "looksmaxxed"), and then adverbs, prepositional phrases, interjections, and the small categories that glue sentences together. It runs from Among Us through the Italian brainrot era.</p>
 
             <h2>Morphology</h2>
 
-            <p>Getting the grammar right required handling English morphology. Question formation in English involves "do-support" and subject-auxiliary inversion: "Skibidi Toilet rizzes up the sigma" becomes "Why did Skibidi Toilet rizz up the sigma?" The verb has to be deconjugated from its third-person present form ("rizzes") back to the bare infinitive ("rizz") when "did" is inserted. A <code>deconjugateTV()</code> function handles this, stripping suffixes and applying rules like "ies" to "y" and "es" to base form. It also handles apostrophe-bearing forms and irregular cases.</p>
+            <p>The fiddly part was English morphology. Verbs in the lexicon are stored in the third-person present ("rizzes up") because that's how most sentences use them, but a question needs do-support and the bare form. "Skibidi Toilet rizzes up the sigma" has to become "Why did Skibidi Toilet rizz up the sigma?" So <code>deconjugateTV()</code> picks a transitive verb, drops any 's or 'd contraction, finds the first word ending in s, and strips it back with the usual rules: "ies" to "y", "es" to the base unless the stem needs its e, and a plain "s" off unless the word ends in "ss" or "us". Intransitives that start with "is" lose the "is" for the "Is X bussin?" question form. Commas go before a coordinating conjunction between independent clauses and after a leading dependent clause. Those details are the difference between sentences and word salad.</p>
 
-            <p>Article-adjective ordering has its own rules. Comma placement between clauses follows English conventions (comma before a coordinating conjunction joining independent clauses, comma after a leading dependent clause). These details are what make the output read as actual sentences rather than word salad.</p>
+            <h2>A cast and a place</h2>
 
-            <h2>Narrative coherence</h2>
+            <p>Before generating, the engine picks 5 to 8 cast members from the entity pool and 3 recurring locations from the prepositional phrases. Characters are tracked as they're introduced, with a bias toward the cast that eases off as more of them have appeared and a rule against reusing anyone from the last two sentences, so the generator can write callbacks ("Meanwhile, Skibidi Toilet was still...") and consequences that refer to earlier events. Paragraphs come from seven archetypes (opening, narrative, academic, interrogative, dramatic, comparison, freeform), each with its own pool of sentence types, and recent types are remembered so the same construction doesn't land twice in a row.</p>
 
-            <p>Before generating, the engine builds a story context: it picks 5 to 8 cast members from the entity pool and 3 recurring locations. Characters are tracked as they're introduced and used, so the generator can write callbacks ("Meanwhile, Skibidi Toilet was still…") and consequences that reference earlier events. Recent sentence types are also tracked to avoid back-to-back repetition. The result reads more like a short story than a bag of words. Paragraphs follow archetypes (opening, narrative, academic, interrogative, dramatic, comparative) that give the text a loose narrative arc.</p>
+            <h2>Filling the box</h2>
 
-            <h2>The fill algorithm</h2>
+            <p>The output box has a fixed height and I wanted it exactly full. The generator asks for 30 paragraphs, then adds them one at a time to a hidden div styled to match the box, checking <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollHeight">scrollHeight</a> against the box's height after each and stopping before the one that overflows. If there's still room it generates 20 more and keeps going. The text regenerates on resize after a 200 ms pause, and Space or Enter does the same as the button.</p>
 
-            <p>The output container has a fixed height. When you press "ROT MY BRAIN," the generator doesn't produce a set number of sentences. Instead, it generates one sentence at a time and measures the rendered height using a hidden <code>div</code>. It copies the accumulated text into this offscreen element, checks <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollHeight">scrollHeight</a> against the container height, and stops when adding another sentence would cause overflow. The result is a block of text that fills the visible area exactly, regardless of screen size or font rendering differences. The text also regenerates on window resize.</p>
-
-            <h2>Packaging</h2>
-
-            <p>Vanilla HTML/CSS/JS using ES modules, no dependencies, no build step. The grammar engine, lexicon (split across five module files), and UI logic are separate modules that the browser loads directly. The project includes a full set of <a href="https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps">PWA</a> assets (favicons, manifest, browserconfig), since people were actually adding it to their home screens. The UI is a purple button and a dark text area.</p>
+            <p>It's vanilla HTML, CSS, and JavaScript with ES modules, loaded straight by the browser. There are PWA icons and a manifest because people were adding it to their home screens, and there are no tests.</p>
         </article>
 
     </div>
