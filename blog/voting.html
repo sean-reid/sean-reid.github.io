@@ -24,7 +24,7 @@
     <div class="container">
         <header>
             <h1>Voting</h1>
-            <p class="meta">Arrow's impossibility theorem demonstrated through five voting algorithms, four fairness criteria, and exhaustive profile enumeration</p>
+            <p class="meta">I check four voting methods against Arrow's criteria by enumerating every three-voter profile.</p>
             <p class="links-row">
                 <a href="https://sean-reid.github.io/voting/">Live Demo</a>
                 <a href="https://github.com/sean-reid/voting">Source</a>
@@ -34,53 +34,38 @@
         <article>
             <figure>
                 <img decoding="async" fetchpriority="high" src="img/voting.webp" alt="Screenshot of the Voting app">
-                <figcaption>The interactive explorer walks through Arrow's theorem in seven chapters, letting you drag preference orderings and watch voting outcomes shift in real time.</figcaption>
+                <figcaption>The title screen. The whole thing is one long scroll.</figcaption>
             </figure>
 
-            <p><a href="https://en.wikipedia.org/wiki/Arrow%27s_impossibility_theorem">Arrow's impossibility theorem</a> (1951) proves that no ranked voting system with three or more candidates can simultaneously satisfy four reasonable fairness criteria. Every system that handles unrestricted preferences and respects unanimity must either depend on irrelevant alternatives or concentrate all power in a single voter. This project lets you verify that claim yourself by running five real voting algorithms against all four criteria and watching each one fail.</p>
+            <p><a href="https://en.wikipedia.org/wiki/Arrow%27s_impossibility_theorem">Arrow's theorem</a> (1951) says that with three or more candidates, no way of turning a set of individual rankings into one group ranking can satisfy four conditions at once. I wanted to see it fail rather than read about it. So I wrote a scroll-through explainer in seven chapters with a sandbox at the end where you set three voters' rankings over three candidates, pick a method, and watch the checker find a counterexample.</p>
 
-            <figure class="small">
-                <img decoding="async" src="img/cc/preferential-ballot.svg" alt="A preferential ballot showing ranked candidate choices" loading="lazy">
-                <figcaption>A preferential ballot. Voters rank candidates in order of preference, and the resulting profile is the input to every social welfare function Arrow's theorem constrains. <a href="https://commons.wikimedia.org/wiki/File:Preferential_ballot.svg">Wikimedia Commons</a></figcaption>
-            </figure>
+            <h2>The four conditions</h2>
 
-            <h2>The four criteria</h2>
+            <p>A <a href="https://en.wikipedia.org/wiki/Social_welfare_function">social welfare function</a> takes a profile, one ranking per voter, and returns a single ranking. Arrow asks for unrestricted domain (it accepts every profile), Pareto (if everyone ranks \(A\) above \(B\), so does the group), independence of irrelevant alternatives (the group's \(A\) versus \(B\) depends only on how each voter ranks \(A\) versus \(B\)), and non-dictatorship (no voter's ranking is always the group's). The theorem says no function on three or more candidates has all four.</p>
 
-            <p>A <a href="https://en.wikipedia.org/wiki/Social_welfare_function">social welfare function</a> \(f\) takes a preference profile (a list of voter rankings over candidates) and produces a single social ranking. Arrow's theorem requires four properties:</p>
+            <h2>The methods</h2>
 
-            <p><strong>Unrestricted domain.</strong> \(f\) must accept any possible preference profile. No voter's ranking is forbidden.</p>
+            <p>Plurality counts first-place votes. It fails IIA in the familiar way: add a candidate similar to the leader and the leader's first places split.</p>
 
-            <p><strong>Pareto optimality.</strong> If every voter ranks \(A\) above \(B\), the social ranking must also place \(A\) above \(B\). Unanimous preference is respected.</p>
+            <p>Borda gives a candidate in position \(i\) (from 0) of a ballot \(m - 1 - i\) points and sums. It satisfies Pareto and fails IIA, since moving a third candidate around on some ballots changes the gap between the other two.</p>
 
-            <p><strong>Independence of irrelevant alternatives (IIA).</strong> The social ranking of \(A\) versus \(B\) depends only on voters' pairwise preferences between \(A\) and \(B\). Introducing or removing a third candidate \(C\) cannot change whether the group prefers \(A\) to \(B\).</p>
+            <p>Instant runoff drops the candidate with the fewest first-place votes and moves those ballots to their next choice until someone has a majority. It satisfies Pareto and fails IIA. Its well-known failure is monotonicity: ranking a candidate higher can make them lose, by changing who gets eliminated first. My checker also reports an IRV Pareto failure, and that's a bug in my code, not in IRV. When a majority winner appears early, I sort the remaining candidates by first-place votes and then reverse the elimination order. With three identical \([C, A, B]\) ballots, \(A\) and \(B\) both have zero votes, the stable sort leaves them as \([A, B]\), and the reversal puts \(B\) above \(A\) even though every voter said \(A > B\). The static table in the app says IRV satisfies unanimity, which is the correct answer.</p>
 
-            <p><strong>Non-dictatorship.</strong> There is no voter \(i\) such that the social ranking always equals voter \(i\)'s ranking, regardless of everyone else's preferences.</p>
+            <p>The method I labelled Condorcet is Copeland. It builds the pairwise matrix, counts how many head-to-head matchups each candidate wins, and sorts by that count with an alphabetical tie-break. A Condorcet winner, someone who wins every matchup, comes out on top when one exists. When there's a cycle (\(A\) beats \(B\), \(B\) beats \(C\), \(C\) beats \(A\)), everyone has one win and the tie-break decides. So it always returns a total order, satisfies Pareto and unrestricted domain, and fails IIA. In Arrow's framing a cycle is a failure of transitivity in the group ranking, and Copeland never produces one, at the cost of an arbitrary answer.</p>
 
-            <p>Arrow's theorem states that for \(|\text{candidates}| \geq 3\), no \(f\) satisfies all four. The app proves this empirically by exhaustively checking each criterion against each voting method.</p>
+            <p>The library also has an approval method that approves the top \(\lceil m/2 \rceil\) of each ranking, and the last chapter says approval and score voting fall outside Arrow's scope. That's true of approval as people use it, where each voter hands in a set rather than a ranking. My version maps a ranking to its top half, which makes it a positional rule and puts it squarely inside the theorem. It's in the methods table and not in the sandbox, and I'd now soften what that chapter says about it.</p>
 
-            <h2>Five voting methods</h2>
+            <h2>Checking by enumeration</h2>
 
-            <p><strong>Plurality</strong> counts first-place votes. The candidate who is ranked first by the most voters wins. Simple, but notoriously vulnerable to <a href="https://en.wikipedia.org/wiki/Vote_splitting">vote splitting</a>: it violates IIA because adding a similar candidate can siphon first-place votes from a frontrunner.</p>
+            <p>With three candidates each voter has \(3! = 6\) rankings, and three voters give \(6^3 = 216\) profiles. That's small enough to check every one, and for three candidates the checkers do. The IIA checker takes every pair of profiles in which all three voters agree on \(A\) versus \(B\), runs the method on both, and reports the first pair where the group disagrees. The unrestricted domain checker just confirms every profile produces a complete ranking, and the dictatorship checker looks for a voter whose ranking matches the output on every profile.</p>
 
-            <p><strong>Borda count</strong> assigns positional scores. With \(m\) candidates, a candidate ranked at position \(i\) (0-indexed) on a ballot receives \(m - 1 - i\) points. The total score for candidate \(c\) across all ballots is:</p>
+            <p>For four candidates the space is \(4!^3 = 13{,}824\) profiles and for five it's \(5!^3 = 1{,}728{,}000\), so the checkers sample instead, 200 random profiles for most criteria and 300 for IIA. A pass at four or more candidates means no counterexample was sampled, not that none exists. The sampler uses unseeded <code>Math.random</code>, so two runs can disagree.</p>
 
-            \[\text{score}(c) = \sum_{j=1}^{n} (m - 1 - \text{pos}_j(c))\]
+            <h2>The proof chapter</h2>
 
-            <p>Borda satisfies Pareto optimality but fails IIA: the relative score between two candidates changes when a third candidate's position shifts on some ballots.</p>
+            <p>The proof walkthrough follows the pivotal-voter argument from Geanakoplos (Economic Theory 26(1): 211-215, 2005) in four steps. Suppose a method has all four properties. Put candidate \(B\) last on every ballot, so by Pareto the group puts \(B\) last too. Move \(B\) from last to first on one ballot at a time. At some ballot \(B\) jumps from the bottom of the group ranking to the top. That voter is pivotal. Using IIA and Pareto, that voter's ranking of any two other candidates decides the group ranking of those two, so the pivotal voter is a dictator. The diagrams use five voters, with voter 3 as the pivot, because the jump is easier to see with more than one voter on each side.</p>
 
-            <p><strong>Instant runoff (IRV)</strong> iteratively eliminates the candidate with the fewest first-place votes and redistributes their ballots to the next surviving choice. A candidate wins immediately upon receiving more than half the votes. IRV satisfies non-dictatorship and unrestricted domain but fails both IIA and, in some edge cases, Pareto optimality.</p>
-
-            <p><strong>Condorcet</strong> builds a <a href="https://en.wikipedia.org/wiki/Condorcet_method">pairwise comparison matrix</a>: for each pair \((A, B)\), count how many voters rank \(A\) above \(B\). A candidate who wins every pairwise matchup is the Condorcet winner. Candidates are ranked by total pairwise wins. The method satisfies IIA on the pairs it can resolve, but <a href="https://en.wikipedia.org/wiki/Condorcet_paradox">Condorcet cycles</a> (\(A > B > C > A\)) can make it impossible to produce a consistent ranking, violating unrestricted domain.</p>
-
-            <p><strong>Approval</strong> lets each voter approve their top \(\lceil m/2 \rceil\) candidates. The candidate with the most approvals wins. Approval voting sidesteps Arrow's theorem somewhat because it doesn't use strict rankings as input, but the app maps ranked preferences to approval ballots to compare it on equal footing.</p>
-
-            <h2>Checking criteria by enumeration</h2>
-
-            <p>With 3 candidates and 3 voters, each voter can submit one of \(3! = 6\) possible rankings. The total number of distinct preference profiles is \(6^3 = 216\). This is small enough to enumerate exhaustively, and the app does exactly that for each criterion check.</p>
-
-            <p>The IIA checker, for instance, iterates over all pairs of profiles that agree on the pairwise ordering of candidates \(A\) and \(B\) for every voter, then verifies that the social ranking of \(A\) versus \(B\) is consistent across both profiles. If the social welfare function ranks \(A > B\) under one profile but \(B > A\) under another, despite identical pairwise voter preferences between \(A\) and \(B\), IIA is violated and the checker returns both profiles as a counterexample.</p>
-
-            <p>For more than 3 candidates the profile space explodes (\(4!^3 = 13{,}824\); \(5!^3 = 1{,}728{,}000\)), so the checkers switch to random sampling (200-300 profiles depending on the criterion). This means a "satisfied" result for 4+ candidates is probabilistic, not exhaustive, but in practice the violations surface quickly.</p>
+            <p>The sandbox presets are the profiles worth trying first: unanimous, the classic cycle, its reverse, a split top, a middle squeeze where \(B\) is everyone's second choice and nobody's first, and a polarised one. Drag the rankings from there. When IIA fails the checker prints both profiles and both group rankings rather than a bare verdict.</p>
         </article>
 
     </div>
