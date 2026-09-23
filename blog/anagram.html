@@ -24,7 +24,7 @@
     <div class="container">
         <header>
             <h1>Anagram Solver</h1>
-            <p class="meta">Find every valid word combination hiding inside a phrase</p>
+            <p class="meta">Every way to rearrange a phrase into real words, ranked so the good ones come first.</p>
             <p class="links-row">
                 <a href="https://sean-reid.github.io/anagram/">Live Demo</a>
                 <a href="https://github.com/sean-reid/anagram">Source</a>
@@ -37,43 +37,25 @@
                 <figcaption>The Anagram Solver.</figcaption>
             </figure>
 
-            <p>There are websites that find anagrams, but most of them return one result. Maybe two. The interesting question isn't "what's an anagram of this phrase" but "what are <em>all</em> the anagrams of this phrase, and which ones are actually good?" That's a harder problem, and it's the one I wanted to solve.</p>
+            <p>Most anagram sites return one result, maybe two. I wanted all of them for a phrase, with the good ones at the top, and that's a different problem from finding one. The solver takes a phrase, reduces it to a letter count, rebuilds every combination of dictionary words that uses those letters exactly, and ranks them.</p>
 
-            <figure class="small">
-                <img decoding="async" src="img/cc/anagram-animation.gif" alt="Listen equals Silent anagram" loading="lazy">
-                <figcaption>A classic anagram: LISTEN = SILENT. <a href="https://commons.wikimedia.org/wiki/File:Anagram_Listen_%3D_Silent.gif">Wikimedia Commons</a></figcaption>
-            </figure>
+            <h2>Letter counts</h2>
 
-            <p>The solver takes any input phrase, tears it down to its constituent letters, and rebuilds every possible combination of real English words that uses those same letters exactly. Not just one answer. All of them, ranked by quality.</p>
+            <p>Every word is a 26-byte array, one count per letter. The 20,000-word dictionary is embedded in the WebAssembly binary with <code>include_str!</code> and converted at startup, and the input phrase gets the same treatment. Checking whether a word fits the remaining letters is 26 comparisons and taking it out is 26 subtractions, which is what keeps the inner loop cheap when the search gets deep. Before searching I filter the dictionary to words that fit inside the phrase at all and sort them longest first, so the branches with long words get explored first.</p>
 
-            <h2>Letter frequency arrays</h2>
+            <h2>The search</h2>
 
-            <p>The core data structure is simple: a 26-element array of bytes, one slot per letter of the alphabet. Every word in the dictionary gets converted to this representation at startup. The input phrase gets the same treatment. Checking whether a word can be formed from a set of remaining letters is just a comparison of 26 integers. Subtracting a word from the remaining pool is 26 subtractions. This makes the inner loop of the search very fast, which matters when you're exploring millions of combinations.</p>
+            <p>It's a depth-first search. At each level I walk the candidate list from a start index, take any word that fits, subtract its letters, and recurse with the start index set to that word's position, so the same set of words can't come out in two orders. Without that, "star wars" and "wars star" would both appear.</p>
 
-            <p>The dictionary is embedded into the <a href="https://webassembly.org/">WebAssembly</a> binary at compile time using Rust's <code>include_str!</code> macro. At initialization, the solver filters the full dictionary down to only words that could possibly be formed from the input phrase's letters. It then sorts those candidates by length, longest first. This ordering biases the search toward solutions with longer words early, which tend to be the interesting ones.</p>
+            <p>On top of that there's a signature check I'm less happy with. Each finished result records the sorted set of its words of four or more letters, and any branch that would reproduce a set already seen is pruned. It kills the flood of results that differ only in how the leftover short words are arranged, which is what I wanted, but it also drops legitimate anagrams that happen to share their long words with an earlier one. The search also stops at 50,000 raw results, and once it has 5,000 it stops descending into words shorter than a depth-dependent minimum unless five or fewer letters remain. Those cutoffs are why "William Shakespeare" comes back at all.</p>
 
-            <figure class="small">
-                <img decoding="async" src="img/cc/scrabble-board.webp" alt="Scrabble tiles on a board" loading="lazy">
-                <figcaption>Scrabble tiles on a board. <a href="https://commons.wikimedia.org/wiki/File:Interacting_with_the_scrabble_board.jpg">Wikimedia Commons</a></figcaption>
-            </figure>
+            <h2>Ranking</h2>
 
-            <h2>Recursive search with pruning</h2>
+            <p>A phrase that long produces thousands of results and most are garbage, strings of two-letter words that use the right letters and interest no one. The score is 100 points per letter of average word length, minus 1,000 per word, minus 5 per unit of total deviation from the average length. A two-word anagram with balanced lengths lands far above a seven-word one made of "is" and "at" and "me". Results come back sorted by that score, deduplicated, and capped at 10,000.</p>
 
-            <p>The search is a depth-first <a href="https://en.wikipedia.org/wiki/Recursion_(computer_science)">recursion</a>. At each level, the algorithm iterates through candidate words, checks whether each can be built from the remaining letter pool, and if so, subtracts those letters and recurses. A <code>start_idx</code> parameter prevents the search from reconsidering words it already passed, which eliminates duplicate permutations. Without this, "star wars" and "wars star" would both appear as separate results.</p>
+            <h2>In the browser</h2>
 
-            <p>There's a second layer of deduplication on top of that. The solver tracks "signatures" for each partial result, built from the set of longer words (four letters or more) found so far. If a branch would produce a signature that's already been seen, it gets pruned. This catches cases where different orderings of the search arrive at the same meaningful combination through different paths.</p>
-
-            <h2>Quality heuristic</h2>
-
-            <p>Finding all valid anagrams is only half the problem. A phrase like "William Shakespeare" produces thousands of results, and most of them are garbage: strings of two-letter words that technically use all the right letters but aren't interesting to anyone. The solver ranks results using a scoring function that penalizes word count heavily (1000 points per word), rewards longer average word length (100 points per character), and penalizes variance in word lengths (5 points per unit). The effect is that a two-word anagram with balanced lengths scores much higher than a seven-word anagram full of "is" and "at" and "me".</p>
-
-            <p>Results come back sorted by this score. The top results are almost always the ones you'd actually want to see.</p>
-
-            <h2>Running in the browser</h2>
-
-            <p>The solver is written in <a href="https://www.rust-lang.org/">Rust</a> and compiled to WebAssembly with <a href="https://github.com/nickel-org/rust-wasm-pack">wasm-pack</a>. Everything runs client-side. There's no server processing the request, no API call, no latency beyond what your own CPU needs to chew through the search tree. For short phrases the results appear instantly. For longer phrases with many candidate words, it can take a few seconds, during which a spinner replaces the search button so you know it's working.</p>
-
-            <p>The UI is minimal on purpose. A text field, a button, a list of results. The interesting part is the algorithm, not the interface.</p>
+            <p>It's 337 lines of Rust compiled with <a href="https://github.com/rustwasm/wasm-pack">wasm-pack</a>, with no server involved. The whole search runs on the main thread behind a spinner, so a long phrase freezes the page while it thinks. A worker would fix that and I haven't bothered. The dictionary is also re-parsed from the embedded text on every call, which is wasted work. There are no tests.</p>
         </article>
 
     </div>
