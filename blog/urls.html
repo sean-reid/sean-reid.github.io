@@ -53,7 +53,7 @@
 
             <p>The chess carrier has an alphabet of exactly 256 moves: pawn pushes to ranks 3 through 6, knight, bishop, and rook moves to every square, 24 queen moves, and eight extras like O-O and Qxd8+. Move numbers are a prefix the parser strips. The games aren't legal. Both sides play Be3 on consecutive plies and bishops teleport across the board, and I decided nobody would check. The pi carrier opens with <code>/pi/3.1415926535</code>, spends the data digits in chunks of 5 to 12, and once the payload is done resumes the real digits of pi from the eleventh decimal onward. It has 2,200 digits on file, more than a 2,000 character link can use.</p>
 
-            <p>The tracking carrier puts the data in query parameters named sid, cid, tok, trace, and six others, in base 36, and pads with utm_source, fbclid, gclid, and _hsenc values of the right shapes and lengths. The GPS carrier writes decimal digits into lat, lng, alt, and hdg segments, and its parser takes every signed decimal it finds. It doesn't bound the values, so the output has longitudes like -362.27721 in it. I noticed that after shipping and haven't decided whether it's worth fixing.</p>
+            <p>The tracking carrier puts the data in query parameters named sid, cid, tok, trace, and six others, in base 36, and pads with utm_source, fbclid, gclid, and _hsenc values of the right shapes and lengths. The GPS carrier writes decimal digits into lat, lng, alt, and hdg segments, and its parser takes every signed decimal it finds. It doesn't bound the values, so the output has longitudes like -362.27721 in it. That is still unfixed.</p>
 
             <h2>Length</h2>
 

@@ -49,7 +49,7 @@
 
             \[ \alpha^{2k} + \frac{2(1-\alpha)^2 (1 - \alpha^{2k})}{1 - \alpha^2}. \]
 
-            <p>The depth-1 identity is asserted in the tests by measuring the union for \(\alpha\) of 0.6, 0.75 and 0.9, and the bound is asserted at depths 2 to 5. In the repo the bound appears twice, once as Chang's closed form and once as Falconer's guaranteed-savings bound \(1 - (3\alpha - 1)(1 - \alpha^{2k})/(1 + \alpha)\), and the test suite checks both. They are the same expression rearranged. I only worked that out while writing this, so what the tests really establish is one bound, checked from above at every depth and, in the table test, from below: the measured area has to land within 80 percent of it, which is what confirms the translations went where they should.</p>
+            <p>The depth-1 identity is asserted in the tests by measuring the union for \(\alpha\) of 0.6, 0.75 and 0.9, and the bound is asserted at depths 2 to 5. In the repo the bound appears twice, once as Chang's closed form and once as Falconer's guaranteed-savings bound \(1 - (3\alpha - 1)(1 - \alpha^{2k})/(1 + \alpha)\), and the test suite checks both. They are the same expression rearranged, so what the tests really establish is one bound, checked from above at every depth and, in the table test, from below: the measured area has to land within 80 percent of it, which is what confirms the translations went where they should.</p>
 
             <h2>Measuring area twice</h2>
 
