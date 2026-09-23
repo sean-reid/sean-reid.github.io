@@ -31,6 +31,12 @@ header h1 {
 .meta {
     color: #666;
     font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+}
+
+.date {
+    color: #666;
+    font-size: 0.85rem;
     margin-bottom: 0.75rem;
 }
 
@@ -43,6 +49,7 @@ header h1 {
     color: #0366d6;
     text-decoration: none;
     font-size: 0.9rem;
+    padding: 0.6rem 0;
 }
 
 .links-row a:hover {
@@ -136,72 +143,35 @@ article figure.compare figcaption {
 
 article figcaption {
     font-size: 0.82rem;
-    color: #888;
+    color: #666;
     margin-top: 0.5rem;
     line-height: 1.4;
 }
 
 article figcaption a {
-    color: #888;
+    color: #666;
     text-decoration: underline;
 }
 
-
-/* Blog index styles */
-.blog-list {
-    list-style: none;
+.katex-display {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0.25rem 0;
 }
 
-.blog-list li {
-    padding: 1rem 0;
-    border-bottom: 1px solid #f0f0f0;
+a:focus-visible,
+button:focus-visible {
+    outline: 2px solid #0366d6;
+    outline-offset: 2px;
 }
 
-.blog-list a {
-    color: #1a1a1a;
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 1.05rem;
-    transition: color 0.2s;
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+    }
 }
 
-.blog-list a:hover {
-    color: #0366d6;
-}
 
-.blog-list .desc {
-    color: #666;
-    font-size: 0.9rem;
-    margin-top: 0.2rem;
-}
-
-.section-label {
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #999;
-    margin-top: 2.5rem;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-}
-
-.index-footer {
-    margin-top: 3rem;
-    padding-top: 2rem;
-    border-top: 1px solid #e0e0e0;
-    text-align: center;
-}
-
-.index-footer a {
-    color: #333;
-    text-decoration: none;
-    font-size: 0.9rem;
-    transition: color 0.2s;
-}
-
-.index-footer a:hover {
-    color: #0366d6;
-}
 
 @media (max-width: 600px) {
     body {
