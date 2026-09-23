@@ -158,14 +158,14 @@
     <link href="https://sean-reid.github.io/blog/voting.html"/>
     <id>https://sean-reid.github.io/blog/voting.html</id>
     <updated>2026-05-12T00:00:00Z</updated>
-    <summary>I check four voting methods against Arrow's criteria by enumerating every three-voter profile.</summary>
+    <summary>Four voting methods checked against Arrow's criteria by enumerating every three-voter profile.</summary>
   </entry>
   <entry>
     <title>Gardener's Dilemma</title>
     <link href="https://sean-reid.github.io/blog/gardeners-dilemma.html"/>
     <id>https://sean-reid.github.io/blog/gardeners-dilemma.html</id>
     <updated>2026-05-12T00:00:00Z</updated>
-    <summary>I turned the Collatz sequence into the clock for a two-player harvesting game.</summary>
+    <summary>A two-player harvesting game with the Collatz sequence as its clock.</summary>
   </entry>
   <entry>
     <title>Pulse</title>
@@ -214,14 +214,14 @@
     <link href="https://sean-reid.github.io/blog/deconflict.html"/>
     <id>https://sean-reid.github.io/blog/deconflict.html</id>
     <updated>2026-04-10T00:00:00Z</updated>
-    <summary>I assign WiFi channels by coloring an interference graph built from a floorplan.</summary>
+    <summary>Assigns WiFi channels by coloring an interference graph built from a floorplan.</summary>
   </entry>
   <entry>
     <title>Discern</title>
     <link href="https://sean-reid.github.io/blog/discern.html"/>
     <id>https://sean-reid.github.io/blog/discern.html</id>
     <updated>2026-04-07T00:00:00Z</updated>
-    <summary>I rate players and images against each other with Elo in a real-or-generated photo game.</summary>
+    <summary>A real-or-generated photo game that rates players and images against each other with Elo.</summary>
   </entry>
   <entry>
     <title>Tron</title>
@@ -256,7 +256,7 @@
     <link href="https://sean-reid.github.io/blog/lacuna.html"/>
     <id>https://sean-reid.github.io/blog/lacuna.html</id>
     <updated>2026-03-29T00:00:00Z</updated>
-    <summary>I made a two-player game where you draw the board as you play and score the regions you close off.</summary>
+    <summary>A two-player game where you draw the board as you play and score the regions you close off.</summary>
   </entry>
   <entry>
     <title>Sprouts</title>
@@ -326,14 +326,14 @@
     <link href="https://sean-reid.github.io/blog/what-are-you.html"/>
     <id>https://sean-reid.github.io/blog/what-are-you.html</id>
     <updated>2026-03-29T00:00:00Z</updated>
-    <summary>I made a personality quiz where the category is a parameter and the answer comes from Wikipedia.</summary>
+    <summary>A personality quiz where the category is a parameter and the answer comes from Wikipedia.</summary>
   </entry>
   <entry>
     <title>Dependencies</title>
     <link href="https://sean-reid.github.io/blog/dependencies.html"/>
     <id>https://sean-reid.github.io/blog/dependencies.html</id>
     <updated>2026-03-29T00:00:00Z</updated>
-    <summary>I race two ways of finding which declared dependencies a build actually needs.</summary>
+    <summary>Races two ways of finding which declared dependencies a build actually needs.</summary>
   </entry>
   <entry>
     <title>FrankenPeanuts</title>
@@ -347,7 +347,7 @@
     <link href="https://sean-reid.github.io/blog/haiku.html"/>
     <id>https://sean-reid.github.io/blog/haiku.html</id>
     <updated>2026-03-29T00:00:00Z</updated>
-    <summary>I wrote a screensaver that generates a new haiku every ten seconds from a small grammar.</summary>
+    <summary>A screensaver that generates a new haiku every ten seconds from a small grammar.</summary>
   </entry>
   <entry>
     <title>BrainRotter</title>
@@ -361,7 +361,7 @@
     <link href="https://sean-reid.github.io/blog/nyt-crosswords.html"/>
     <id>https://sean-reid.github.io/blog/nyt-crosswords.html</id>
     <updated>2026-03-29T00:00:00Z</updated>
-    <summary>I built an ad-free browser player for New York Times crosswords from 1976 to 2017.</summary>
+    <summary>An ad-free browser player for New York Times crosswords from 1976 to 2017.</summary>
   </entry>
   <entry>
     <title>Flow</title>
@@ -410,7 +410,7 @@
     <link href="https://sean-reid.github.io/blog/the-count-of-monte-carlo.html"/>
     <id>https://sean-reid.github.io/blog/the-count-of-monte-carlo.html</id>
     <updated>2026-03-29T00:00:00Z</updated>
-    <summary>I let random characters settle into the text of Dumas one letter at a time.</summary>
+    <summary>Random characters settle into the text of Dumas one letter at a time.</summary>
   </entry>
   <entry>
     <title>Creature Garden</title>
