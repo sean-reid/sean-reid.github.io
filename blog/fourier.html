@@ -24,7 +24,7 @@
     <div class="container">
         <header>
             <h1>Fourier Phase</h1>
-            <p class="meta">Iterative amplitude convergence via Gerchberg-Saxton projection, demonstrating phase dominance in image structure</p>
+            <p class="meta">Two images pushed to share one Fourier amplitude spectrum, and they still look like themselves</p>
             <p class="links-row">
                 <a href="https://sean-reid.github.io/fourier/">Live Demo</a>
                 <a href="https://github.com/sean-reid/fourier">Source</a>
@@ -34,117 +34,38 @@
         <article>
             <figure>
                 <img decoding="async" fetchpriority="high" src="img/fourier.webp" alt="Screenshot of Fourier Phase showing two images with identical amplitude spectra but different phase spectra">
-                <figcaption>A banana and a dog, processed to share an identical Fourier amplitude spectrum. The viridis plots below are the amplitude spectra, which the algorithm has forced to converge. The images remain visually distinct because each retains its original phase information.</figcaption>
+                <figcaption>A banana and a dog after 200 iterations. The viridis plots are their amplitude spectra, which now nearly match. The pictures still look like a banana and a dog.</figcaption>
             </figure>
 
-            <p>Every image has a dual life in the frequency domain. The <a href="https://en.wikipedia.org/wiki/Discrete_Fourier_transform">2D discrete Fourier transform</a> decomposes an image into a sum of sinusoidal basis functions, each characterized by two numbers: an amplitude (how strong the component is) and a phase (where the component is shifted). The amplitude spectrum tells you which frequencies are present and at what strength. The phase spectrum tells you how those frequencies are aligned spatially. The question this project asks: which one carries the image's visual identity?</p>
+            <p>Take the <a href="https://en.wikipedia.org/wiki/Discrete_Fourier_transform">2D discrete Fourier transform</a> of an image and every coefficient is a complex number: an amplitude saying how strong that spatial frequency is, and a phase saying where it sits. I wanted to see for myself which of the two carries what the image looks like. The answer is phase, by a wide margin. This app takes two images you upload, pushes them toward one shared amplitude spectrum, and shows that they still look like themselves.</p>
 
-            <p>The answer is phase, and it isn't close. You can force two completely different images to share the exact same amplitude spectrum, and they will remain immediately recognizable. The amplitude spectrum is doing almost nothing for spatial structure. This project demonstrates that fact interactively: upload two images, and the algorithm iteratively converges them to a shared amplitude spectrum while preserving each image's original phase. The result is two images that look barely different from the originals but whose amplitude spectra are identical. A trick question asks you to distinguish them by their spectra. You can't.</p>
+            <h2>The iteration</h2>
 
-            <figure class="small">
-                <img decoding="async" src="img/cc/fft-butterfly.svg" alt="Butterfly diagram of an 8-point decimation-in-time FFT" loading="lazy">
-                <figcaption>Butterfly diagram of an 8-point decimation-in-time FFT. Each stage combines pairs of sub-results via a twiddle factor \(W_N^k = e^{-i2\pi k/N}\), halving the problem at every level. The 2D transform applies this structure to every row, then every column. <a href="https://commons.wikimedia.org/wiki/File:DIT-FFT-butterfly.svg">Wikimedia Commons</a></figcaption>
-            </figure>
+            <p>Both images are converted to grey with the <a href="https://en.wikipedia.org/wiki/Rec._601">BT.601</a> weights (0.299, 0.587, 0.114) and resized to the same power of two, at most 512, because the radix-2 FFT in <a href="https://www.npmjs.com/package/fft.js">fft.js</a> needs it. The 2D transform,</p>
 
-            <h2>The 2D discrete Fourier transform</h2>
+            \[F[u, v] = \sum_{x=0}^{N-1} \sum_{y=0}^{N-1} f[x, y] \, e^{-i2\pi(ux + vy)/N},\]
 
-            <p>For an \(N \times N\) image \(f[x, y]\) with pixel values in \([0, 255]\), the 2D DFT maps the spatial domain to the frequency domain:</p>
+            <p>separates into a 1D FFT on every row and then on every column, which is what I do. Then 200 rounds of the following. Transform both images. Split each spectrum into amplitude \(|F|\) and phase \(\varphi = \operatorname{atan2}(b, a)\). Replace both amplitudes with their mean,</p>
 
-            \[F[u, v] = \sum_{x=0}^{N-1} \sum_{y=0}^{N-1} f[x, y] \, e^{-i2\pi(ux/N + vy/N)}\]
+            \[A[u,v] = \tfrac{1}{2}\bigl(|F_A[u,v]| + |F_B[u,v]|\bigr),\]
 
-            <p>Each coefficient \(F[u, v]\) is a complex number encoding the contribution of the 2D sinusoid at spatial frequency \((u, v)\). The inverse transform recovers the original image:</p>
+            <p>which is the exact projection onto the set of spectrum pairs with equal amplitude. Recombine \(A\) with each image's own phase, inverse transform, and blend the result with the original image,</p>
 
-            \[f[x, y] = \frac{1}{N^2} \sum_{u=0}^{N-1} \sum_{v=0}^{N-1} F[u, v] \, e^{i2\pi(ux/N + vy/N)}\]
+            \[f^{(t+1)} = \operatorname{clip}\bigl(\beta_t f^{(0)} + (1 - \beta_t)\,\tilde f^{(t)},\; [0, 255]\bigr), \qquad \beta_t = 0.8\,e^{-4t/200}.\]
 
-            <p>The transform is <a href="https://en.wikipedia.org/wiki/Separable_filter">separable</a>: it factors into 1D transforms applied first to rows, then to columns. This reduces the cost from \(O(N^4)\) for naive evaluation to \(O(N^2 \log N)\) when each 1D transform uses the <a href="https://en.wikipedia.org/wiki/Cooley%E2%80%93Tukey_FFT_algorithm">Cooley-Tukey FFT</a>. The implementation applies a 1D FFT to every row of the input, producing a complex intermediate matrix, then applies a 1D FFT to every column of that matrix.</p>
+            <p>At the first step \(\beta\) is 0.8 and the images barely move. By the last step it is 0.015, so the final image is 98.5 percent projection and 1.5 percent original. The shape is borrowed from <a href="https://en.wikipedia.org/wiki/Gerchberg%E2%80%93Saxton_algorithm">Gerchberg-Saxton</a>, alternating between a constraint in the frequency domain and one in the image domain, except my image-domain constraint is "stay near the original" rather than a known amplitude, and the decay schedule is a knob I tuned by eye rather than anything derived. The constraint sets aren't convex, so I have no convergence proof, only 200 iterations that behave.</p>
 
-            <h2>Amplitude and phase</h2>
+            <h2>Nearly identical</h2>
 
-            <p>Each complex coefficient \(F[u, v] = a + bi\) decomposes into polar form:</p>
+            <p>The UI says the two final spectra are identical. Nearly identical is the honest word. The displayed spectra are recomputed from the final images, and those images were just blended with 1.5 percent of the originals and clipped to [0, 255]. Both steps move the amplitude by about \(\beta\) plus whatever the clipping does. On smooth photographs I measure about 2.6 percent mean per-bin mismatch between the two amplitude spectra, and up to 15 percent on images with hard edges, where clipping bites. They look the same in a viridis log plot, which is what the reveal depends on, and they are not equal to several decimal places. The same goes for phase. I re-extract it from the current iterate every round, so each image's phase drifts from its original as the blend and the clip nudge pixels. It stays close, which is why the images stay recognisable, and it is not held fixed.</p>
 
-            \[|F[u, v]| = \sqrt{a^2 + b^2}, \qquad \varphi[u, v] = \operatorname{atan2}(b, a)\]
+            <h2>Why phase wins</h2>
 
-            <p>The amplitude \(|F|\) is the magnitude of the frequency component. The phase \(\varphi\) is its angular offset, ranging from \(-\pi\) to \(\pi\). To reconstruct the complex coefficient from polar form:</p>
+            <p>Oppenheim and Lim showed in 1981 that an image rebuilt from its phase alone, with flat amplitude, stays recognisable, while one rebuilt from its amplitude with random phase is noise (<a href="https://doi.org/10.1109/PROC.1981.12022">The importance of phase in signals</a>, Proc. IEEE 69(5), 529 to 541). An edge is many frequencies agreeing on where to peak. Scramble the phase and the agreement is gone, and the energy smears across the frame. Amplitude mostly encodes how energy falls off with frequency, roughly \(1/f\) for natural photographs, and that curve is shared by a banana and a dog alike. So averaging two natural amplitude spectra is a small change to either image, while phase, the thing that differs, is only touched indirectly through the blend and the clip.</p>
 
-            \[F[u, v] = |F[u, v]| \cdot e^{i\varphi[u, v]} = |F[u, v]| \bigl(\cos\varphi[u, v] + i\sin\varphi[u, v]\bigr)\]
+            <h2>The reveal</h2>
 
-            <p>The amplitude spectrum is symmetric (for real-valued inputs it has conjugate symmetry about the origin) and varies slowly across similar images. The phase spectrum is the one that differs wildly between images. It encodes the spatial alignment of every frequency component: where edges are, where textures start and stop, how features relate to each other in space. Scramble the phase and the image becomes noise. Replace the amplitude with a flat constant and the image remains recognizable, though with altered contrast.</p>
-
-            <h2>The algorithm</h2>
-
-            <p>The goal is to modify two images so they converge to a shared amplitude spectrum while each retains its own phase. This is a <a href="https://en.wikipedia.org/wiki/Constraint_satisfaction_problem">constraint satisfaction problem</a> with two competing requirements: (1) the amplitude spectra of both images must be equal, and (2) each image should remain close to its original appearance.</p>
-
-            <p>The approach is an iterative projection method inspired by the <a href="https://en.wikipedia.org/wiki/Gerchberg%E2%80%93Saxton_algorithm">Gerchberg-Saxton algorithm</a>, which solves phase retrieval problems by alternating projections between two constraint sets. In the original Gerchberg-Saxton formulation, the constraints are known amplitude distributions in two different domains (typically the image plane and the Fourier plane). Here, the constraints are: a shared amplitude in the frequency domain, and proximity to the originals in the spatial domain.</p>
-
-            <p>Given two grayscale images \(f_A\) and \(f_B\) of size \(N \times N\), the algorithm runs for \(T = 200\) iterations. At each iteration \(t\):</p>
-
-            <p><strong>1. Forward transform.</strong> Compute the 2D FFT of both current images:</p>
-
-            \[F_A^{(t)} = \mathcal{F}\{f_A^{(t)}\}, \qquad F_B^{(t)} = \mathcal{F}\{f_B^{(t)}\}\]
-
-            <p><strong>2. Extract polar components.</strong> Decompose each spectrum into amplitude and phase:</p>
-
-            \[\bigl(|F_A^{(t)}|,\, \varphi_A^{(t)}\bigr), \qquad \bigl(|F_B^{(t)}|,\, \varphi_B^{(t)}\bigr)\]
-
-            <p><strong>3. Average amplitudes.</strong> The amplitude constraint is enforced by replacing both amplitudes with their mean:</p>
-
-            \[A^{(t)}[u, v] = \frac{|F_A^{(t)}[u, v]| + |F_B^{(t)}[u, v]|}{2}\]
-
-            <p><strong>4. Reconstruct spectra.</strong> Recombine the averaged amplitude with each image's original phase:</p>
-
-            \[\tilde{F}_A^{(t)} = A^{(t)} \cdot e^{i\varphi_A^{(t)}}, \qquad \tilde{F}_B^{(t)} = A^{(t)} \cdot e^{i\varphi_B^{(t)}}\]
-
-            <p><strong>5. Inverse transform.</strong> Return to the spatial domain:</p>
-
-            \[\tilde{f}_A^{(t)} = \mathcal{F}^{-1}\{\tilde{F}_A^{(t)}\}, \qquad \tilde{f}_B^{(t)} = \mathcal{F}^{-1}\{\tilde{F}_B^{(t)}\}\]
-
-            <p><strong>6. Blend with originals.</strong> The spatial constraint is enforced by blending the reconstructed image with the original, weighted by a decay factor \(\beta(t)\):</p>
-
-            \[f_A^{(t+1)}[x, y] = \operatorname{clip}\!\bigl(\beta(t) \cdot f_A^{(0)}[x, y] + (1 - \beta(t)) \cdot \tilde{f}_A^{(t)}[x, y],\; [0, 255]\bigr)\]
-
-            <p>and identically for \(f_B\). The blend factor follows an exponential decay schedule:</p>
-
-            \[\beta(t) = 0.8 \, e^{-4t/T}\]
-
-            <p>At \(t = 0\), \(\beta = 0.8\): the reconstruction is 80% original, 20% frequency-projected. This keeps the images stable during early iterations when the amplitude spectra are still far apart. By \(t = T - 1\), \(\beta \approx 0.001\): the frequency-domain constraint dominates almost entirely, and the images have converged to a shared amplitude spectrum.</p>
-
-            <h2>Why it converges</h2>
-
-            <p>The algorithm is an instance of <a href="https://en.wikipedia.org/wiki/Projections_onto_convex_sets">alternating projections</a>. Step 3 projects onto the set of image pairs whose amplitude spectra are equal (by averaging). Step 6 projects back toward the set of images that are close to the originals (by blending). The exponential decay of \(\beta\) gradually relaxes the spatial constraint, allowing the frequency-domain constraint to tighten.</p>
-
-            <p>Convergence is not guaranteed in the strict sense (the constraint sets are not convex in general, and the blend schedule is heuristic rather than derived from a convergence proof). But in practice, 200 iterations reliably produce images whose amplitude spectra match to several decimal places. The key insight is that phase is the high-entropy component. Two random images already have amplitude spectra that are more similar to each other than their phase spectra are. Averaging amplitudes is a gentle modification; preserving phase is the hard constraint, and it's satisfied by construction at every iteration.</p>
-
-            <h2>Visualization</h2>
-
-            <p>The raw DFT output places the zero-frequency (DC) component at \(F[0, 0]\), in the top-left corner. For visualization, this is shifted to the center of the image by the <a href="https://en.wikipedia.org/wiki/Discrete_Fourier_transform#Shift_theorem">FFT shift</a> operation, a cyclic permutation by \(N/2\) in both dimensions:</p>
-
-            \[\text{shifted}[u, v] = F\!\left[\left(u + \frac{N}{2}\right) \bmod N,\; \left(v + \frac{N}{2}\right) \bmod N\right]\]
-
-            <p>This places low frequencies at the center and high frequencies at the edges, matching the conventional representation where distance from center corresponds to spatial frequency.</p>
-
-            <p>The amplitude spectrum has enormous dynamic range (the DC component is typically orders of magnitude larger than high-frequency components), so it's displayed on a log scale:</p>
-
-            \[\text{display}[u, v] = \log\!\bigl(1 + |F[u, v]|\bigr)\]
-
-            <p>The \(\log(1 + x)\) form avoids the singularity at zero. The result is normalized to \([0, 1]\) and rendered with the <a href="https://bids.github.io/colormap/">viridis</a> colormap, a perceptually uniform sequential colormap that maps low values to dark purple and high values to bright yellow. Phase is rendered with a circular twilight colormap built from phase-shifted sine waves, since phase wraps from \(-\pi\) to \(\pi\).</p>
-
-            <h2>Why phase dominates</h2>
-
-            <p>The perceptual dominance of phase over amplitude has been known since at least <a href="https://doi.org/10.1109/TASSP.1981.1163587">Oppenheim and Lim (1981)</a>, who showed that reconstructing an image from its phase alone (with unit amplitude) preserves the recognizable structure, while reconstructing from amplitude alone (with random phase) produces noise. The intuition is that phase encodes the relative alignment of all frequency components. Edges in an image require many frequencies to be <em>in phase</em> at the edge location (constructive interference). Scrambling the phase destroys this alignment, and the edge vanishes into diffuse energy spread across the image.</p>
-
-            <p>Amplitude, by contrast, controls the overall energy distribution across frequencies. Natural images have a characteristic amplitude spectrum that falls off roughly as \(1/f\) (the <a href="https://en.wikipedia.org/wiki/Pink_noise">power law</a> of natural images), and this is shared broadly across all natural photographs. Two photographs of completely different subjects have more similar amplitude spectra than you would expect, because they're both samples from the same statistical ensemble of natural scenes. Phase is what makes each image unique.</p>
-
-            <h2>The game</h2>
-
-            <p>The UI wraps the algorithm in a three-step reveal. After uploading two images and waiting for the 200-iteration convergence (which runs in a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API">Web Worker</a> to keep the main thread responsive), the app shows the modified images side by side. Then it presents the two amplitude spectra and asks: which one belongs to Image A? When you click, it reveals the trick: both spectra are identical. The phase spectra, shown below, are what actually distinguish the two images. The reveal is designed to make the mathematical fact visceral rather than abstract.</p>
-
-            <h2>Implementation</h2>
-
-            <p>Images are converted to grayscale using <a href="https://en.wikipedia.org/wiki/Rec._601">ITU-R BT.601</a> luminance weights:</p>
-
-            \[Y = 0.299\,R + 0.587\,G + 0.114\,B\]
-
-            <p>and resized to the nearest power of two up to 512 pixels, since the radix-2 FFT requires power-of-two dimensions. The 2D FFT uses the row-column decomposition described above, with <a href="https://www.npmjs.com/package/fft.js">fft.js</a> providing the underlying 1D Cooley-Tukey implementation. Complex numbers are stored as interleaved <code>Float64Array</code> pairs (real at even indices, imaginary at odd), and the algorithm transfers these arrays to and from the Web Worker using <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Transferable_objects">transferable objects</a> to avoid copying. The frontend is vanilla TypeScript with Vite, deployed to <a href="https://pages.github.com/">GitHub Pages</a>.</p>
+            <p>The 200 iterations run in a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API">Web Worker</a>, passing the Float64Arrays back as <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Transferable_objects">transferable objects</a> so nothing is copied. Then the app shows the two modified images, shows two amplitude spectra, and asks which one belongs to image A. Whichever you click, it tells you the spectra are the same and shows the phase plots underneath, which is where the difference lives. Spectra are shifted so DC sits in the centre, plotted as \(\log(1 + |F|)\) because DC is orders of magnitude above everything else, and coloured with <a href="https://bids.github.io/colormap/">viridis</a>. Phase wraps at \(\pm\pi\), so it gets a circular colormap built from phase-shifted sines.</p>
         </article>
 
     </div>
