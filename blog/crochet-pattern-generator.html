@@ -24,7 +24,7 @@
     <div class="container">
         <header>
             <h1>Crochet Pattern Generator</h1>
-            <p class="meta">Draw a silhouette, get row-by-row crochet instructions for amigurumi</p>
+            <p class="meta">Draw one side of a shape and get row-by-row amigurumi stitch counts for it.</p>
             <p class="links-row">
                 <a href="https://sean-reid.github.io/crochet-pattern-generator/">Live Demo</a>
                 <a href="https://github.com/sean-reid/crochet-pattern-generator">Source</a>
@@ -34,61 +34,35 @@
         <article>
             <figure>
                 <img decoding="async" fetchpriority="high" src="img/crochet-pattern-generator.webp" alt="Screenshot of Crochet Pattern Generator">
-                <figcaption>Crochet Pattern Generator.</figcaption>
+                <figcaption>A drawn profile on the left, the 3D preview of it spun around the axis, and the generated rows.</figcaption>
             </figure>
 
-            <p><a href="https://en.wikipedia.org/wiki/Amigurumi">Amigurumi</a> are small stuffed figures made by crocheting in the round. You start with a magic ring at the bottom, increase stitches each row to widen the shape, then decrease back down to close it off. The pattern for any given shape is just a list of stitch counts per row. If you know the profile you want (say, a sphere, or a pear, or a mushroom), the math to get those stitch counts is mechanical. So why not draw the profile and let the computer figure out the pattern?</p>
-
-            <figure class="small">
-                <img decoding="async" src="img/cc/crochet-hands.webp" alt="Hands crocheting with a hook and yarn" loading="lazy">
-                <figcaption>Crocheting. The pattern generator converts 2D profile drawings into row-by-row stitch instructions. <a href="https://commons.wikimedia.org/wiki/File:Table-cloth_2008-1.jpg">Wikimedia Commons</a></figcaption>
-            </figure>
-
-            <p>That's what this tool does. You draw one side of your desired shape on a canvas. The app treats that drawing as a <a href="https://en.wikipedia.org/wiki/Surface_of_revolution">surface of revolution</a>, rotating it around the vertical axis to produce a 3D solid. Formally, the drawn profile defines a radius function \(r(z)\), where \(z\) is the height. Rotating this curve around the \(z\)-axis sweeps out a surface whose cross-section at height \(z\) is a circle of circumference</p>
-
-            \[C(z) = 2\pi\, r(z).\]
-
-            <p>The tool samples \(r(z)\) at each row height and converts those circumferences into stitch counts, respecting the physical constraints of crochet.</p>
-
-            <h2>From drawing to stitches</h2>
-
-            <p>The drawn profile gets smoothed into a <a href="https://en.wikipedia.org/wiki/B-spline">B-spline</a> curve so that minor hand tremors don't produce jagged radius changes between rows. Given a set of drawn control points \(\{(r_i, z_i)\}\), the algorithm fits a B-spline of degree \(p\) over a knot vector \(\mathbf{t} = (t_0, t_1, \ldots, t_{m})\). The smoothed radius function is then</p>
-
-            \[r(z) = \sum_{i=0}^{n} c_i\, N_{i,p}(z),\]
-
-            <p>where \(c_i\) are the spline coefficients and \(N_{i,p}(z)\) are the B-spline basis functions defined recursively by the Cox&ndash;de Boor formula over the knot vector \(\mathbf{t}\). The knot vector is clamped (its first and last \(p+1\) entries are repeated) so that the curve interpolates the endpoints of the drawing.</p>
-
-            <figure class="small">
-                <img decoding="async" src="img/cc/bezier-curve.svg" alt="Bezier curve construction" loading="lazy">
-                <figcaption>A Bezier curve constructed from control points. B-splines generalize this by joining multiple curve segments with smooth continuity at the knots. <a href="https://commons.wikimedia.org/wiki/File:Bezier_curve.svg">Wikimedia Commons</a></figcaption>
-            </figure>
-
-            <p>The algorithm samples this curve at fixed height intervals, one per row. At each sample point \(z\), it computes the circumference \(C(z) = 2\pi\, r(z)\) and divides by the stitch gauge \(g\) (configurable based on your yarn and hook size) to get the ideal stitch count for that row:</p>
-
-            \[n(z) = \left\lfloor \frac{C(z)}{g} \right\rfloor = \left\lfloor \frac{2\pi\, r(z)}{g} \right\rfloor.\]
-
-            <p>The tricky part is enforcing crochet constraints. In real life, you can at most double the stitch count from one row to the next (by doing an increase in every stitch), and at most halve it (by doing a decrease in every stitch). Letting \(n_k\) denote the stitch count at row \(k\), the clamping constraint is</p>
-
-            \[\lceil n_{k} / 2 \rceil \;\leq\; n_{k+1} \;\leq\; 2 \cdot n_{k}.\]
-
-            <p>If the ideal stitch count derived from the drawn profile falls outside this band, the algorithm clamps it to the nearest feasible value and the actual shape will deviate slightly from the drawing. This is honest: the pattern won't promise a shape the yarn can't deliver.</p>
-
-            <p>Within each row, increases and decreases need to be distributed evenly around the circle to avoid lumps. If row 5 has 12 stitches and row 6 needs 18, that's 6 increases spread across 12 positions. The algorithm spaces them as uniformly as possible so the fabric grows evenly.</p>
+            <p><a href="https://en.wikipedia.org/wiki/Amigurumi">Amigurumi</a> are small stuffed figures crocheted in the round. You start with a magic ring at the bottom, increase stitches each row to widen the shape, then decrease back down to close it. The pattern for any shape is a list of stitch counts per row, and if you know the profile you want the arithmetic to get those counts is mechanical. I wanted to draw the profile and have the arithmetic done for me.</p>
 
             <figure class="small">
                 <img decoding="async" src="img/cc/amigurumi-elephant.webp" alt="A crocheted amigurumi elephant" loading="lazy">
-                <figcaption>A crocheted amigurumi elephant. <a href="https://commons.wikimedia.org/wiki/File:Amigurumi_Elephant.jpg">Wikimedia Commons</a></figcaption>
+                <figcaption>A crocheted amigurumi. Each part of this is a list of stitch counts per row. <a href="https://commons.wikimedia.org/wiki/File:Amigurumi_Elephant.jpg">Wikimedia Commons</a></figcaption>
             </figure>
+
+            <p>You draw one side of the shape on a canvas. I treat the drawing as a <a href="https://en.wikipedia.org/wiki/Surface_of_revolution">surface of revolution</a>: the curve gives a radius \(r(z)\) at each height, and spinning it around the vertical axis gives a solid whose cross-section at height \(z\) is a circle of circumference \(2\pi r(z)\). A 3D preview shows the spun shape as you draw.</p>
+
+            <h2>From a curve to stitch counts</h2>
+
+            <p>Nobody draws a smooth curve with a mouse, so I first fit a clamped <a href="https://en.wikipedia.org/wiki/B-spline">B-spline</a> through the drawn points. Clamped means it passes through the first and last point exactly, so the top and bottom of the shape stay where you put them, and the spline smooths out hand tremor that would otherwise turn into jagged stitch counts between rows. I sample the curve once per row height and divide each circumference by the stitch gauge \(g\), which you set for your yarn and hook, to get the ideal count for that row:</p>
+
+            \[n(z) = \left\lfloor \frac{2\pi\, r(z)}{g} \right\rfloor.\]
+
+            <p>Then the crochet constraint. From one row to the next you can at most double the stitch count, by increasing in every stitch, and at most halve it, by decreasing in every stitch. So with \(n_k\) stitches in row \(k\), the next row has to land in</p>
+
+            \[\lceil n_{k} / 2 \rceil \;\leq\; n_{k+1} \;\leq\; 2 n_{k}.\]
+
+            <p>If the drawn profile asks for a count outside that band, I clamp it to the nearest feasible value and the finished shape will deviate from the drawing there. A pattern that promised a shape the yarn can't make would be worse than a slightly wrong one. Within a row, increases and decreases are spread as evenly as possible around the circle so the fabric grows without lumps. If row 5 has 12 stitches and row 6 needs 18, that's 6 increases spread across 12 positions.</p>
 
             <h2>The output</h2>
 
-            <p>The generated pattern uses standard crochet notation. Each row specifies the stitch type (single crochet, increase, decrease) and the repeat count. The pattern starts with a <a href="https://en.wikipedia.org/wiki/Crochet#Magic_ring">magic ring</a> of 6 single crochet stitches, because that's the conventional starting point for amigurumi worked in the round. It ends by closing down to somewhere between 6 and 15 stitches, at which point you stuff the figure and sew the opening shut.</p>
+            <p>The pattern uses standard crochet notation, one line per row with the stitch type and repeat count. It starts with a <a href="https://en.wikipedia.org/wiki/Crochet#Magic_ring">magic ring</a> of 6 single crochet, the usual amigurumi start, and ends by closing down to somewhere between 6 and 15 stitches, at which point you stuff the figure and sew it shut. It exports as plain text or JSON.</p>
 
-            <p>A 3D preview shows the rotated shape as you draw, so you can see what the finished amigurumi will look like before generating the pattern. The pattern is exportable as plain text or JSON.</p>
-
-            <h2>Implementation</h2>
-
-            <p>The pattern generation runs in Rust compiled to <a href="https://webassembly.org/">WebAssembly</a>. Three Rust crates handle the pipeline: type definitions, the core algorithm (B-spline interpolation, sampling, constraint enforcement, stitch distribution), and WASM bindings via <a href="https://rustwasm.github.io/docs/wasm-pack/">wasm-pack</a>. The frontend is <a href="https://react.dev/">React</a> with TypeScript, using Canvas for the drawing interface and the 3D preview. WASM computation runs in a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API">Web Worker</a> so the UI stays responsive while the pattern is being generated. <a href="https://vite.dev/">Vite</a> handles the dev server and build.</p>
+            <p>The spline fitting, sampling, and clamping are Rust compiled to WebAssembly, split across three crates, running in a Web Worker so the canvas stays responsive while a pattern is generated. The drawing and preview are a React canvas UI.</p>
         </article>
 
     </div>
