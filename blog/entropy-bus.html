@@ -24,7 +24,7 @@
     <div class="container">
         <header>
             <h1>Entropy Bus</h1>
-            <p class="meta">Race a bus by generating keyboard entropy</p>
+            <p class="meta">A racing game where the bus goes faster the less predictable your typing is</p>
             <p class="links-row">
                 <a href="https://sean-reid.github.io/entropy-bus/">Live Demo</a>
                 <a href="https://github.com/sean-reid/entropy-bus">Source</a>
@@ -34,46 +34,30 @@
         <article>
             <figure>
                 <img decoding="async" fetchpriority="high" src="img/entropy-bus.webp" alt="Screenshot of Entropy Bus">
-                <figcaption>Entropy Bus.</figcaption>
+                <figcaption>A run in progress. The bar at the top is the entropy score for the last four seconds of typing.</figcaption>
             </figure>
 
-            <p>Most racing games ask you to press the right key at the right time. This one asks you to press the <em>wrong</em> key. Or rather, every key. The bus accelerates based on the <a href="https://en.wikipedia.org/wiki/Entropy_(information_theory)">entropy</a> of your keyboard input. Mashing the same key does almost nothing. Alternating between two keys does a little more. But if you use all your keys, letters, numbers, symbols, punctuation, shift combinations, with irregular timing and no discernible pattern, the bus flies.</p>
+            <p>The bus accelerates on the <a href="https://en.wikipedia.org/wiki/Entropy_(information_theory)">Shannon entropy</a> of whatever you type. Hold one key and it crawls. Alternate two keys and it crawls a little faster. Use everything on the keyboard, letters, digits, punctuation, shifted symbols, with no rhythm to it, and it moves.</p>
 
-            <figure class="small">
-                <img decoding="async" src="img/cc/binary-entropy.svg" alt="Binary entropy function plot" loading="lazy">
-                <figcaption>The binary entropy function. Entropy Bus measures the information entropy of your keypresses to determine bus speed. <a href="https://commons.wikimedia.org/wiki/File:Binary_entropy_plot.svg">Wikimedia Commons</a></figcaption>
-            </figure>
+            <h2>Scoring a keypress</h2>
 
-            <h2>Measuring entropy</h2>
+            <p>I keep the last four seconds of keypresses. Fewer than five distinct keys in that window scores 0.05 and fewer than ten scores 0.15. Past that I take the entropy of the key frequencies,</p>
 
-            <p>The core metric is <a href="https://en.wikipedia.org/wiki/Entropy_(information_theory)">Shannon entropy</a>. Given a distribution of key frequencies \(p_1, p_2, \ldots, p_n\) within a rolling four-second window, the entropy is:</p>
+            \[H = -\sum_{i} p_i \log_2 p_i\]
 
-            \[H = -\sum_{i=1}^{n} p_i \log_2 p_i\]
+            <p>and divide by \(\log_2 n\) for the \(n\) distinct keys seen, which puts it between 0 and 1.</p>
 
-            <p>This is maximized when all keys are equally likely (\(H_{\max} = \log_2 n\)) and minimized when a single key dominates (\(H \to 0\)). The game normalizes \(H\) to \([0, 1]\) by dividing by the theoretical maximum for the observed alphabet size. Beyond character frequencies, the calculation penalizes predictable structure: sequential key presses (like typing "asdf"), alternating patterns (like bouncing between two keys), and repeated <a href="https://en.wikipedia.org/wiki/Bigram">bigrams</a> (like pressing the same two-key sequence multiple times). It also factors in the variance of inter-keystroke timing, since metronomic regularity is itself a form of low entropy.</p>
+            <p>That number on its own was too easy to max out. Five keys pressed in equal proportion score a perfect 1, and five keys is not much randomness. So I multiply by a diversity term, \((n/50)^{2.5}\), which is why the unique-key counter in the corner runs to 50. Then three pattern checks over the last 15 presses each knock the score down. More than two adjacent-character steps like "asdf" halves it. More than three ABAB alternations multiplies it by 0.6. Any two-key sequence repeated more than twice multiplies it by 0.7. A final factor rewards typing quickly, up to about 10 presses a second. I don't look at rhythm on desktop at all, only on mobile.</p>
 
-            <figure class="small">
-                <img decoding="async" src="img/cc/backlit-keyboard.webp" alt="Backlit computer keyboard" loading="lazy">
-                <figcaption>A backlit keyboard. Entropy Bus rewards pressing as many different keys as possible with irregular timing. <a href="https://commons.wikimedia.org/wiki/File:Backlit_keyboard.jpg">Wikimedia Commons</a></figcaption>
-            </figure>
+            <p>Each keypress adds 0.8 times that score to the bus's velocity, capped at 15, and velocity loses 4 percent every frame. Stop typing and the bus coasts to a stop within a second or two. The race is 1000 metres.</p>
 
-            <p>The result is a number between 0 and 1. Zero means your input is completely predictable (\(H = 0\), a single repeated key). One means it's maximally random (\(H = H_{\max}\), uniform distribution over all keys with irregular timing). This entropy value maps linearly to velocity. A bus driven by high entropy can reach 15 m/s. A bus driven by someone holding down the spacebar barely moves.</p>
+            <h2>Playing it</h2>
 
-            <p>The stat display shows your entropy as a color-coded bar that shifts from red (low) through yellow (medium) to green (high). There's also a unique key counter that tracks how many distinct keys you've pressed, capping around 50. Both numbers update in real time so you can see the immediate effect of switching up your input strategy.</p>
+            <p>Fingers get tired, but what actually slows the bus is that my brain wants to settle into a sequence and repeat it, and the score drops the moment it does. I found myself doing strange things while playing. Closing my eyes and letting my fingers wander. Using my palms. Typing nonsense words to reach keys I wouldn't normally think of. Humans are bad at <a href="https://en.wikipedia.org/wiki/Random_number_generation#Human_generation">generating random sequences</a> on demand. We avoid repeating a key and overuse alternation, which is exactly what the ABAB check catches.</p>
 
-            <h2>The game</h2>
+            <p>On a phone there is one big button instead, so key variety is gone. There I score the standard deviation of the intervals between taps, divided by 200 ms and capped at 1, times a rate factor. Tapping at irregular intervals beats tapping to a beat.</p>
 
-            <p>You're racing 1000 meters to a checkered finish line. Velocity decays by a friction factor of 0.96 each frame, so you need continuous input to maintain speed. Stop typing and the bus coasts to a halt. The challenge isn't physical endurance (though your fingers may disagree). It's mental. Your brain wants to fall into patterns. It wants to settle on a comfortable sequence of keys and repeat it. The game punishes exactly that instinct.</p>
-
-            <p>I found myself doing strange things while playing. Closing my eyes and letting my fingers wander. Using my palms. Deliberately typing nonsense words to access keys I wouldn't normally think of. The optimal strategy is to become a random number generator, which is something humans are notoriously bad at. Studies on <a href="https://en.wikipedia.org/wiki/Random_number_generation#Human_generation">human random generation</a> consistently show that people underrepresent certain sequences and overrepresent others. The game turns that cognitive bias into a difficulty curve.</p>
-
-            <p>On mobile, there's a large purple button you tap instead. The entropy comes from the timing variance between taps rather than key variety, since a touchscreen only has one input. Tapping at irregular intervals produces higher entropy than tapping at a steady rhythm.</p>
-
-            <h2>Pixel art</h2>
-
-            <p>The visual style is deliberately retro. The bus is a golden rectangle with windows, wheels, and a red taillight, rendered in chunky pixels. White clouds drift across a blue sky gradient. A gray road scrolls beneath the bus. Green grass sits below the road. The finish line is a black-and-white checkerboard pattern. Nothing is anti-aliased. The aesthetic is retro pixel art with chunky sprites and flat colors.</p>
-
-            <p>When you cross the finish line, the game shows your total time and average speed in kilometers per hour. My best runs hover around 80 seconds. Getting below 70 requires sustained high entropy, which means sustained randomness, which means fighting every pattern-seeking instinct your brain has. It's a surprisingly difficult thing to do on purpose.</p>
+            <p>My best runs come in around 80 seconds. Getting under 70 means keeping the bar green the whole way, and I haven't managed it yet.</p>
         </article>
 
     </div>
