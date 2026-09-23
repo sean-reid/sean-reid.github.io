@@ -1,0 +1,24 @@
+{
+  "name": "Sean Reid",
+  "url": "https://sean-reid.github.io",
+  "description": "Projects by Sean Reid: games, simulations, generative music, and a few theorems doing real work in a browser.",
+  "bio": [
+    "I'm a software engineer with a math background. This site is where my side projects live.",
+    "Most of them run in the browser. Every entry has a live demo and source, and a writeup on how it works and what went wrong."
+  ],
+  "links": [
+    { "label": "GitHub", "href": "https://github.com/sean-reid" },
+    { "label": "Mathstodon", "href": "https://mathstodon.xyz/@seanreid" },
+    { "label": "Bandcamp", "href": "https://seanmreid.bandcamp.com" },
+    { "label": "Poetry", "href": "https://socrates-of-athens.github.io" },
+    { "label": "Coffee", "href": "https://www.buymeacoffee.com/seanreid" }
+  ],
+  "groups": [
+    { "id": "math", "label": "Math and physics" },
+    { "id": "games", "label": "Games and puzzles" },
+    { "id": "music", "label": "Music and audio" },
+    { "id": "text", "label": "Text and images" },
+    { "id": "tools", "label": "Tools and data" }
+  ],
+  "featuredCount": 8
+}
