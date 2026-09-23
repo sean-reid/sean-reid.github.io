@@ -4,266 +4,194 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
     <title>Sean Reid</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica', 'Arial', sans-serif;
-            line-height: 1.6;
-            color: #1a1a1a;
-            background: #fafafa;
-            padding: 0;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-
-        .projects {
-            margin-bottom: 3rem;
-        }
-
-        .projects h2 {
-            font-size: 1.3rem;
-            font-weight: 500;
-            margin-bottom: 1.5rem;
-            color: #333;
-        }
-
-        .featured-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1.25rem;
-            margin-bottom: 3rem;
-        }
-
-        .project {
-            padding: 1.5rem;
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            transition: box-shadow 0.2s;
-        }
-
-        .project:hover {
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        }
-
-        .project-name {
-            font-size: 1.05rem;
-            font-weight: 600;
-            color: #1a1a1a;
-            margin-bottom: 0.5rem;
-        }
-
-        .project-desc {
-            color: #555;
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-
-        .project-link {
-            display: flex;
-            text-decoration: none;
-            color: inherit;
-        }
-
-        .project-link .project {
-            flex: 1;
-        }
-
-        .more-projects {
-            margin-bottom: 3rem;
-        }
-
-        .more-projects h2 {
-            font-size: 1.3rem;
-            font-weight: 500;
-            margin-bottom: 1rem;
-            color: #333;
-        }
-
-        .project-list {
-            list-style: none;
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 0;
-        }
-
-        .project-list li {
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .project-list li:nth-child(odd) {
-            padding-right: 1.5rem;
-        }
-
-        .project-list li:nth-child(even) {
-            padding-left: 1.5rem;
-        }
-
-        .project-list a {
-            color: #1a1a1a;
-            text-decoration: none;
-            font-size: 0.95rem;
-            transition: color 0.2s;
-        }
-
-        .project-list a:hover {
-            color: #0366d6;
-        }
-
-        .project-list .list-desc {
-            color: #888;
-            font-size: 0.8rem;
-            margin-left: 0.25rem;
-        }
-
-
-        @media (max-width: 600px) {
-            body {
-                padding: 1.5rem 1rem;
-            }
-
-            .featured-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .project {
-                padding: 1.25rem;
-            }
-
-            .project-list {
-                grid-template-columns: 1fr;
-            }
-
-            .project-list li,
-            .project-list li:nth-child(odd),
-            .project-list li:nth-child(even) {
-                padding-left: 0;
-                padding-right: 0;
-            }
-
-        }
-    </style>
+    <meta name="description" content="Projects by Sean Reid: games, simulations, generative music, and a few theorems doing real work in a browser.">
+    <link rel="canonical" href="https://sean-reid.github.io/">
+    <link rel="alternate" type="application/atom+xml" title="Sean Reid" href="/feed.xml">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Sean Reid">
+    <meta property="og:title" content="Sean Reid">
+    <meta property="og:description" content="Projects by Sean Reid: games, simulations, generative music, and a few theorems doing real work in a browser.">
+    <meta property="og:url" content="https://sean-reid.github.io/">
+    <meta property="og:image" content="https://sean-reid.github.io/blog/img/time.webp">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="stylesheet" href="/home.css">
     <link rel="stylesheet" href="/nav.css">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 </head>
 <body>
-    <nav class="site-nav">
-      <div class="site-nav-inner">
-        <a href="/" class="site-nav-name">Sean Reid</a>
-        <div class="site-nav-controls">
-          <div class="site-nav-search-wrap"><input type="text" class="site-nav-search" placeholder="Search..." autocomplete="off"><span class="site-nav-search-hint">/</span></div>
-          <a class="site-nav-random">&rarr; Random</a>
-          <div class="search-dropdown"></div>
-        </div>
-      </div>
-    </nav>
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="/" class="site-nav-name">Sean Reid</a>
+    <div class="site-nav-controls">
+      <div class="site-nav-search-wrap"><input type="search" class="site-nav-search" placeholder="Search..." aria-label="Search projects" autocomplete="off"><span class="site-nav-search-hint" aria-hidden="true">/</span></div>
+      <button type="button" class="site-nav-random">Random</button>
+      <div class="search-dropdown" role="listbox" aria-label="Search results"></div>
+    </div>
+  </div>
+</nav>
     <main class="site-content">
     <div class="container">
+
+        <header class="intro">
+            <h1>Sean Reid</h1>
+            <p>I'm a software engineer with a math background. This site is where my side projects live.</p>
+            <p>Most of them run in the browser. Every entry has a live demo and source, and a writeup on how it works and what went wrong.</p>
+            <p class="intro-links">
+                <a href="https://github.com/sean-reid">GitHub</a>
+                <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
+                <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
+                <a href="https://socrates-of-athens.github.io">Poetry</a>
+                <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
+                <a href="/feed.xml">Feed</a>
+            </p>
+        </header>
 
         <section class="projects">
             <h2>Featured</h2>
             <div class="featured-grid">
-                <a href="/blog/blotter.html" class="project-link"><div class="project">
-                    <div class="project-name">blotter</div>
-                    <p class="project-desc">Real-time police scanner transcription and geocoded event mapping across twenty-one US metro areas</p>
+                <a href="/blog/time.html" class="project-link"><div class="project">
+                    <div class="project-name">time</div>
+                    <p class="project-desc">Two clocks, one on Earth and one on a ship you fly around the Sun, a neutron star, or Sagittarius A*, with the drift between them computed from real geodesics</p>
                 </div></a>
 
-                <a href="/blog/randomify.html" class="project-link"><div class="project">
-                    <div class="project-name">randomify</div>
-                    <p class="project-desc">Shuffle everything ever recorded - one press draws a song from a MusicBrainz-derived corpus and links it across eight streaming services</p>
-                </div></a>
-
-                <a href="/blog/deconflict.html" class="project-link"><div class="project">
-                    <div class="project-name">deconflict</div>
-                    <p class="project-desc">Browser-based WiFi planner with multi-floor support, signal heatmaps, and graph coloring channel assignment</p>
-                </div></a>
-
-                <a href="/blog/jamstream.html" class="project-link"><div class="project">
-                    <div class="project-name">jamstream</div>
-                    <p class="project-desc">Spin up a self-destructing jam server in your own cloud account, play together at under 30 ms mouth to ear, and stream the session live to Twitch and YouTube</p>
-                </div></a>
-
-                <a href="/blog/clowns-and-mimes.html" class="project-link"><div class="project">
-                    <div class="project-name">clowns and mimes</div>
-                    <p class="project-desc">Server-authoritative multiplayer tag in a dark labyrinth wrapped onto a torus, a M&ouml;bius strip, or a Klein bottle</p>
+                <a href="/blog/squares.html" class="project-link"><div class="project">
+                    <div class="project-name">squares</div>
+                    <p class="project-desc">A photo redrawn as a squared rectangle, where Kirchhoff's laws pick every square size and a search over planar networks picks the arrangement</p>
                 </div></a>
 
                 <a href="/blog/string.html" class="project-link"><div class="project">
                     <div class="project-name">string</div>
-                    <p class="project-desc">Turn a photo into a string-art construction pattern using Boltzmann-sampled greedy optimization and antialiased line rasterization</p>
+                    <p class="project-desc">Turns a photo into a few thousand chords between pins on a circle, then prints the build guide.</p>
+                </div></a>
+
+                <a href="/blog/deconflict.html" class="project-link"><div class="project">
+                    <div class="project-name">deconflict</div>
+                    <p class="project-desc">I assign WiFi channels by coloring an interference graph built from a floorplan.</p>
+                </div></a>
+
+                <a href="/blog/miditool.html" class="project-link"><div class="project">
+                    <div class="project-name">miditool</div>
+                    <p class="project-desc">Sits between my keyboard and the DAW and rewrites what I play, with 52 seeded effects and a hot-reloading KDL config.</p>
+                </div></a>
+
+                <a href="/blog/unquote.html" class="project-link"><div class="project">
+                    <div class="project-name">unquote</div>
+                    <p class="project-desc">Exact, keyword, and semantic search over 3.7 million lines of film dialogue, all stored in one ClickHouse server.</p>
+                </div></a>
+
+                <a href="/blog/randomify.html" class="project-link"><div class="project">
+                    <div class="project-name">randomify</div>
+                    <p class="project-desc">A shuffle button for everything ever recorded, built on MusicBrainz and linked to eight streaming services</p>
+                </div></a>
+
+                <a href="/blog/how-will-i-die.html" class="project-link"><div class="project">
+                    <div class="project-name">how will i die</div>
+                    <p class="project-desc">What people of your age, sex, and country eventually die of, projected forward from WHO mortality data</p>
                 </div></a>
             </div>
         </section>
 
-        <section class="more-projects">
-            <h2>More Projects</h2>
+        <section class="group" id="math">
+            <h2>Math and physics</h2>
             <ul class="project-list">
-                <li><a href="/blog/unquote.html">unquote</a> <span class="list-desc">- film dialogue search by quote, half-memory, or scene</span></li>
-                <li><a href="/blog/discern.html">discern</a> <span class="list-desc">- Elo-rated real-vs-AI photo game</span></li>
-                <li><a href="/blog/pulse.html">pulse</a> <span class="list-desc">- rPPG heart rate from a webcam</span></li>
-                <li><a href="/blog/severed.html">severed</a> <span class="list-desc">- submarine cable failure simulation</span></li>
-                <li><a href="/blog/miditool.html">miditool</a> <span class="list-desc">- realtime MIDI transforms between keyboard and DAW</span></li>
-                <li><a href="/blog/eigencircuits.html">eigencircuits</a> <span class="list-desc">- fake arXiv papers from a seeded grammar</span></li>
-                <li><a href="/blog/rebase.html">rebase</a> <span class="list-desc">- daily puzzles in irrational number bases</span></li>
-                <li><a href="/blog/movie-quotes.html">movie quotes</a> <span class="list-desc">- quote matching with embedding-ranked decoys</span></li>
-                <li><a href="/blog/crossword-generator.html">crossword generator</a> <span class="list-desc">- crossword construction via SAT solving</span></li>
-                <li><a href="/blog/captcha-royale.html">captcha royale</a> <span class="list-desc">- competitive CAPTCHA battle royale</span></li>
-                <li><a href="/blog/antipodal.html">antipodal</a> <span class="list-desc">- Borsuk-Ulam theorem and Fibonacci sphere weather</span></li>
-                <li><a href="/blog/gardeners-dilemma.html">gardener's dilemma</a> <span class="list-desc">- Collatz conjecture as competitive game</span></li>
-                <li><a href="/blog/gravity.html">gravity</a> <span class="list-desc">- Schwarzschild time dilation and Verlet integration</span></li>
-                <li><a href="/blog/sprouts.html">sprouts</a> <span class="list-desc">- topological game vs Sprague-Grundy AI</span></li>
-                <li><a href="/blog/tron.html">tron</a> <span class="list-desc">- lightcycles vs Voronoi territory AI</span></li>
-                <li><a href="/blog/meta-tictactoe.html">meta-tictactoe</a> <span class="list-desc">- minimax with alpha-beta pruning</span></li>
-                <li><a href="/blog/points.html">points</a> <span class="list-desc">- least-squares curve fitting puzzle</span></li>
-                <li><a href="/blog/lacuna.html">lacuna</a> <span class="list-desc">- planar graph strategy game</span></li>
-                <li><a href="/blog/lasers.html">lasers</a> <span class="list-desc">- specular reflection and ray-geometry intersection</span></li>
-                <li><a href="/blog/creature-garden.html">creature garden</a> <span class="list-desc">- Lotka-Volterra ecosystem simulation</span></li>
-                <li><a href="/blog/voting.html">voting</a> <span class="list-desc">- Arrow's impossibility theorem explorer</span></li>
-                <li><a href="/blog/dependencies.html">dependencies</a> <span class="list-desc">- topological sort and constraint solving</span></li>
-                <li><a href="/blog/entropy-bus.html">entropy bus</a> <span class="list-desc">- Shannon entropy as game mechanic</span></li>
-                <li><a href="/blog/crochet-pattern-generator.html">crochet pattern generator</a> <span class="list-desc">- B-splines and surfaces of revolution</span></li>
-                <li><a href="/blog/perfect-hindsight.html">perfect hindsight</a> <span class="list-desc">- dynamic programming on S&P 500 data</span></li>
-                <li><a href="/blog/the-count-of-monte-carlo.html">the count of monte carlo</a> <span class="list-desc">- Monte Christo estimation</span></li>
-                <li><a href="/blog/fourier.html">fourier phase</a> <span class="list-desc">- phase dominance in image structure</span></li>
-                <li><a href="/blog/random-game.html">random game</a> <span class="list-desc">- interval bisection strategy</span></li>
-                <li><a href="/blog/how-will-i-die.html">how will i die</a> <span class="list-desc">- eventual causes of death by country, age, sex</span></li>
-                <li><a href="/blog/brainrotter.html">brainrotter</a> <span class="list-desc">- weighted context-free grammar</span></li>
-                <li><a href="/blog/bananas-for-scale.html">bananas for scale</a> <span class="list-desc">- dimensional analysis in absurd units</span></li>
-                <li><a href="/blog/tongue-simulator.html">tongue simulator</a> <span class="list-desc">- articulatory phonetics animation</span></li>
-                <li><a href="/blog/sounds.html">sounds</a> <span class="list-desc">- biome-reactive generative music</span></li>
-                <li><a href="/blog/papermaker.html">papermaker</a> <span class="list-desc">- CFG-generated fake CS papers</span></li>
-                <li><a href="/blog/flow.html">flow</a> <span class="list-desc">- RSVP speed reader</span></li>
-                <li><a href="/blog/anagram.html">anagram</a> <span class="list-desc">- combinatorial word finder</span></li>
-                <li><a href="/blog/wikipedia-unscrambler.html">wikipedia unscrambler</a> <span class="list-desc">- word scramble puzzle</span></li>
-                <li><a href="/blog/mastery.html">mastery</a> <span class="list-desc">- 100 skills ranked across 19 dimensions</span></li>
-                <li><a href="/blog/licenseplategame.html">license plate game</a> <span class="list-desc">- 3-letter word search</span></li>
-                <li><a href="/blog/nyt-crosswords.html">nyt crosswords</a> <span class="list-desc">- ad-free NYT puzzles</span></li>
-                <li><a href="/blog/antibook.html">antibook</a> <span class="list-desc">- every word replaced by its antonym</span></li>
-                <li><a href="/blog/what-are-you.html">what are you</a> <span class="list-desc">- personality quiz generator</span></li>
-                <li><a href="/blog/haiku.html">haiku</a> <span class="list-desc">- ambient haiku generator</span></li>
-                <li><a href="/blog/frankenpeanuts.html">frankenpeanuts</a> <span class="list-desc">- remixed Peanuts strips</span></li>
+                <li><a href="/blog/time.html"><span class="project-list-name">time</span> <span class="list-desc">how gravity and motion move a clock</span></a></li>
+                <li><a href="/blog/squares.html"><span class="project-list-name">squares</span> <span class="list-desc">photos as simple squared rectangles</span></a></li>
+                <li><a href="/blog/how-will-i-die.html"><span class="project-list-name">how will i die</span> <span class="list-desc">eventual causes of death by country, age, sex</span></a></li>
+                <li><a href="/blog/kakeya.html"><span class="project-list-name">kakeya</span> <span class="list-desc">the Kakeya needle problem, animated from computed sets</span></a></li>
+                <li><a href="/blog/oeis-pi-search.html"><span class="project-list-name">oeis pi search</span> <span class="list-desc">where OEIS sequences first appear in pi</span></a></li>
+                <li><a href="/blog/pulse.html"><span class="project-list-name">pulse</span> <span class="list-desc">heart rate from a webcam</span></a></li>
+                <li><a href="/blog/rebase.html"><span class="project-list-name">rebase</span> <span class="list-desc">daily puzzles in irrational number bases</span></a></li>
+                <li><a href="/blog/polish-notation.html"><span class="project-list-name">polish notation</span> <span class="list-desc">convert logic to and from Polish notation</span></a></li>
+                <li><a href="/blog/voting.html"><span class="project-list-name">voting</span> <span class="list-desc">Arrow's impossibility theorem, explorable</span></a></li>
+                <li><a href="/blog/antipodal.html"><span class="project-list-name">antipodal</span> <span class="list-desc">weather at your antipode, and Borsuk-Ulam</span></a></li>
+                <li><a href="/blog/points.html"><span class="project-list-name">points</span> <span class="list-desc">exact algebraic curves through lattice points</span></a></li>
+                <li><a href="/blog/fourier.html"><span class="project-list-name">fourier phase</span> <span class="list-desc">phase dominance in image structure</span></a></li>
+                <li><a href="/blog/dependencies.html"><span class="project-list-name">dependencies</span> <span class="list-desc">group testing for required dependencies</span></a></li>
+                <li><a href="/blog/perfect-hindsight.html"><span class="project-list-name">perfect hindsight</span> <span class="list-desc">the best possible S&amp;P 500 trade, every day</span></a></li>
+                <li><a href="/blog/the-count-of-monte-carlo.html"><span class="project-list-name">the count of monte carlo</span> <span class="list-desc">a novel converging out of noise</span></a></li>
+                <li><a href="/blog/random-game.html"><span class="project-list-name">random game</span> <span class="list-desc">interval bisection for a guessing game</span></a></li>
+            </ul>
+        </section>
+
+        <section class="group" id="games">
+            <h2>Games and puzzles</h2>
+            <ul class="project-list">
+                <li><a href="/blog/clowns-and-mimes.html"><span class="project-list-name">clowns and mimes</span> <span class="list-desc">multiplayer tag on a torus or Klein bottle</span></a></li>
+                <li><a href="/blog/movie-quotes.html"><span class="project-list-name">movie quotes</span> <span class="list-desc">movie quote quiz with embedding-picked decoys</span></a></li>
+                <li><a href="/blog/discern.html"><span class="project-list-name">discern</span> <span class="list-desc">Elo-rated real-vs-generated photo game</span></a></li>
+                <li><a href="/blog/wason.html"><span class="project-list-name">wason</span> <span class="list-desc">a daily Wason selection task</span></a></li>
+                <li><a href="/blog/gravity.html"><span class="project-list-name">gravity</span> <span class="list-desc">space shooter in Schwarzschild-shaped time</span></a></li>
+                <li><a href="/blog/tron.html"><span class="project-list-name">tron</span> <span class="list-desc">lightcycles against a Voronoi bot</span></a></li>
+                <li><a href="/blog/lacuna.html"><span class="project-list-name">lacuna</span> <span class="list-desc">two-player game of enclosing regions in a circle</span></a></li>
+                <li><a href="/blog/sprouts.html"><span class="project-list-name">sprouts</span> <span class="list-desc">Conway's Sprouts against a search AI</span></a></li>
+                <li><a href="/blog/captcha-royale.html"><span class="project-list-name">captcha royale</span> <span class="list-desc">multiplayer CAPTCHA elimination</span></a></li>
+                <li><a href="/blog/gardeners-dilemma.html"><span class="project-list-name">gardener's dilemma</span> <span class="list-desc">Collatz orbits as a competitive game</span></a></li>
+                <li><a href="/blog/meta-tictactoe.html"><span class="project-list-name">meta-tictactoe</span> <span class="list-desc">ultimate tic-tac-toe against alpha-beta search</span></a></li>
+                <li><a href="/blog/entropy-bus.html"><span class="project-list-name">entropy bus</span> <span class="list-desc">Shannon entropy as a game mechanic</span></a></li>
+                <li><a href="/blog/what-are-you.html"><span class="project-list-name">what are you</span> <span class="list-desc">personality quiz generator</span></a></li>
+                <li><a href="/blog/wikipedia-unscrambler.html"><span class="project-list-name">wikipedia unscrambler</span> <span class="list-desc">word scramble from trending articles</span></a></li>
+                <li><a href="/blog/lasers.html"><span class="project-list-name">lasers</span> <span class="list-desc">mirror puzzle with continuous rotation</span></a></li>
+                <li><a href="/blog/licenseplategame.html"><span class="project-list-name">license plate game</span> <span class="list-desc">shortest words containing three letters</span></a></li>
+            </ul>
+        </section>
+
+        <section class="group" id="music">
+            <h2>Music and audio</h2>
+            <ul class="project-list">
+                <li><a href="/blog/miditool.html"><span class="project-list-name">miditool</span> <span class="list-desc">realtime MIDI transforms between keyboard and DAW</span></a></li>
+                <li><a href="/blog/jamstream.html"><span class="project-list-name">jamstream</span> <span class="list-desc">low-latency jam sessions over the internet</span></a></li>
+                <li><a href="/blog/rhythm.html"><span class="project-list-name">rhythm</span> <span class="list-desc">drum rhythms from stacked Markov chains</span></a></li>
+                <li><a href="/blog/cyclical.html"><span class="project-list-name">cyclical</span> <span class="list-desc">chord progressions that take a long time to resolve</span></a></li>
+                <li><a href="/blog/sounds.html"><span class="project-list-name">sounds</span> <span class="list-desc">generative music that follows the terrain</span></a></li>
+            </ul>
+        </section>
+
+        <section class="group" id="text">
+            <h2>Text and images</h2>
+            <ul class="project-list">
+                <li><a href="/blog/string.html"><span class="project-list-name">string</span> <span class="list-desc">string-art patterns from a photo</span></a></li>
+                <li><a href="/blog/eigencircuits.html"><span class="project-list-name">eigencircuits</span> <span class="list-desc">fake arXiv papers from a seeded grammar</span></a></li>
+                <li><a href="/blog/pikiwedia.html"><span class="project-list-name">pikiwedia</span> <span class="list-desc">Wikipedia, spoonerized</span></a></li>
+                <li><a href="/blog/keynote.html"><span class="project-list-name">keynote</span> <span class="list-desc">a tech keynote that never ends</span></a></li>
+                <li><a href="/blog/antibook.html"><span class="project-list-name">antibook</span> <span class="list-desc">every word replaced by its antonym</span></a></li>
+                <li><a href="/blog/tongue-simulator.html"><span class="project-list-name">tongue simulator</span> <span class="list-desc">a soft-body tongue that speaks your text</span></a></li>
+                <li><a href="/blog/crochet-pattern-generator.html"><span class="project-list-name">crochet pattern generator</span> <span class="list-desc">crochet patterns from a drawn profile</span></a></li>
+                <li><a href="/blog/frankenpeanuts.html"><span class="project-list-name">frankenpeanuts</span> <span class="list-desc">remixed Peanuts strips</span></a></li>
+                <li><a href="/blog/haiku.html"><span class="project-list-name">haiku</span> <span class="list-desc">ambient haiku generator</span></a></li>
+                <li><a href="/blog/brainrotter.html"><span class="project-list-name">brainrotter</span> <span class="list-desc">weighted grammar for brainrot prose</span></a></li>
+                <li><a href="/blog/papermaker.html"><span class="project-list-name">papermaker</span> <span class="list-desc">SCIgen in the browser</span></a></li>
+                <li><a href="/blog/creature-garden.html"><span class="project-list-name">creature garden</span> <span class="list-desc">a petri dish of tentacled creatures</span></a></li>
+            </ul>
+        </section>
+
+        <section class="group" id="tools">
+            <h2>Tools and data</h2>
+            <ul class="project-list">
+                <li><a href="/blog/deconflict.html"><span class="project-list-name">deconflict</span> <span class="list-desc">WiFi channel planning by graph coloring</span></a></li>
+                <li><a href="/blog/unquote.html"><span class="project-list-name">unquote</span> <span class="list-desc">film dialogue search by quote, half-memory, or scene</span></a></li>
+                <li><a href="/blog/randomify.html"><span class="project-list-name">randomify</span> <span class="list-desc">a shuffle button over everything ever recorded</span></a></li>
+                <li><a href="/blog/severed.html"><span class="project-list-name">severed</span> <span class="list-desc">submarine cable cut simulation</span></a></li>
+                <li><a href="/blog/latex-preview.html"><span class="project-list-name">latex preview</span> <span class="list-desc">LaTeX to PDF entirely in the browser</span></a></li>
+                <li><a href="/blog/urls.html"><span class="project-list-name">urls</span> <span class="list-desc">make any URL as long as you want</span></a></li>
+                <li><a href="/blog/crossword-generator.html"><span class="project-list-name">crossword generator</span> <span class="list-desc">crossword construction via SAT solving</span></a></li>
+                <li><a href="/blog/mastery.html"><span class="project-list-name">mastery</span> <span class="list-desc">100 skills ranked across 19 dimensions</span></a></li>
+                <li><a href="/blog/bananas-for-scale.html"><span class="project-list-name">bananas for scale</span> <span class="list-desc">dimensional analysis in absurd units</span></a></li>
+                <li><a href="/blog/nyt-crosswords.html"><span class="project-list-name">nyt crosswords</span> <span class="list-desc">ad-free NYT crossword archive</span></a></li>
+                <li><a href="/blog/flow.html"><span class="project-list-name">flow</span> <span class="list-desc">RSVP speed reader</span></a></li>
+                <li><a href="/blog/anagram.html"><span class="project-list-name">anagram</span> <span class="list-desc">multi-word anagram finder</span></a></li>
             </ul>
         </section>
 
     </div>
     </main>
-    <footer class="site-footer">
+<footer class="site-footer">
       <div class="site-footer-links">
         <a href="https://github.com/sean-reid">GitHub</a>
         <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
         <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
         <a href="https://socrates-of-athens.github.io">Poetry</a>
         <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
+        <a href="/feed.xml">Feed</a>
       </div>
     </footer>
     <script src="/nav.js"></script>

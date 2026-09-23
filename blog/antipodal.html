@@ -8,15 +8,26 @@
     <link rel="preload" as="image" href="img/antipodal.webp">
     <link rel="stylesheet" href="/nav.css">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="description" content="A globe that shows the weather at any point and at its antipode, over 85 years of ERA5 reanalysis.">
+    <link rel="canonical" href="https://sean-reid.github.io/blog/antipodal.html">
+    <link rel="alternate" type="application/atom+xml" title="Sean Reid" href="/feed.xml">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Sean Reid">
+    <meta property="og:title" content="Antipodal">
+    <meta property="og:description" content="A globe that shows the weather at any point and at its antipode, over 85 years of ERA5 reanalysis.">
+    <meta property="og:url" content="https://sean-reid.github.io/blog/antipodal.html">
+    <meta property="og:image" content="https://sean-reid.github.io/blog/img/antipodal.webp">
+    <meta property="article:published_time" content="2026-07-11">
+    <meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
 <nav class="site-nav">
   <div class="site-nav-inner">
     <a href="/" class="site-nav-name">Sean Reid</a>
     <div class="site-nav-controls">
-      <div class="site-nav-search-wrap"><input type="text" class="site-nav-search" placeholder="Search..." autocomplete="off"><span class="site-nav-search-hint">/</span></div>
-      <a class="site-nav-random">&rarr; Random</a>
-      <div class="search-dropdown"></div>
+      <div class="site-nav-search-wrap"><input type="search" class="site-nav-search" placeholder="Search..." aria-label="Search projects" autocomplete="off"><span class="site-nav-search-hint" aria-hidden="true">/</span></div>
+      <button type="button" class="site-nav-random">Random</button>
+      <div class="search-dropdown" role="listbox" aria-label="Search results"></div>
     </div>
   </div>
 </nav>
@@ -25,6 +36,7 @@
         <header>
             <h1>Antipodal</h1>
             <p class="meta">A globe that shows the weather at any point and at its antipode, over 85 years of ERA5 reanalysis.</p>
+            <p class="date"><time datetime="2026-07-11">July 2026</time></p>
             <p class="links-row">
                 <a href="https://antipodal.pages.dev">Live Demo</a>
                 <a href="https://github.com/sean-reid/antipodal">Source</a>
@@ -33,7 +45,7 @@
 
         <article>
             <figure>
-                <img decoding="async" fetchpriority="high" src="img/antipodal.webp" alt="Screenshot of Antipodal showing a 3D globe with weather data points">
+                <img decoding="async" fetchpriority="high" src="img/antipodal.webp" alt="Screenshot of Antipodal showing a 3D globe with weather data points" width="1280" height="800">
                 <figcaption>Pick a point, see the weather at its antipode, and scan a date for the pair where temperature and pressure both come closest to matching.</figcaption>
             </figure>
 
@@ -80,14 +92,15 @@
     </div>
 </main>
 <footer class="site-footer">
-  <div class="site-footer-links">
-    <a href="https://github.com/sean-reid">GitHub</a>
-    <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
-    <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
-    <a href="https://socrates-of-athens.github.io">Poetry</a>
-    <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
-  </div>
-</footer>
+      <div class="site-footer-links">
+        <a href="https://github.com/sean-reid">GitHub</a>
+        <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
+        <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
+        <a href="https://socrates-of-athens.github.io">Poetry</a>
+        <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
+        <a href="/feed.xml">Feed</a>
+      </div>
+    </footer>
     <script src="/nav.js"></script>
 </body>
 </html>

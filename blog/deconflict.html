@@ -8,15 +8,26 @@
     <link rel="preload" as="image" href="img/deconflict.webp">
     <link rel="stylesheet" href="/nav.css">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="description" content="I assign WiFi channels by coloring an interference graph built from a floorplan.">
+    <link rel="canonical" href="https://sean-reid.github.io/blog/deconflict.html">
+    <link rel="alternate" type="application/atom+xml" title="Sean Reid" href="/feed.xml">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Sean Reid">
+    <meta property="og:title" content="Deconflict">
+    <meta property="og:description" content="I assign WiFi channels by coloring an interference graph built from a floorplan.">
+    <meta property="og:url" content="https://sean-reid.github.io/blog/deconflict.html">
+    <meta property="og:image" content="https://sean-reid.github.io/blog/img/deconflict.webp">
+    <meta property="article:published_time" content="2026-04-10">
+    <meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
 <nav class="site-nav">
   <div class="site-nav-inner">
     <a href="/" class="site-nav-name">Sean Reid</a>
     <div class="site-nav-controls">
-      <div class="site-nav-search-wrap"><input type="text" class="site-nav-search" placeholder="Search..." autocomplete="off"><span class="site-nav-search-hint">/</span></div>
-      <a class="site-nav-random">&rarr; Random</a>
-      <div class="search-dropdown"></div>
+      <div class="site-nav-search-wrap"><input type="search" class="site-nav-search" placeholder="Search..." aria-label="Search projects" autocomplete="off"><span class="site-nav-search-hint" aria-hidden="true">/</span></div>
+      <button type="button" class="site-nav-random">Random</button>
+      <div class="search-dropdown" role="listbox" aria-label="Search results"></div>
     </div>
   </div>
 </nav>
@@ -25,6 +36,7 @@
         <header>
             <h1>Deconflict</h1>
             <p class="meta">I assign WiFi channels by coloring an interference graph built from a floorplan.</p>
+            <p class="date"><time datetime="2026-04-10">April 2026</time></p>
             <p class="links-row">
                 <a href="https://deconflict.app/">Live Demo</a>
                 <a href="https://github.com/sean-reid/deconflict">Source</a>
@@ -33,7 +45,7 @@
 
         <article>
             <figure>
-                <img decoding="async" fetchpriority="high" src="img/deconflict.webp" alt="Screenshot of Deconflict showing four access points on an office floorplan with signal heatmap and AP properties panel">
+                <img decoding="async" fetchpriority="high" src="img/deconflict.webp" alt="Screenshot of Deconflict showing four access points on an office floorplan with signal heatmap and AP properties panel" width="2560" height="1600">
                 <figcaption>Four access points on an office floorplan. Green is strong signal, red is dead, and each AP has a 5 GHz channel none of its neighbours share.</figcaption>
             </figure>
 
@@ -98,14 +110,15 @@
     </div>
 </main>
 <footer class="site-footer">
-  <div class="site-footer-links">
-    <a href="https://github.com/sean-reid">GitHub</a>
-    <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
-    <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
-    <a href="https://socrates-of-athens.github.io">Poetry</a>
-    <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
-  </div>
-</footer>
+      <div class="site-footer-links">
+        <a href="https://github.com/sean-reid">GitHub</a>
+        <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
+        <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
+        <a href="https://socrates-of-athens.github.io">Poetry</a>
+        <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
+        <a href="/feed.xml">Feed</a>
+      </div>
+    </footer>
     <script src="/nav.js"></script>
 </body>
 </html>

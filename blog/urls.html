@@ -8,15 +8,26 @@
     <link rel="preload" as="image" href="img/urls.webp">
     <link rel="stylesheet" href="/nav.css">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="description" content="A URL lengthener that encodes the destination inside the long link, so it needs no database and nothing expires">
+    <link rel="canonical" href="https://sean-reid.github.io/blog/urls.html">
+    <link rel="alternate" type="application/atom+xml" title="Sean Reid" href="/feed.xml">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Sean Reid">
+    <meta property="og:title" content="URL Extension Service">
+    <meta property="og:description" content="A URL lengthener that encodes the destination inside the long link, so it needs no database and nothing expires">
+    <meta property="og:url" content="https://sean-reid.github.io/blog/urls.html">
+    <meta property="og:image" content="https://sean-reid.github.io/blog/img/urls.webp">
+    <meta property="article:published_time" content="2026-09-23">
+    <meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
 <nav class="site-nav">
   <div class="site-nav-inner">
     <a href="/" class="site-nav-name">Sean Reid</a>
     <div class="site-nav-controls">
-      <div class="site-nav-search-wrap"><input type="text" class="site-nav-search" placeholder="Search..." autocomplete="off"><span class="site-nav-search-hint">/</span></div>
-      <a class="site-nav-random">&rarr; Random</a>
-      <div class="search-dropdown"></div>
+      <div class="site-nav-search-wrap"><input type="search" class="site-nav-search" placeholder="Search..." aria-label="Search projects" autocomplete="off"><span class="site-nav-search-hint" aria-hidden="true">/</span></div>
+      <button type="button" class="site-nav-random">Random</button>
+      <div class="search-dropdown" role="listbox" aria-label="Search results"></div>
     </div>
   </div>
 </nav>
@@ -25,6 +36,7 @@
         <header>
             <h1>URL Extension Service</h1>
             <p class="meta">A URL lengthener that encodes the destination inside the long link, so it needs no database and nothing expires</p>
+            <p class="date"><time datetime="2026-09-23">September 2026</time></p>
             <p class="links-row">
                 <a href="https://urls.dwainosaur.com">Live Demo</a>
                 <a href="https://github.com/sean-reid/urls">Source</a>
@@ -33,7 +45,7 @@
 
         <article>
             <figure>
-                <img decoding="async" fetchpriority="high" src="img/urls.webp" alt="The urls.dwainosaur.com form with the Chess game style selected and a 1,000 character link rendered as 89 moves of algebraic notation">
+                <img decoding="async" fetchpriority="high" src="img/urls.webp" alt="The urls.dwainosaur.com form with the Chess game style selected and a 1,000 character link rendered as 89 moves of algebraic notation" width="2560" height="1600">
                 <figcaption>A Wikipedia link extended to 1,000 characters in the chess style. The 89 moves are not a legal game.</figcaption>
             </figure>
 
@@ -65,14 +77,15 @@
     </div>
 </main>
 <footer class="site-footer">
-  <div class="site-footer-links">
-    <a href="https://github.com/sean-reid">GitHub</a>
-    <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
-    <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
-    <a href="https://socrates-of-athens.github.io">Poetry</a>
-    <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
-  </div>
-</footer>
+      <div class="site-footer-links">
+        <a href="https://github.com/sean-reid">GitHub</a>
+        <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
+        <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
+        <a href="https://socrates-of-athens.github.io">Poetry</a>
+        <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
+        <a href="/feed.xml">Feed</a>
+      </div>
+    </footer>
 <script src="/nav.js"></script>
 </body>
 </html>
