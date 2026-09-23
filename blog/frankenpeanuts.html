@@ -24,7 +24,7 @@
     <div class="container">
         <header>
             <h1>FrankenPeanuts</h1>
-            <p class="meta">Random Peanuts panels from 1950 to 2000, stitched into new comic strips</p>
+            <p class="meta">Four random Peanuts panels from 1950 to 2000, stitched into a new strip on every reload.</p>
             <p class="links-row">
                 <a href="https://sean-reid.github.io/frankenpeanuts/">Live Demo</a>
                 <a href="https://github.com/sean-reid/frankenpeanuts">Source</a>
@@ -37,39 +37,21 @@
                 <figcaption>A FrankenPeanuts strip.</figcaption>
             </figure>
 
-            <p><a href="https://en.wikipedia.org/wiki/Peanuts">Peanuts</a> ran daily from October 2, 1950 to February 13, 2000. That's nearly 18,000 strips, each drawn by <a href="https://en.wikipedia.org/wiki/Charles_M._Schulz">Charles Schulz</a> alone. FrankenPeanuts picks four panels at random from that archive and stitches them into a new four-panel comic. The results range from accidentally poetic to completely incoherent. Every reload is a new strip.</p>
+            <p><a href="https://en.wikipedia.org/wiki/Peanuts">Peanuts</a> ran from October 2, 1950 to February 13, 2000, every strip drawn by <a href="https://en.wikipedia.org/wiki/Charles_M._Schulz">Charles Schulz</a> alone. FrankenPeanuts picks four panels at random from the weekday strips and lays them out as a new four-panel comic. Most of them are incoherent. Some of them are accidentally better than they have any right to be. Hovering a panel shows its original date, and the strip is encoded in the URL hash, so a good one can be copied and sent to someone.</p>
 
-            <figure class="small">
-                <img decoding="async" src="img/cc/peanuts-strip.webp" alt="A 1943 two-panel comic strip by Jimmy Hatlo" loading="lazy">
-                <figcaption>A 1943 comic strip with visible panel gutters. FrankenPeanuts detects these boundaries algorithmically to extract individual panels. <a href="https://en.wikipedia.org/wiki/They%27ll_Do_It_Every_Time">Wikipedia</a></figcaption>
-            </figure>
+            <h2>Cutting the strips up</h2>
 
-            <h2>The panel extraction pipeline</h2>
+            <p>My first version fetched whole strips from <a href="https://peanuts-search.com">peanuts-search.com</a> at page load and split them in the browser with Canvas pixel reads. It needed a CORS proxy, panels took seconds to appear, and some strips never loaded at all. So I moved the cutting to a one-off batch job and committed the results.</p>
 
-            <p>The original version of FrankenPeanuts fetched full strips from <a href="https://peanuts-search.com">peanuts-search.com</a> at runtime and split them into panels in the browser using Canvas pixel analysis. This worked but was fragile: the cross-origin image fetches required a CORS proxy, panels loaded slowly, and some strips would fail to load entirely. The refactored version moves all the panel extraction to a batch pipeline that runs once, ahead of time, and stores the results.</p>
+            <p>A <a href="https://github.com/sean-reid/frankenpeanuts/blob/main/scripts/build_manifest.py">238-line Python script</a> walks every non-Sunday date in the run (the Sunday strips have a different layout) and fetches the strip image. To find the gutters it takes the middle 80 percent of the image height, every second row, and counts how many pixels in each column have a summed RGB under 180. A column where more than 70 percent of sampled pixels are that dark is a gutter line. Runs of gutter columns collapse to their midpoint, anything within 3 percent of the left or right edge is ignored, and the midpoints become the cut positions. A slice narrower than 5 percent of the strip width is dropped, and so is any panel whose width-to-height ratio is outside 0.55 to 1.45, because a very wide or very narrow panel looks wrong in a square grid.</p>
 
-            <p>A <a href="https://github.com/sean-reid/frankenpeanuts/blob/main/scripts/build_manifest.py">Python script</a> iterates through every weekday between October 2, 1950 and February 13, 2000 (Sundays are skipped since Peanuts didn't publish daily strips on Sundays). For each date, it fetches the strip image from peanuts-search.com and runs the panel detection algorithm. Detected panels are cropped and saved as individual JPEG files in a <code>panels/</code> directory. A <code>manifest.json</code> file maps each date to its extracted panels with filenames and indices.</p>
+            <p>The last run covered 15,456 dates. 14,724 of them produced at least one usable panel, 11,963 produced exactly four, and 732 produced none, usually because the scan of a faded or crooked strip found no clean gutter. That's 55,357 JPEGs, about 1.1 GB, committed straight into the repo alongside a manifest.json that maps each date to its panel files. GitHub hasn't complained yet.</p>
 
-            <h2>How panels are detected</h2>
+            <h2>Running it on Actions</h2>
 
-            <p>The detection algorithm works on the raw pixel data using <a href="https://numpy.org/">NumPy</a> and <a href="https://pillow.readthedocs.io/">Pillow</a>. It samples the middle 80% of the strip vertically (avoiding header and footer artifacts) and computes a per-column darkness metric. Panel gutters appear as columns where the darkness value spikes, because the gutter lines are dark against the white background. The algorithm identifies these spikes, filters out edge artifacts, and uses the gutter positions to split the strip into individual panel regions.</p>
+            <p>Fifty years of strips through one runner would take too long, so the <a href="https://github.com/sean-reid/frankenpeanuts/blob/main/.github/workflows/build-manifest.yml">workflow</a> is a 10-job matrix, each job taking a 5-year slice of the archive with 16 fetch threads and a 50 ms pause per request. Each job uploads its partial manifest and its panels as artifacts. A merge job downloads all of them, combines the manifests with a 42-line script, and commits the manifest and images back to the repo. The whole archive takes a few minutes. The script also skips any date already present in its output manifest, so an interrupted local run can be picked up, though on Actions every job starts from nothing.</p>
 
-            <p>Panels with extreme aspect ratios (outside the 0.55 to 1.45 range) are discarded. This filters out the oddly shaped panels that show up occasionally in weekday strips and would look wrong in the final four-panel grid.</p>
-
-            <h2>Running at scale</h2>
-
-            <p>Processing 50 years of daily strips is a lot of images. The script uses concurrent HTTP requests with connection pooling and configurable delays to avoid overwhelming the source server. A <a href="https://github.com/sean-reid/frankenpeanuts/blob/main/.github/workflows/build-manifest.yml">GitHub Actions workflow</a> parallelizes the job across 10 workers, each handling a different date range. After all chunks complete, a merge step combines the partial manifests into a single <code>manifest.json</code> and commits the result back to the repo. The pipeline is resumable: if it gets interrupted, it checks the existing manifest and skips dates that have already been processed.</p>
-
-            <figure class="small">
-                <img decoding="async" src="img/cc/comics-layout.svg" alt="Schematic layout of a Sunday comic strip third page" loading="lazy">
-                <figcaption>Standard Sunday comic strip third-page panel layout. <a href="https://commons.wikimedia.org/wiki/File:Comics_third_page.svg">Wikimedia Commons</a></figcaption>
-            </figure>
-
-            <h2>The frontend</h2>
-
-            <p>The frontend is a single HTML file. It loads <code>manifest.json</code>, picks four random panels, and displays them in a grid. Because the panels are pre-extracted and hosted alongside the page, there are no cross-origin issues and no waiting for a proxy. Loading is fast and reliable.</p>
-
-            <p>Each generated strip is encoded in the URL hash as a set of panel identifiers. Clicking "Copy Link" gives you a URL that reconstructs exactly the same four-panel comic. The grid is responsive: four columns on desktop, two on mobile. Hovering over a panel shows the original publication date, so you can see when you've got a 1952 Snoopy next to a 1998 Snoopy.</p>
+            <p>The page itself is one HTML file. It loads the manifest, flattens it into a pool of 55,357 panels, picks four, and shows them in a grid, four across on desktop and two across under 600 px. There is no proxy and nothing to wait for.</p>
         </article>
 
     </div>
