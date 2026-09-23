@@ -24,7 +24,7 @@
     <div class="container">
         <header>
             <h1>Meta Tic-Tac-Toe</h1>
-            <p class="meta">Ultimate tic-tac-toe against a minimax AI</p>
+            <p class="meta">Ultimate tic-tac-toe against an alpha-beta search written in Rust and compiled to WebAssembly.</p>
             <p class="links-row">
                 <a href="https://sean-reid.github.io/meta-tictactoe/">Live Demo</a>
                 <a href="https://github.com/sean-reid/meta-tictactoe">Source</a>
@@ -34,73 +34,33 @@
         <article>
             <figure>
                 <img decoding="async" fetchpriority="high" src="img/meta-tictactoe.webp" alt="Screenshot of Meta Tic-Tac-Toe">
-                <figcaption>Meta Tic-Tac-Toe.</figcaption>
+                <figcaption>A game in progress. The highlighted sub-board is the one the player has to play in.</figcaption>
             </figure>
 
-            <p><a href="https://en.wikipedia.org/wiki/Ultimate_tic-tac-toe">Ultimate tic-tac-toe</a> takes a game that's been solved since childhood and makes it genuinely hard. The board is a 3x3 grid of smaller tic-tac-toe boards. To win, you need to claim three sub-boards in a row. But the twist is what makes it interesting: the cell you play in determines which sub-board your opponent must play in next. Pick the top-right cell of any sub-board, and your opponent is forced to play in the top-right sub-board. This constraint turns a game of local tactics into one of global strategy. Every move has consequences two layers deep.</p>
+            <p><a href="https://en.wikipedia.org/wiki/Ultimate_tic-tac-toe">Ultimate tic-tac-toe</a> takes a game that's been solved since childhood and makes it hard. The board is a 3x3 grid of smaller tic-tac-toe boards, and you win by claiming three sub-boards in a row. The twist is that the cell you play in decides which sub-board your opponent must play in next. Pick the top-right cell of any sub-board and your opponent is sent to the top-right sub-board. Every move has consequences two layers deep.</p>
 
             <figure class="small">
                 <img decoding="async" src="img/cc/super-tictactoe.webp" alt="Ultimate tic-tac-toe board" loading="lazy">
-                <figcaption>An Ultimate Tic-Tac-Toe board. Your move within a sub-board determines which sub-board your opponent must play in. <a href="https://commons.wikimedia.org/wiki/File:Super_tic-tac-toe_rules_example.png">Wikimedia Commons</a></figcaption>
+                <figcaption>The routing rule. The cell you play in picks the sub-board your opponent has to play in. <a href="https://commons.wikimedia.org/wiki/File:Super_tic-tac-toe_rules_example.png">Wikimedia Commons</a></figcaption>
             </figure>
 
-            <p>When you're sent to a sub-board that's already been won or filled, you get a free choice of any open sub-board. This rule prevents deadlocks and creates moments of sudden strategic opportunity. Sending your opponent to a completed board gives them freedom, which is usually bad for you.</p>
+            <p>When you're sent to a sub-board that's already won or full, you get a free choice of any open sub-board. That's usually bad for the person who sent you there. A lot of the game is about not handing out free choices.</p>
 
-            <h2>The AI</h2>
+            <h2>The search</h2>
 
-            <p>The opponent uses <a href="https://en.wikipedia.org/wiki/Minimax">minimax</a> with <a href="https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning">alpha-beta pruning</a>, searching three plies deep. Minimax models the game as a two-player zero-sum decision process. Given a game state \(s\), the algorithm computes a value \(V(s)\) by recursing over all legal moves and alternating between the two players. At terminal or depth-limited states, a heuristic evaluation function provides the base case. The recurrence is:</p>
+            <p>Ordinary tic-tac-toe has 255,168 possible games and you can enumerate them in a blink. The ultimate version has at most \(3^{81}\) board configurations, about \(4 \times 10^{38}\), and the branching factor swings from 9 in a forced position to the low dozens when you have free choice, so I use depth-limited <a href="https://en.wikipedia.org/wiki/Minimax">minimax</a> with <a href="https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning">alpha-beta pruning</a> and a time budget instead. The search is iterative deepening. It searches to depth 1, then 2, and so on up to a cap of 20, and stops starting new iterations once half of a 1.5 second budget is gone. If an iteration runs past the full budget it's abandoned and the move from the last completed depth is used. The best move from each iteration goes to the front of the move list for the next one, which is what makes the pruning effective. How deep it gets depends on the position and the machine, and I haven't measured it carefully.</p>
 
-            \[V(s) = \begin{cases} \text{eval}(s) & \text{if } s \text{ is terminal or depth limit reached} \\ \max_{a \in A(s)} V(s') & \text{if it is the maximizer's turn} \\ \min_{a \in A(s)} V(s') & \text{if it is the minimizer's turn} \end{cases}\]
+            <p>Move ordering scores each candidate before the search looks at it. Centre cells and centre boards score higher, a move that wins a sub-board gets a 1,000-point bonus, and a move that sends the opponent to a board where they can win immediately loses 200. There's also a 50-point bonus for sending the opponent to a won or full board, which gives them free choice. That's the opposite of the advice two paragraphs up. The ordering only affects which moves are searched first, so the search can still reject the move, but it's a bug.</p>
 
-            <p>where \(A(s)\) is the set of legal actions in state \(s\) and \(s'\) is the successor state after taking action \(a\).</p>
+            <h2>The evaluation</h2>
 
-            <h3>Game tree complexity</h3>
+            <p>At the depth limit each position gets a score from the searching side's point of view. A won game is plus or minus 100,000. Otherwise I look at the eight lines through the 3x3 meta-board. Each sub-board a player has won along a line is worth 40 times a positional weight (5 for the centre board, 3 for corners, 2 for edges), and the line as a whole is worth 800 if one player holds two boards on it and the other holds none, or 60 for one board unopposed. A line with boards from both players is dead and scores nothing. Sub-boards still in play add a smaller score of their own, 12 for two in a row and 2 for one, scaled by the same positional weight, plus 30 per sub-board where the player is one move from winning along an unblocked meta-line. Finally, a routing term of 300 rewards forcing the opponent into a sub-board where you already have a winning move waiting, and penalizes being forced into one where they do.</p>
 
-            <p>Three plies doesn't sound like much, but the branching factor in ultimate tic-tac-toe is large. When you're constrained to a single sub-board, there are up to 9 possible moves. When you have free choice (because the target sub-board is already won or filled), there can be dozens of legal moves spread across multiple open sub-boards. The effective branching factor \(b\) varies throughout the game but averages roughly \(b \approx 9\) in constrained positions and can spike above 40 in free-choice positions. With a search depth of \(d = 3\), a naive minimax explores on the order of \(O(b^d)\) nodes. In the constrained case that's \(9^3 = 729\) nodes; in free-choice positions it grows into the tens of thousands.</p>
-
-            <p>The full game tree for ultimate tic-tac-toe has been estimated at around \(10^{50}\) to \(10^{60}\) possible states, far too large to solve by brute force. For comparison, standard 3x3 tic-tac-toe has only \(9! = 362{,}880\) possible games and is trivially solved. The meta-level constraint is what makes exhaustive search infeasible and depth-limited heuristic search necessary.</p>
-
-            <h3>Alpha-beta pruning</h3>
-
-            <p>Alpha-beta pruning maintains two bounds during the search: \(\alpha\), the best value the maximizer can guarantee, and \(\beta\), the best value the minimizer can guarantee. A subtree is pruned whenever \(\alpha \geq \beta\), because the current player already has a better option elsewhere in the tree. Formally, the search becomes:</p>
-
-            \[\text{alphabeta}(s, d, \alpha, \beta) = \begin{cases} \text{eval}(s) & \text{if } d = 0 \text{ or } s \text{ is terminal} \\ \max_{a \in A(s)} \text{alphabeta}(s', d-1, \alpha, \beta) & \text{maximizer, with } \alpha \leftarrow \max(\alpha, v) \\ \min_{a \in A(s)} \text{alphabeta}(s', d-1, \alpha, \beta) & \text{minimizer, with } \beta \leftarrow \min(\beta, v) \end{cases}\]
-
-            <p>with cutoff when \(\alpha \geq \beta\). With optimal move ordering, alpha-beta reduces the effective number of nodes explored from \(O(b^d)\) to \(O(b^{d/2})\), which is equivalent to searching twice as deep for the same cost. In practice, move ordering is imperfect, so the actual performance lies between these bounds: roughly \(O(b^{3d/4})\) for reasonable heuristic ordering. This is what keeps the search tractable at depth three even in free-choice positions.</p>
-
-            <figure class="small">
-                <img decoding="async" src="img/cc/alpha-beta-pruning.svg" alt="Alpha-beta pruning on a game tree" loading="lazy">
-                <figcaption>Alpha-beta pruning eliminates branches that cannot affect the final decision. Gray subtrees are never evaluated. <a href="https://commons.wikimedia.org/wiki/File:AB_pruning.svg">Wikimedia Commons</a></figcaption>
-            </figure>
-
-            <h3>Evaluation function</h3>
-
-            <p>The evaluation function scores board states at the leaves of the search tree. It calls <code>evaluate_global()</code>, which examines the meta-board (which sub-boards have been won by whom) and returns a numeric score. Positive values favor the maximizing player; negative values favor the minimizer.</p>
-
-            <p>Conceptually, for each of the eight winning lines \(\ell\) on the meta-board (three rows, three columns, two diagonals), the function computes a line score based on how many sub-boards each player has claimed along that line. Let \(x_\ell\) be the number of sub-boards won by the maximizer on line \(\ell\) and \(o_\ell\) the count for the minimizer. A line that contains marks from both players is blocked and contributes nothing. Otherwise, the evaluation is:</p>
-
-            \[\text{eval}(s) = \sum_{\ell} \left( w(x_\ell) - w(o_\ell) \right)\]
-
-            <p>where \(w(k)\) is a weighting function that assigns increasing value to more marks on an unblocked line, such as \(w(0) = 0\), \(w(1) = 1\), \(w(2) = 10\), \(w(3) = +\infty\) (a win). This makes the AI value positions that threaten to complete a meta-row far more than isolated sub-board wins, and it captures both offensive and defensive priorities in a single scalar.</p>
-
-            <p>The Rust code is organized into separate modules for types, individual board logic, game state management, and the minimax search itself. <code>types.rs</code> defines the cell states and move structures. <code>board.rs</code> handles the 3x3 sub-board logic, including win detection. <code>game.rs</code> manages the full 9-board state and enforces the "your move picks their board" constraint. <code>minimax.rs</code> contains the search algorithm.</p>
-
-            <figure class="small">
-                <img decoding="async" src="img/cc/minimax.svg" alt="Minimax algorithm game tree diagram" loading="lazy">
-                <figcaption>A minimax game tree. Each level alternates between maximizing and minimizing players. <a href="https://commons.wikimedia.org/wiki/File:Minimax.svg">Wikimedia Commons</a></figcaption>
-            </figure>
+            <p>The weights are hand-tuned. It's beatable, but it doesn't make obvious mistakes, it punishes a careless free choice, and it will give up a sub-board to set up a meta-line.</p>
 
             <h2>Rust to WebAssembly</h2>
 
-            <p>The AI is written in <a href="https://www.rust-lang.org/">Rust</a> and compiled to <a href="https://webassembly.org/">WebAssembly</a>. The frontend is plain JavaScript and CSS. When you make a move, JavaScript sends the game state to the WASM module, which runs the minimax search and returns the AI's chosen move. On a modern machine this takes well under a second, even at depth three.</p>
-
-            <p>The game state is serialized between JavaScript and Rust using <a href="https://serde.rs/">Serde</a> via <a href="https://rustwasm.github.io/wasm-bindgen/">wasm-bindgen</a>. Each call passes the full board state rather than maintaining mutable state inside the WASM module. This makes the interface stateless from the Rust side, which simplifies debugging and means the JavaScript frontend is the single source of truth for the game.</p>
-
-            <h2>Playing it</h2>
-
-            <p>The game highlights which sub-board you're allowed to play in. If you have a free choice, all open boards are highlighted. Won sub-boards display the winner's mark scaled up to fill the entire sub-board, making the meta-level game state easy to read at a glance. The UI shows a rules modal for anyone unfamiliar with the variant.</p>
-
-            <p>The AI is beatable, but it doesn't make obvious mistakes. It will punish you for sending it to a completed board unnecessarily and it has a good sense of when to sacrifice a sub-board to gain positional advantage at the meta level. Depth three is enough to see most tactical traps coming.</p>
+            <p>The search and evaluation are about 680 lines of Rust compiled to WebAssembly with wasm-bindgen, and the front end is plain JavaScript. Each call passes the full board state across with Serde and gets a move back, so the Rust side holds no state between moves and the JavaScript side owns the game. There are no tests. The move-ordering bug above is the kind of thing one would have caught.</p>
         </article>
 
     </div>
