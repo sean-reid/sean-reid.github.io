@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+    <title>Polish Notation - Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/polish-notation.webp">
+    <link rel="stylesheet" href="/nav.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="/" class="site-nav-name">Sean Reid</a>
+    <div class="site-nav-controls">
+      <div class="site-nav-search-wrap"><input type="text" class="site-nav-search" placeholder="Search..." autocomplete="off"><span class="site-nav-search-hint">/</span></div>
+      <a class="site-nav-random">&rarr; Random</a>
+      <div class="search-dropdown"></div>
+    </div>
+  </div>
+</nav>
+<main class="site-content">
+    <div class="container">
+        <header>
+            <h1>Polish Notation</h1>
+            <p class="meta">A converter between Łukasiewicz's parenthesis-free notation and conventional logic notation, with LaTeX output</p>
+            <p class="links-row">
+                <a href="https://sean-reid.github.io/polish-notation/">Live Demo</a>
+                <a href="https://github.com/sean-reid/polish-notation">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <figure>
+                <img decoding="async" fetchpriority="high" src="img/polish-notation.webp" alt="The converter with CCpqCCqrCpr typed in, a badge reading Polish notation, and the formula rendered in both notations below">
+                <figcaption>Łukasiewicz's first axiom, CCpqCCqrCpr, detected as Polish and rendered as \((p \to q) \to (q \to r) \to p \to r\).</figcaption>
+            </figure>
+
+            <p>Polish notation puts every logical operator before its arguments. The conventional \((p \land q) \to r\) becomes CKpqr: C for implication, K for conjunction, then the three variables in order. Jan Łukasiewicz devised it in 1924 and used it in print from his 1929 <em>Elementy logiki matematycznej</em>. Because C always takes two arguments and N always takes one, a string like CNpq reads in exactly one way, and parentheses have nothing left to do. I built a page that takes a formula in either notation, works out which one it is, and renders both, with the LaTeX a click away.</p>
+
+            <p>Detection is the trivial part, and it's trivial because of the letters. Łukasiewicz used capitals for the connectives, following their Polish names where he could: N for negacja, K for koniunkcja, A for alternatywa, D for dysjunkcja (the Sheffer stroke), E for ekwiwalencja, and later L and M for necessity and possibility, with Π and Σ for the quantifiers. Variables are lowercase. So a formula containing an uppercase letter is Polish, and a formula containing ∧, →, or a backslash command is conventional. The converter doesn't reason about any of this. It runs both parsers on the input, and if exactly one succeeds that's the answer. If both succeed, which only happens for a lone variable like p₁, the badge says either. If neither does, a regex looks for conventional symbols to decide whose error message to show.</p>
+
+            <h2>Two parsers, two printers, one tree</h2>
+
+            <p>Both parsers produce the same syntax tree: atoms with a name, a subscript, and a prime count; the constants true and false; unary not, box, and diamond; five binary connectives; and two quantifiers. The Polish parser is recursive descent with no lookahead. Read an operator, recurse for exactly as many arguments as it takes, and complain when the input ends early with a message like "'C' needs 1 more argument". The conventional parser is precedence climbing over binding powers: biconditional 10, implication 20, or 30, and 40, nand 50, and 60 for the prefix operators. Implication and biconditional associate to the right, so \(p \to q \to r\) is \(p \to (q \to r)\). Nand doesn't associate at all. \(p \mid q \mid r\) is rejected with a request for parentheses rather than silently picking a side.</p>
+
+            <p>The conventional lexer accepts the three spellings people type: Unicode symbols, ASCII like <code>-&gt;</code>, <code>&amp;</code>, and <code>~</code>, and LaTeX commands like <code>\to</code> and <code>\neg</code>. It skips <code>\left</code>, <code>\big</code>, and dollar signs so a formula pasted out of a paper parses as written. Atoms may be Latin or Greek letters with subscripts in any of the forms p1, p_1, p_{12}, or p₁, and primes as ', ′, or ^{\prime}.</p>
+
+            <p>The printers go the other way. The Polish printer is a preorder walk. The conventional printer emits LaTeX with minimal parentheses. A subformula is wrapped only when its connective binds more loosely than the position requires, so CCpqr comes out as \((p \to q) \to r\) but CpCqr as \(p \to q \to r\), and KpKqr keeps its parentheses because conjunction is left-associative here.</p>
+
+            <h2>Testing the parsers against each other</h2>
+
+            <p>Hand-picked examples would have missed the interesting cases, so the tests generate formulas. fast-check builds random trees to depth 6 over ten variable names with subscripts and up to three primes, and three properties each run 500 times: print in Polish then parse as Polish gives back an equal tree, print as conventional LaTeX then parse as conventional gives back an equal tree, and print as Polish LaTeX (with \Pi and \Sigma) then parse as Polish does too. A fourth property pushes 300 generated formulas through the whole convert function, detection included. The trailing space after a Greek atom in the Polish LaTeX exists because <code>\varphi</code> followed by a variable q would fuse into the unknown command <code>\varphiq</code>. I don't remember whether I spotted that or the property test did.</p>
+
+            <p>A second suite checks formulas from the literature against their known conventional forms: Łukasiewicz's three axioms for the propositional calculus in C and N (CCpqCCqrCpr, CCNppp, CpCNpq), his shortest single axiom for the implicational calculus CCCpqrCCrpCsp, Meredith's 1953 single axiom CCCCCpqCNrNsrtCCtpCsp, Peirce's law, De Morgan, and the modal axioms K, T, 4, and 5. C. L. Hamblin's 1962 paper <a href="https://doi.org/10.1093/comjnl/5.3.210">Translation to and from Polish notation</a> in The Computer Journal gives the classic algorithms. Burks, Warren, and Wright's 1954 <a href="https://doi.org/10.2307/2001990">analysis of a parenthesis-free logic machine</a> is where the idea met hardware, and reverse Polish went from there into stack machines and HP calculators.</p>
+
+            <p>I chose V and O for the constants true and false, and I accept Q, Δ, and Γ as alternate spellings of E, M, and L, normalizing them to the primary letters on output. I took V and O from the table on the Wikipedia page for Polish notation and haven't traced them to a primary source.</p>
+        </article>
+
+    </div>
+</main>
+<footer class="site-footer">
+  <div class="site-footer-links">
+    <a href="https://github.com/sean-reid">GitHub</a>
+    <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
+    <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
+    <a href="https://socrates-of-athens.github.io">Poetry</a>
+    <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
+  </div>
+</footer>
+<script src="/nav.js"></script>
+</body>
+</html>
