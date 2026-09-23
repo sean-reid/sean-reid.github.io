@@ -24,7 +24,7 @@
     <div class="container">
         <header>
             <h1>Antibook</h1>
-            <p class="meta">Classic literature with every word replaced by its antonym, sourced from Project Gutenberg</p>
+            <p class="meta">Project Gutenberg books with every word I could invert replaced by its antonym.</p>
             <p class="links-row">
                 <a href="https://sean-reid.github.io/antibook/">Live Demo</a>
                 <a href="https://github.com/sean-reid/antibook">Source</a>
@@ -37,37 +37,23 @@
                 <figcaption>Antibook.</figcaption>
             </figure>
 
-            <p>The opening of <em>A Tale of Two Cities</em> is one of the most quoted passages in English literature. "It was the best of times, it was the worst of times." Run it through Antibook and you get something like: "It wasn't the worst of places, it wasn't the best of places." The sentence structure survives. The meaning inverts. The result is absurd in a way that's surprisingly readable.</p>
+            <p>Antibook takes books from the <a href="https://www.gutenberg.org/">Project Gutenberg</a> catalog and replaces every word it can with an antonym. Sentence structure survives, the meaning flips, and the output is absurd in a way I find more readable than it should be. You search the catalog, pick a book, and read the inverted version, with a compare mode that puts the original alongside.</p>
 
-            <figure class="small">
-                <img decoding="async" src="img/cc/gutenberg-bible.webp" alt="A page from the Gutenberg Bible" loading="lazy">
-                <figcaption>A page from the Gutenberg Bible. Antibook draws its source texts from Project Gutenberg's digital catalog and inverts every word. <a href="https://commons.wikimedia.org/wiki/File:Gutenberg_Bible,_Lenox_Copy,_New_York_Public_Library,_2009._Pic_01.jpg">Wikimedia Commons</a></figcaption>
-            </figure>
+            <p>Finding the opposite of a word sounds simple until you try it on every word in a novel. "Hot" is "cold". But what's the opposite of "Tuesday", or "the", or "Ebenezer"? Most words in a sentence have no opposite. So the job is to invert what can be inverted, leave the rest alone, and keep the rhythm.</p>
 
-            <p>Antibook takes books from the <a href="https://www.gutenberg.org/">Project Gutenberg</a> catalog and replaces every word it can with an antonym. You can search the catalog, pick a book, and read the inverted version in the browser. A compare mode lets you see the original and the antibook side by side.</p>
+            <h2>Building the antonym map</h2>
 
-            <h2>The antonym problem</h2>
+            <p>The map has 27,507 entries and is built in tiers, each one only filling words the previous tiers missed. The first is a hand-curated file of 1,153 pairs, the obvious ones: good/bad, up/down, love/hate, yes/no. The second pulls direct antonym relations out of <a href="https://wordnet.princeton.edu/">WordNet</a> via <a href="https://www.nltk.org/">NLTK</a>, taking the most frequent sense and skipping any multi-word antonym, since those can't substitute one for one. That adds 5,953 words. The third is the <a href="https://en.wikipedia.org/wiki/Moby_Project">Moby Thesaurus</a>: for a word with no antonym yet, look at its synonym cluster, and if one of those synonyms has a known antonym whose own synonyms overlap the cluster, take it. That's the big one at 19,204 words, and it's also where the nonsense comes from. "Time" resolves to "rejuvenate" and "times" to "death". A <a href="https://conceptnet.io/">ConceptNet</a> tier adds 1,199 more from its antonym relation, cached to disk so the API is only hit for new words. There's an optional <a href="https://nlp.stanford.edu/projects/glove/">GloVe</a> tier that scores candidates by embedding similarity, but it needs a 1 GB download and the map in the repo was built without it. Anything left over stays as itself.</p>
 
-            <p>Finding the opposite of a word sounds simple until you try to do it at scale. "Hot" maps to "cold" easily enough. But what's the opposite of "Tuesday"? Or "the"? Or "Ebeneezer"? There is no universal antonym for most of the words in a typical sentence. The system needs to handle this gracefully: invert what can be inverted, leave the rest alone, and produce text that still feels like it has a rhythm.</p>
+            <p>Applying the map is its own pass. Each book is POS-tagged, and proper nouns (an NNP tag, or a capital letter anywhere but sentence start) are skipped along with a list of function words: articles, pronouns, prepositions, auxiliaries, "not" and "no". Contractions are looked up whole. Everything else is lemmatized, looked up, and re-inflected, with a Lesk pass over an 8-word window when a word has senses with different antonyms and a British-to-American spelling fallback when the lemma misses. Because "was" is on the preserve list and "times" maps to "death", the Dickens opener comes out as "It was the worst of death, it was the best of death", not the tidier "wasn't the worst of places" the README promises. I should fix the README.</p>
 
-            <p>Antibook uses a five-tier antonym lookup. The first tier is a hand-curated dictionary of about 900 word pairs. These are the obvious ones: good/bad, up/down, love/hate, yes/no. Because high-frequency words dominate natural language, this small list covers 60 to 70 percent of the tokens in a typical book by frequency. The second tier pulls from <a href="https://wordnet.princeton.edu/">Princeton WordNet</a> via <a href="https://www.nltk.org/">NLTK</a>, adding another 15 to 20 percent. The third tier uses the <a href="https://en.wikipedia.org/wiki/Moby_Project">Moby Thesaurus</a> with transitive closure to find indirect antonym relationships. An optional fourth tier uses <a href="https://nlp.stanford.edu/projects/glove/">GloVe</a> word embeddings to find semantic opposites by vector inversion. Everything that falls through all four tiers gets left unchanged: proper nouns, articles, prepositions, and other words that have no meaningful opposite.</p>
+            <h2>Three workflows</h2>
 
-            <figure class="small">
-                <img decoding="async" src="img/cc/dictionaries.webp" alt="English dictionaries and thesaurus books" loading="lazy">
-                <figcaption>English dictionaries and thesaurus books. <a href="https://commons.wikimedia.org/wiki/File:English-English_dictionaries_and_thesaurus_books.JPG">Wikimedia Commons</a></figcaption>
-            </figure>
+            <p>Everything runs on GitHub Actions. One manual workflow rebuilds the antonym map. A weekly one, Sunday at 04:00 UTC, asks <a href="https://gutendex.com/">Gutendex</a> for the 500 most-downloaded English titles, downloads any it hasn't seen, strips the Gutenberg header and footer, transforms them, chunks each book into 20,000-character JSON pieces, and builds a catalog for <a href="https://www.fusejs.io/">Fuse.js</a> to search on the client. It restores the previous <code>dist/</code>, the raw book cache, the pip cache, and the NLTK data from the Actions cache so a weekly run only touches new books, then uploads <code>dist/</code> as an artifact. A third workflow fires on that run's completion, downloads the artifact by run id, bundles the front end, and deploys to GitHub Pages. If someone triggers the deploy by hand, it finds the latest successful build run and uses that artifact instead. None of this has tests.</p>
 
-            <h2>The pipeline</h2>
+            <h2>What comes out</h2>
 
-            <p>Processing a book is a multi-stage pipeline written in Python. First, the raw text is downloaded from Project Gutenberg and the boilerplate headers and footers are stripped. Then each word is run through the tiered antonym lookup. The transformed text gets chunked into JSON fragments small enough for efficient delivery over GitHub Pages. Finally, an index is built using <a href="https://www.fusejs.io/">Fuse.js</a> so users can search the catalog by title or author.</p>
-
-            <p>The whole thing runs on free infrastructure. Building the antonym map takes about 10 minutes. Processing 500 books takes roughly 30 minutes in a weekly <a href="https://github.com/features/actions">GitHub Actions</a> run. The output is a static site under 1 GB, served by GitHub Pages with <a href="https://www.cloudflare.com/">Cloudflare</a> in front.</p>
-
-            <h2>Results</h2>
-
-            <p>Dialogue tags still say "he said" because "said" has no antonym. Character names persist. Sentence structure is identical to the original. But within that skeleton, every adjective, verb, and adverb has been flipped. Characters who were brave are now cowardly. Scenes set in daylight happen at night. Love stories become hate stories.</p>
-
-            <p>Some books work better than others. Dickens is good source material because his prose is emotionally loaded, so the inversions land. Technical writing is less interesting because flipping clinical language just produces more clinical language.</p>
+            <p>Dialogue tags still say "he said" because "he" is preserved, though "said" itself becomes "unarticulated". Character names persist. Within the skeleton, adjectives, verbs, and adverbs flip. Brave characters are cowardly, daylight scenes happen at night, love stories become hate stories. Dickens works well because his prose is emotionally loaded, so the inversions land. Technical writing is dull because flipping clinical language produces more clinical language.</p>
         </article>
 
     </div>
