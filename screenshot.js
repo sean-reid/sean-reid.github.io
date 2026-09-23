@@ -1,5 +1,7 @@
 const puppeteer = require('puppeteer');
 const path = require('path');
+const fs = require('fs');
+const { execFileSync } = require('child_process');
 
 const outDir = path.join(__dirname, 'blog', 'img');
 
@@ -595,6 +597,76 @@ const interactions = {
     await page.waitForSelector('.paper .katex', { timeout: 30000 });
     await new Promise(r => setTimeout(r, 1500));
   },
+  'squares': async (page) => {
+    // Feed a public-domain image, then wait for the search to settle
+    const input = await page.$('input#file');
+    if (input) {
+      const img = path.join(require('os').tmpdir(), 'squares-sample.jpg');
+      if (!fs.existsSync(img)) {
+        const res = await fetch('https://commons.wikimedia.org/wiki/Special:FilePath/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg?width=1280',
+          { headers: { 'User-Agent': 'sean-reid.github.io screenshot script' } });
+        fs.writeFileSync(img, Buffer.from(await res.arrayBuffer()));
+      }
+      await input.uploadFile(img);
+      await page.waitForFunction(() => /growing|refining/.test((document.querySelector('#status') || {}).textContent || ''), { timeout: 20000 }).catch(() => {});
+      await page.waitForFunction(() => !((document.querySelector('#status') || {}).textContent || '').trim(), { timeout: 60000 }).catch(() => {});
+      await new Promise(r => setTimeout(r, 800));
+    }
+  },
+  'time': async (page) => {
+    await new Promise(r => setTimeout(r, 7000));
+  },
+  'kakeya': async (page) => {
+    await page.evaluate(() => { const el = document.querySelector('#playground'); if (el) el.scrollIntoView(); });
+    await new Promise(r => setTimeout(r, 1500));
+    const play = await page.$('[data-testid="play"]');
+    if (play) await play.click();
+    await new Promise(r => setTimeout(r, 4000));
+  },
+  'urls': async (page) => {
+    await page.type('#url', 'https://en.wikipedia.org/wiki/Spoonerism');
+    await page.click('input[name="style"][value="chess"]');
+    await page.click('button[type="submit"]');
+    await page.waitForSelector('#result:not([hidden]) .url', { timeout: 20000 });
+    await new Promise(r => setTimeout(r, 800));
+  },
+  'latex-preview': async (page) => {
+    await page.click('#compile');
+    await page.waitForFunction(() => /Compiled in/.test((document.querySelector('#status') || {}).textContent || ''), { timeout: 120000 });
+    await new Promise(r => setTimeout(r, 4000));
+  },
+  'polish-notation': async (page) => {
+    await page.click('#formula-input');
+    await page.type('#formula-input', 'CCpqCCqrCpr');
+    await page.waitForSelector('mjx-container', { timeout: 20000 });
+    await new Promise(r => setTimeout(r, 1500));
+  },
+  'rhythm': async (page) => {
+    await page.waitForSelector('canvas');
+    await clickText(page, 'button', 'play');
+    await new Promise(r => setTimeout(r, 6000));
+  },
+  'cyclical': async (page) => {
+    await new Promise(r => setTimeout(r, 1500));
+    await clickText(page, 'button', 'search');
+    await new Promise(r => setTimeout(r, 5000));
+    const items = await page.$$('li');
+    if (items[2]) await items[2].click();
+    await new Promise(r => setTimeout(r, 1000));
+  },
+  'wason': async (page) => {
+    // Cards 1 and 7 are the answer for 2026-09-23; other dates need dailyPuzzle(date).answer
+    await new Promise(r => setTimeout(r, 1000));
+    const cards = await page.$$('button.card');
+    if (cards[2]) await cards[2].click();
+    if (cards[3]) await cards[3].click();
+  },
+  'keynote': async (page) => {
+    await new Promise(r => setTimeout(r, 4000));
+    const toggle = await page.$('button[aria-label="Toggle sound"]');
+    if (toggle) await toggle.click();
+    await new Promise(r => setTimeout(r, 7000));
+  },
   'severed': async (page) => {
     // Wait for globe and data to load, then click a scenario
     await new Promise(r => setTimeout(r, 6000));
@@ -646,7 +718,6 @@ const sites = [
   { name: 'deconflict', url: 'https://deconflict.app/' },
   { name: 'mastery', url: 'https://sean-reid.github.io/mastery/' },
   { name: 'string', url: 'https://string-loom.pages.dev/' },
-  { name: 'blotter', url: 'https://blotter.fm' },
   { name: 'fourier', url: 'https://sean-reid.github.io/fourier/' },
   { name: 'sounds', url: 'https://sean-reid.github.io/sounds/' },
   { name: 'pulse', url: 'https://sean-reid.github.io/pulse/', interactive: true },
@@ -657,7 +728,38 @@ const sites = [
   { name: 'miditool', url: 'https://sean-reid.github.io/miditool/' },
   { name: 'eigencircuits', url: 'https://eigencircuits.seanreid.workers.dev/html/2607.00427' },
   { name: 'clowns-and-mimes', url: 'https://sean-reid.github.io/clowns-and-mimes' },
+  { name: 'antipodal', url: 'https://antipodal.pages.dev' },
+  { name: 'gardeners-dilemma', url: 'https://gardeners-dilemma.pages.dev' },
+  { name: 'jamstream', url: 'https://sean-reid.github.io/jamstream/' },
+  { name: 'voting', url: 'https://sean-reid.github.io/voting/' },
+  { name: 'squares', url: 'https://squares.dwainosaur.com' },
+  { name: 'time', url: 'https://time.dwainosaur.com/?s=' + timeScene() },
+  { name: 'kakeya', url: 'https://sean-reid.github.io/kakeya/' },
+  { name: 'oeis-pi-search', url: 'https://oeis-pi-search.dwainosaur.com/A000045' },
+  { name: 'urls', url: 'https://urls.dwainosaur.com/' },
+  { name: 'pikiwedia', url: 'https://pikiwedia.dwainosaur.com/wiki/Ham_sandwich' },
+  { name: 'latex-preview', url: 'https://sean-reid.github.io/latex-preview/' },
+  { name: 'polish-notation', url: 'https://sean-reid.github.io/polish-notation/' },
+  { name: 'rhythm', url: 'https://rhythm.dwainosaur.com', autoplay: true },
+  { name: 'cyclical', url: 'https://sean-reid.github.io/cyclical/' },
+  { name: 'wason', url: 'https://sean-reid.github.io/wason/' },
+  { name: 'keynote', url: 'https://keynote.dwainosaur.com', autoplay: true, wait: 'domcontentloaded' },
 ];
+
+// Sgr A* at twice the prograde ISCO for spin 0.9, matching blog/time.html
+function timeScene() {
+  const r = 2 * 2.3209 * 4.297e6 * 1476.625;
+  const payload = JSON.stringify(['sgr-a-star', [r, -0.785398, 'o', 1], [], 60, 2000]);
+  return Buffer.from(payload).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+async function clickText(page, selector, text) {
+  await page.evaluate((selector, text) => {
+    for (const el of document.querySelectorAll(selector)) {
+      if (el.textContent.trim().toLowerCase() === text) { el.click(); return; }
+    }
+  }, selector, text);
+}
 
 const readline = require('readline');
 
@@ -677,13 +779,9 @@ function waitForEnter(prompt) {
 
   const hasInteractive = targets.some(s => s.interactive);
 
-  const browser = await puppeteer.launch({
-    headless: hasInteractive ? false : true,
-    args: hasInteractive ? [
-      '--use-fake-ui-for-media-stream',
-      '--enable-usermedia-screen-capturing',
-    ] : [],
-  });
+  const args = ['--autoplay-policy=no-user-gesture-required'];
+  if (hasInteractive) args.push('--use-fake-ui-for-media-stream', '--enable-usermedia-screen-capturing');
+  const browser = await puppeteer.launch({ headless: !hasInteractive, args });
   const page = await browser.newPage();
   await page.setViewport({ width: 1280, height: 800, deviceScaleFactor: 2 });
 
@@ -698,7 +796,7 @@ function waitForEnter(prompt) {
   for (const site of targets) {
     try {
       console.log(`Screenshotting ${site.name}...`);
-      const waitStrategy = site.name === 'frankenpeanuts' ? 'domcontentloaded' : 'networkidle2';
+      const waitStrategy = site.wait || (site.name === 'frankenpeanuts' ? 'domcontentloaded' : 'networkidle2');
       await page.goto(site.url, { waitUntil: waitStrategy, timeout: 30000 });
       await new Promise(r => setTimeout(r, 2000));
 
@@ -712,11 +810,12 @@ function waitForEnter(prompt) {
         await new Promise(r => setTimeout(r, 2000));
       }
 
-      await page.screenshot({
-        path: path.join(outDir, `${site.name}.png`),
-        fullPage: false,
-      });
-      console.log(`  saved ${site.name}.png`);
+      const png = path.join(require('os').tmpdir(), `${site.name}.png`);
+      const webp = path.join(outDir, `${site.name}.webp`);
+      await page.screenshot({ path: png, fullPage: false });
+      execFileSync('cwebp', ['-quiet', '-q', '82', png, '-o', webp]);
+      fs.unlinkSync(png);
+      console.log(`  saved ${path.relative(__dirname, webp)}`);
     } catch (err) {
       console.error(`  FAILED ${site.name}: ${err.message}`);
     }
