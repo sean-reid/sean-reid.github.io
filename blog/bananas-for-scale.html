@@ -24,7 +24,7 @@
     <div class="container">
         <header>
             <h1>Bananas for Scale</h1>
-            <p class="meta">Static reference site that converts real measurements into absurd units</p>
+            <p class="meta">A static reference site that restates real measurements in bananas, golden retrievers, and other useless units.</p>
             <p class="links-row">
                 <a href="https://sean-reid.github.io/bananas-for-scale/">Live Demo</a>
                 <a href="https://github.com/sean-reid/bananas-for-scale">Source</a>
@@ -37,48 +37,37 @@
                 <figcaption>The homepage. Search for anything, or hit Random and see what you get.</figcaption>
             </figure>
 
-            <p>Bananas for Scale is a reference site. You look up a thing, get its real measurements, and see those measurements restated in unconventional units. The International Space Station orbits at 408 kilometers, or about 2.3 million bananas end-to-end. A blue whale weighs 150,000 kilograms, or 300,000 fully loaded burritos. Every conversion uses real SI values. The site just swaps the unit.</p>
+            <p>Bananas for Scale is a reference site. You look up a thing, get its real measurements, and see them restated in units nobody asked for. The International Space Station orbits at 408 kilometers, or about 2.3 million bananas end to end. A blue whale weighs 150,000 kilograms, or 300,000 fully loaded burritos. Every number is a ratio of two real SI values. The site just swaps the unit.</p>
 
             <figure class="small">
                 <img decoding="async" src="img/cc/cavendish-banana.webp" alt="A Cavendish banana" loading="lazy">
                 <figcaption>The Cavendish banana. 0.18 meters. The base unit. <a href="https://commons.wikimedia.org/wiki/File:Cavendish_banana_from_Maracaibo.jpg">Wikimedia Commons</a></figcaption>
             </figure>
 
-            <p>There are 1,167 things across 66 categories, from a grain of rice to the Andromeda Galaxy. Each has curated SI measurements (length, mass, speed, volume, whatever applies) paired against 1,250 unconventional units spread across 16 dimensions. A golden retriever is 30 kilograms. Nicolas Cage is 84 kilograms. A Subway Footlong is 0.3048 meters. These are the units.</p>
+            <p>There are 1,147 things across 66 categories, from a grain of rice to the Andromeda Galaxy, with 6,707 measurements between them (length, mass, speed, volume, whatever applies). Against those sit 1,339 units across 14 dimensions. A golden retriever is 30 kilograms. Nicolas Cage is 84 kilograms. A Subway Footlong is 0.3048 meters. Each unit carries a singular and a plural ("1 golden retriever", "2.5 golden retrievers") and a dimension tag, so mass units only ever pair with mass measurements and length with length.</p>
 
             <figure>
                 <img decoding="async" src="img/bananas-for-scale-entry.webp" alt="Screenshot of the Giraffe entry on Bananas for Scale, showing measurements converted to silly units" loading="lazy">
-                <figcaption>A thing page for the Giraffe, with its height and mass converted into units like Shaq O'Neals and rubber ducks.</figcaption>
+                <figcaption>The Giraffe page, with its height and mass in units like Shaq O'Neals and rubber ducks.</figcaption>
             </figure>
 
             <h2>Picking the right wrong unit</h2>
 
-            <p>Not every unit works for every measurement. A giraffe that's 0.000003 Eiffel Towers tall is a useless number. Every conversion is a ratio of SI values: given a measurement \(m\) in SI units and a unit \(u\) also in SI, the converted value is simply \(v = m / u\). The conversion engine classifies this as "comprehensible" if \(10^{-30} \leq v \leq 10^{30}\) and finite. <a href="https://en.wikipedia.org/wiki/Dimensional_analysis">Dimensional consistency</a> is enforced throughout: mass units only pair with mass measurements, length with length, and so on across 16 physical dimensions.</p>
+            <p>Not every unit works for every measurement. A giraffe that is 0.000003 Eiffel Towers tall is a useless number. For a measurement \(m\) and a unit \(u\), both in SI, the converted value is \(v = m / u\), and I call it comprehensible if \(10^{-30} \leq v \leq 10^{30}\). That's a wide window. It exists to throw out the infinities and the zeroes, not to keep the numbers small.</p>
 
-            <p>Each measurement shows two or three conversions. The first two come from the comprehensible pool. The third, about 60% of the time, is picked from outside the range on purpose. Selection uses a seeded PRNG (<a href="https://gist.github.com/tommyettinger/46a874533244883189143505d203312c">Mulberry32</a>, a 32-bit xorshift generator with period \(2^{32}\), fed by a <a href="https://en.wikipedia.org/wiki/Daniel_J._Bernstein">djb2</a> hash of the thing's slug and measurement ID) so the same entry always shows the same conversions on every page load. The Remix button generates a new seed and picks different units, all client-side.</p>
-
-            <figure class="small">
-                <img decoding="async" src="img/cc/prototype-kilogram.webp" alt="Replica of the International Prototype Kilogram" loading="lazy">
-                <figcaption>A replica of the International Prototype Kilogram, which defined the kilogram from 1889 to 2019. <a href="https://commons.wikimedia.org/wiki/File:Prototype_kilogram_replica.JPG">Wikimedia Commons</a></figcaption>
-            </figure>
+            <p>Each measurement shows two or three conversions. The first two come from the comprehensible pool. With probability 0.6 there's a third, drawn from outside the window on purpose. Picks come from a seeded PRNG (<a href="https://gist.github.com/tommyettinger/46a874533244883189143505d203312c">Mulberry32</a>, seeded with a <a href="https://en.wikipedia.org/wiki/Daniel_J._Bernstein">djb2</a> hash of the thing's slug and the measurement id), so the same entry shows the same conversions on every load and the build is reproducible. The Remix button draws a new seed and repicks in the browser. The 17 vitest cases in the repo all cover this picker and the ratio arithmetic. Nothing tests the data.</p>
 
             <h2>Static all the way down</h2>
 
-            <p>The entire site is pre-rendered at build time. A SQLite database holds the things, measurements, categories, and silly units. At build time, <a href="https://nextjs.org/">Next.js</a> queries the database, runs the conversion engine for every measurement of every thing, and outputs 1,167 static HTML pages plus 66 category pages. The database doesn't exist at runtime. There's no server, no API, no lambda. The deployed site is a folder of HTML, CSS, JavaScript, and a search index.</p>
+            <p>A SQLite database holds the things, measurements, categories, and units. At build time <a href="https://nextjs.org/">Next.js</a> reads it, runs the conversion for every measurement of every thing, and writes out 1,147 thing pages and 66 category pages. The database doesn't exist at runtime. The deployed site is a folder of HTML, CSS, JavaScript, and a search index on GitHub Pages.</p>
 
-            <p>Search works the same way. A build script generates a JSON index of all things with their names, categories, and search aliases. The client loads that index and runs <a href="https://lucaong.github.io/minisearch/">MiniSearch</a> (about 7 KB) with prefix matching, fuzzy tolerance, and field boosting that weights names over categories. Results come back in single-digit milliseconds because the entire corpus is already in memory. The search overlay shows up to eight results grouped by category.</p>
+            <p>Search works the same way. A build script writes a JSON index of names, categories, and aliases. The client loads it and runs <a href="https://lucaong.github.io/minisearch/">MiniSearch</a> with prefix matching, a fuzzy tolerance of 0.2, and names boosted 3x over aliases at 2x and categories at 1x. The overlay shows up to eight results grouped by category.</p>
 
             <h2>The data problem</h2>
 
-            <p>Curating 1,167 entries with accurate measurements took more effort than the code. A blue whale's length is well-documented. The mass of a cumulus cloud is not. Every measurement needed a real SI value from a credible source, which meant tracking down specifications, research papers, and occasionally doing the unit conversions by hand to verify the number wasn't off by an order of magnitude. Some things have one measurement. Others have five or six: length, mass, wingspan, top speed, cruising altitude.</p>
+            <p>Curating 1,147 entries took more time than the code. A blue whale's length is well documented. The mass of a cumulus cloud is not. Every measurement needed a real SI value from a source I could point at, which meant specifications, papers, and redoing unit conversions by hand to check I wasn't off by a power of ten. Some things have one measurement. Others have five or six: length, mass, wingspan, top speed, cruising altitude.</p>
 
-            <p>The units needed the same treatment. Each carries a singular and plural form ("1 golden retriever" vs. "2.5 golden retrievers") and a dimension tag that constrains which measurements it can pair with. Mass units only pair with mass measurements. Length units only pair with length. The conversion engine enforces dimensional consistency throughout.</p>
-
-            <h2>Making the numbers readable</h2>
-
-            <p>The site covers things from sub-atomic particles to the observable universe, so the formatting logic needs to handle a wide range. Values above a million render as "1.2 million" or "3 billion" rather than raw digits. Values between 1 and 999,999 get comma separators. Small values get two decimal places. Very small values use scientific notation. About a dozen branches in the formatter cover the full range, tuned by reviewing actual output across the dataset.</p>
-
-            <p>The site is built with <a href="https://nextjs.org/">Next.js 15</a>, <a href="https://tailwindcss.com/">Tailwind CSS 4</a>, <a href="https://www.radix-ui.com/">Radix UI</a> for accessible primitives, and <a href="https://motion.dev/">Motion</a> for the count-up animations and remix transitions. All images are real photography. The whole thing deploys to <a href="https://pages.github.com/">GitHub Pages</a> for free.</p>
+            <p>The site covers things from subatomic particles to the observable universe, so the number formatter has to span the whole range. Above a million it writes "1.2 million" or "340 billion". Between 1 and 999,999 it uses comma separators. Small values get one decimal, and very small ones become "710 millionths" or "5 trillionths". There are about a dozen branches, and I tuned them by reading the actual output across the dataset until nothing looked wrong.</p>
         </article>
 
     </div>
