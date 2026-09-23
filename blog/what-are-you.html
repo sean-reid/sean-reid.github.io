@@ -24,7 +24,7 @@
     <div class="container">
         <header>
             <h1>What ____ Are You?</h1>
-            <p class="meta">Personality quiz generator for any category, powered by the Wikipedia API</p>
+            <p class="meta">I made a personality quiz where the category is a parameter and the answer comes from Wikipedia.</p>
             <p class="links-row">
                 <a href="https://sean-reid.github.io/what-are-you/">Live Demo</a>
                 <a href="https://github.com/sean-reid/what-are-you">Source</a>
@@ -34,42 +34,28 @@
         <article>
             <figure>
                 <img decoding="async" fetchpriority="high" src="img/what-are-you.webp" alt="Screenshot of What Are You">
-                <figcaption>What Are You quiz.</figcaption>
+                <figcaption>The title screen. The blank is a dropdown of categories.</figcaption>
             </figure>
 
-            <p>Those "What kind of X are you?" quizzes are everywhere online. What sandwich are you. What 90s sitcom character are you. They're hugely popular. The thing I noticed is that they always have the same structure: a fixed set of multiple-choice questions, a mapping from answers to results, and a big reveal at the end. The questions are generic personality questions that could map to anything. The category doesn't actually matter.</p>
+            <p>Those "What kind of X are you?" quizzes are everywhere. What sandwich are you. What 90s sitcom character are you. They all have the same shape: a fixed set of multiple-choice questions, a mapping from answers to results, and a reveal. The questions are generic personality questions that could map to anything. The category doesn't matter.</p>
 
-            <figure class="small">
-                <img decoding="async" src="img/cc/survey-icon.svg" alt="Online survey icon" loading="lazy">
-                <figcaption>Answer 10 absurd questions and a Wikipedia article is chosen from your selected category. <a href="https://commons.wikimedia.org/wiki/File:Online_Survey_Icon_or_logo.svg">Wikimedia Commons</a></figcaption>
-            </figure>
+            <p>So I built one where the category is a parameter. You pick a topic from a dropdown, the title fills in ("Countries" becomes "What Country Are You?"), and the result is pulled live from <a href="https://en.wikipedia.org/wiki/Wikipedia:About">Wikipedia</a>.</p>
 
-            <p>So I built a version where the category is a parameter. You pick a topic from a dropdown and the quiz generates itself. The questions are the same regardless. What changes is the result, which gets pulled live from <a href="https://en.wikipedia.org/wiki/Wikipedia:About">Wikipedia</a>.</p>
+            <h2>Where the categories come from</h2>
 
-            <h2>Categories</h2>
+            <p>The dropdown itself comes from Wikipedia. On each load I pick 5 of 15 broad root categories (Nature, Science, Food and drink, Organisms, Sports, and so on), fetch their subcategories through the <a href="https://www.mediawiki.org/wiki/API:Categorymembers">MediaWiki API</a>, keep the single-word names between 4 and 14 characters, shuffle, and show 25. If that turns up fewer than 10, a fixed list of 25 fills in instead. So the dropdown is different every time you load the page.</p>
 
-            <p>The app has a curated list of 60+ <a href="https://www.mediawiki.org/wiki/API:Categorymembers">Wikipedia categories</a>: Animals, Birds, Countries, Foods, Sports, Musical Instruments, and so on. On each page load, the list is shuffled and 25 are presented in a dropdown. Category names are singularized for display ("Countries" becomes "Country" in the title "What Country Are You?"). Selecting a category triggers a <a href="https://www.mediawiki.org/wiki/API:Main_page">MediaWiki API</a> call that fetches all members of that category, filtering out disambiguation pages, list articles, and redirects so the result pool contains only real, concrete things.</p>
+            <h2>The questions and the hash</h2>
 
-            <h2>How the result is determined</h2>
+            <p>You get 10 questions drawn from a pool of 500, each with four answers. "What is your relationship with your phone at 2% battery?" is one of them, and "My phone is always at 2 percent. We live here now." is one of its answers. When you finish, I take the index of each answer, multiply it by the question's position from 1 to 10, sum the products, and take the total modulo the number of eligible articles in the category. Same answers, same article.</p>
 
-            <p>The quiz presents 10 questions drawn randomly from a pool of 500. Each question has four multiple-choice answers ("How many bees could you fit in your mouth?" / "I am the bee king").</p>
-
-            <p>When you finish, your answers are fed into a <a href="https://en.wikipedia.org/wiki/Hash_function">hash function</a>. Each answer's numeric value is multiplied by its question position (1-indexed), and the products are summed. The total is taken modulo the number of filtered category members. This produces a deterministic mapping: the same answers always select the same article. A second API call fetches the selected article's summary text and thumbnail image for the reveal screen, with a link to the full article.</p>
-
-            <p>The result set updates whenever Wikipedia does. If someone adds a new entry to a category, it becomes a possible quiz result without any change to the code.</p>
-
-            <figure class="small">
-                <img decoding="async" src="img/cc/mbti-types.svg" alt="Chart of the 16 Myers-Briggs personality types" loading="lazy">
-                <figcaption>The 16 Myers-Briggs personality types. <a href="https://commons.wikimedia.org/wiki/File:MyersBriggsTypes.svg">Wikimedia Commons</a></figcaption>
-            </figure>
+            <p>The eligible articles are the first 100 pages in the category by sort key, minus anything with "disambiguation", "list of", "index of", "outline of", or "glossary of" in the title, and anything with a slash or a colon. If the category query fails I fall back to a plain search for the category name. A second call fetches the winning article's intro text and a 500 px thumbnail for the reveal. Because the pool is whatever Wikipedia holds today, the result you got last month can be a different article now.</p>
 
             <h2>The Jeopardy theme</h2>
 
-            <p>There's an audio file bundled with the project: the <a href="https://en.wikipedia.org/wiki/Jeopardy!">Jeopardy!</a> think music. It starts playing on the first user interaction (browsers require a gesture before autoplaying audio) and gradually speeds up as you progress through the questions. By question 8 or 9 the music is noticeably fast. It turned out to be the feature people mention most when they share the link.</p>
+            <p>There's an mp3 in the repo: the <a href="https://en.wikipedia.org/wiki/Jeopardy!">Jeopardy!</a> think music. It starts on your first tap, since browsers won't autoplay audio before a gesture, and its playback rate ramps from 1x at the first question to 3x at the last, in 0.3 second glides so it never jumps. By question 8 it's noticeably frantic. It's the thing people mention when they send the link to someone.</p>
 
-            <h2>Design</h2>
-
-            <p>The UI is dark-themed with blue accent buttons. A progress bar fills as you answer questions. The transitions between the title screen, quiz, and results use CSS fade animations. The whole app is a single HTML file with inline JavaScript and CSS. No framework, no build step. The only external dependency is the Wikipedia API.</p>
+            <p>The whole app is one 1,391-line HTML file plus the mp3, six commits, and the only thing it talks to is Wikipedia.</p>
         </article>
 
     </div>
