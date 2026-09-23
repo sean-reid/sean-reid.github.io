@@ -24,7 +24,7 @@
     <div class="container">
         <header>
             <h1>Sprouts</h1>
-            <p class="meta">Browser-based Sprouts with an AI opponent</p>
+            <p class="meta">Conway and Paterson's pen-and-paper game in the browser, against an AI that finds its moves on a morphological skeleton.</p>
             <p class="links-row">
                 <a href="https://sean-reid.github.io/sprouts/">Live Demo</a>
                 <a href="https://github.com/sean-reid/sprouts">Source</a>
@@ -34,89 +34,41 @@
         <article>
             <figure>
                 <img decoding="async" fetchpriority="high" src="img/sprouts.webp" alt="Screenshot of Sprouts">
-                <figcaption>A game of Sprouts with 4 starting nodes.</figcaption>
+                <figcaption>A game of Sprouts with 4 starting spots.</figcaption>
             </figure>
 
-            <p>Sprouts is a pen-and-paper game that <a href="https://en.wikipedia.org/wiki/Sprouts_(game)">John Conway and Michael Paterson</a> invented in 1967. You start with \(n\) dots (called <em>spots</em>) on a page. Players take turns drawing a curve between two spots (or from a spot back to itself), then placing a new spot somewhere along the curve they just drew. Each spot can have at most three lines touching it &mdash; that is, every vertex has degree at most 3 &mdash; and lines are not allowed to cross. The last player who can make a legal move wins (this is the <em>normal play convention</em>).</p>
-
-            <p>The rules fit on an index card but the game is surprisingly deep. For small numbers of starting spots, determining the winner is a solved problem in <a href="https://en.wikipedia.org/wiki/Combinatorial_game_theory">combinatorial game theory</a>, but the proofs are non-trivial and the general case is still open. I wanted to play it against a computer, and building that computer opponent turned out to be harder than the game itself.</p>
-
-            <h2>Graph theory and the Euler characteristic</h2>
-
-            <p>A Sprouts position is a planar graph drawn on the sphere (or equivalently the plane). At any moment the game state is a graph \(G = (V, E)\) embedded in a surface of genus 0. By the <a href="https://en.wikipedia.org/wiki/Euler_characteristic">Euler formula</a> for connected planar graphs:</p>
-
-            \[V - E + F = 2\]
-
-            <p>where \(V\) is the number of vertices, \(E\) the number of edges, and \(F\) the number of faces (regions, including the unbounded outer face). Each move adds one edge and one vertex: the new curve becomes an edge (or sometimes two edges, split by the new spot), and the new spot is a vertex of degree 2 or 3. The non-crossing constraint is what forces the game onto a surface &mdash; it is precisely the requirement that the graph remain planar.</p>
-
-            <p>The key constraint is the degree bound. Every vertex has degree at most 3, so the sum of all vertex degrees satisfies \(\sum_{v \in V} \deg(v) \leq 3|V|\). By the handshaking lemma, \(\sum_{v \in V} \deg(v) = 2|E|\), giving us:</p>
-
-            \[|E| \leq \frac{3}{2}|V|\]
-
-            <p>Now consider a game starting with \(n\) spots. Each original spot begins with degree 0 and can accept up to 3 edges. Each move creates exactly one new spot (of degree 2, since it sits in the interior of the new curve) and adds one new edge. After \(m\) moves, we have \(|V| = n + m\) vertices and \(|E| = 2m\) edges (each move produces two edge-segments separated by the new spot). The total degree budget starts at \(3n\) (from the original spots) and each move consumes 2 degrees from existing endpoints while adding a new vertex with 1 remaining degree. A careful accounting yields the following theorem.</p>
-
-            <p><strong>Theorem (Conway &amp; Paterson, 1967).</strong> <em>A game of Sprouts beginning with \(n\) spots lasts at least \(2n\) moves and at most \(3n - 1\) moves.</em></p>
-
-            <p>The lower bound comes from the observation that each move reduces the total number of available lives (unused degree slots) by at most 1, and you start with \(3n\) lives but need at least \(n + 1\) alive vertices at the end for the graph to have been constructible. The upper bound \(3n - 1\) follows from the edge inequality above: after \(m\) moves, \(2m \leq \frac{3}{2}(n + m)\), which gives \(m \leq 3n\), and a slightly tighter argument using the Euler formula and the fact that every face must be bounded by at least 3 edges pushes this to \(m \leq 3n - 1\). In practice, games tend to last close to \(3n - 1\) moves with good play.</p>
+            <p><a href="https://en.wikipedia.org/wiki/Sprouts_(game)">Sprouts</a> is a pen-and-paper game that John Conway and Michael Paterson invented at Cambridge in 1967. You start with \(n\) dots, called spots. A move draws a curve from one spot to another, or from a spot back to itself, without crossing any existing line, and then puts a new spot somewhere on that curve. No spot may have more than three lines touching it. Whoever makes the last legal move wins. The rules fit on an index card. I wanted to play it against a computer, and the computer turned out to be much harder than the game.</p>
 
             <figure class="small">
                 <img decoding="async" src="img/cc/sprouts-game.webp" alt="A game of Sprouts in progress" loading="lazy">
-                <figcaption>A game of Sprouts. Each dot can have at most three connections, and lines cannot cross. <a href="https://commons.wikimedia.org/wiki/File:Sprouts-2spot-game.png">Wikimedia Commons</a></figcaption>
+                <figcaption>A two-spot game in progress. Each spot takes at most three lines and lines never cross. <a href="https://commons.wikimedia.org/wiki/File:Sprouts-2spot-game.png">Wikimedia Commons</a></figcaption>
             </figure>
 
-            <h2>Sprague-Grundy theory</h2>
+            <h2>How long a game lasts</h2>
 
-            <p>Sprouts is an <a href="https://en.wikipedia.org/wiki/Impartial_game">impartial game</a> under normal play: both players have the same moves available from any position, and the last player to move wins. This places it squarely in the domain of the <a href="https://en.wikipedia.org/wiki/Sprague%E2%80%93Grundy_theorem">Sprague-Grundy theorem</a>, which says that every impartial game position is equivalent to a <a href="https://en.wikipedia.org/wiki/Nimber">nimber</a> \(*k\) for some non-negative integer \(k\). A position is a loss for the player to move if and only if its Grundy value is \(*0\).</p>
+            <p>Call the unused line slots on a spot its lives. There are \(3n\) at the start. Every move spends two lives, one at each end of the curve (or two on the same spot for a loop), and creates a spot that already has two lines, so one life. Each move costs exactly one life net, and every move adds exactly two edges to the graph, because the new spot splits the curve. The last move still leaves that new spot's life unspent, so at least one life remains when the game ends and a game lasts at most \(3n - 1\) moves.</p>
 
-            <p>In principle, you could compute the Grundy value \(\mathcal{G}(P)\) for every Sprouts position \(P\) by the recursive formula:</p>
+            <p>The lower bound takes one more idea. When the game ends, every surviving spot has exactly one life, because a spot with two could still draw a loop to itself. Each survivor's two neighbours are dead, and no dead spot neighbours two survivors, since two lines into the same dead spot share a face and the survivors at their far ends could be joined. So there are at least twice as many dead spots as survivors. After \(m\) moves there are \(n + m\) spots and \(S = 3n - m\) survivors, and \(n + m \geq 3S\) gives \(m \geq 2n\). <em>Winning Ways</em> (Berlekamp, Conway, and Guy) calls a dead spot that neighbours no survivor a Pharisee, and counting them makes it exact: \(m = 2n + P/4\). So a game runs between \(2n\) and \(3n - 1\) moves. With 6 spots that's 12 to 17.</p>
 
-            \[\mathcal{G}(P) = \operatorname{mex}\bigl(\{\mathcal{G}(P') : P' \text{ is a position reachable from } P\}\bigr)\]
+            <p>Who wins is a different question. Applegate, Jacobson, and Sleator computed it by exhaustive search up to 11 spots in 1991 and conjectured that the first player wins exactly when \(n \bmod 6\) is 3, 4, or 5. Later searches carried that pattern to \(n \leq 44\). Nobody has proved it holds in general. Sprouts is an impartial game, so every position has a nim-value in principle, but I didn't compute any. My AI is heuristic, and approximate in ways I'll get to.</p>
 
-            <p>where \(\operatorname{mex}\) (minimum excludant) is the smallest non-negative integer not in the set. In practice, this is intractable for all but the smallest \(n\) because the number of distinct positions grows enormously. Exhaustive Sprague-Grundy computation has determined the winner for \(n \leq 44\) (with the first player winning when \(n\) is 3, 4, or 5 mod 6, and losing otherwise), but a general proof of this pattern remains open. The computations rely on reducing the continuous game to equivalence classes of abstract planar graphs, which is itself a deep problem in topology.</p>
+            <h2>Moves aren't discrete</h2>
 
-            <figure class="small">
-                <img decoding="async" src="img/cc/petersen-graph.svg" alt="Petersen graph with 3-coloring" loading="lazy">
-                <figcaption>The Petersen graph with a proper 3-coloring. Graph coloring and planarity constraints appear in the analysis of Sprouts positions. <a href="https://commons.wikimedia.org/wiki/File:Petersen_graph_3-coloring.svg">Wikimedia Commons</a></figcaption>
-            </figure>
+            <p>In most board games a move is a thing you can enumerate. Sprouts moves are curves in the plane, and legality depends on whether the curve crosses anything. My first attempt sampled each candidate curve at many points and tested each sample against existing lines. It was slow and wrong in both directions: curves that passed near a line registered as collisions depending on sampling density, and real crossings slipped between samples.</p>
 
-            <h2>The problem with continuous moves</h2>
+            <p>The fix came from image processing. Treat the board as a binary image where lines and spots are obstacles and everything else is free. Thin the free space with the <a href="https://en.wikipedia.org/wiki/Topological_skeleton">Zhang-Suen algorithm</a>, which strips boundary pixels while preserving connectivity, and what's left is a one-pixel-wide <a href="https://en.wikipedia.org/wiki/Medial_axis">medial axis</a> running down the middle of every open corridor. That skeleton is a graph, and any path along it is a curve that clears existing geometry by construction. It's a map of where moves can exist.</p>
 
-            <p>In most board games, a move is something discrete: pick up a piece, put it down on a square. The game engine can enumerate all legal moves and check them against a list. Sprouts doesn't work this way. A move is a freeform curve drawn in the plane, and its legality depends on whether that curve intersects any existing geometry. There's no grid. The move space is continuous.</p>
-
-            <p>My first approach to checking move legality was to sample the curve at many points and test each sample for collisions with existing lines. This was slow and unreliable. Curves that passed close to existing lines but didn't cross them would sometimes register as collisions depending on sampling density, and actual crossings could slip through gaps between samples. I needed a different approach.</p>
-
-            <h2>Morphological skeletons</h2>
-
-            <p>The solution came from image processing. Think of the game board as a binary image: existing lines and dots are obstacles, and everything else is free space. If you apply <a href="https://github.com/sean-reid/sprouts/blob/main/src/morphology.rs">morphological thinning</a> to the free space, you get a <a href="https://en.wikipedia.org/wiki/Medial_axis">medial axis</a>, a one-pixel-wide <a href="https://en.wikipedia.org/wiki/Topological_skeleton">skeleton</a> that runs through the center of every open corridor on the board. This skeleton is itself a graph \(S = (V_S, E_S)\) embedded in the plane, and pathfinding on \(S\) gives candidate curves that are guaranteed to avoid existing geometry. It is a map of where valid moves can exist.</p>
-
-            <p>The thinning uses the <a href="https://en.wikipedia.org/wiki/Topological_skeleton">Zhang-Suen algorithm</a>, which iterates over the image removing boundary pixels that satisfy certain connectivity conditions. After thinning, what remains is the skeleton: a graph of corridors through free space.</p>
-
-            <p>Before thinning, there's an adaptive dilation step. Wide open areas get heavy dilation, which forces the skeleton toward the center of those areas. Narrow passages get light dilation so they don't collapse entirely. The dilation amount is determined by a local <a href="https://en.wikipedia.org/wiki/Distance_transform">distance transform</a> that estimates corridor width at each point. This adaptive approach matters a lot in the endgame, when the board is crowded and remaining free space is a collection of thin, winding channels. Without adaptive dilation, the skeleton would either miss narrow passages or produce a skeleton so far from the center of wide areas that it suggests moves too close to existing lines.</p>
-
-            <p>When the skeleton approach fails (and in very tight endgame positions it does), a fallback <a href="https://en.wikipedia.org/wiki/A*_search_algorithm">A* pathfinder</a> operates in the raw free space with relaxed constraints. The fallback is slower but can find paths that the skeleton misses.</p>
-
-            <figure class="small">
-                <img decoding="async" src="img/cc/john-conway.webp" alt="John Horton Conway in 2005" loading="lazy">
-                <figcaption>John Horton Conway, co-inventor of Sprouts, photographed in 2005. <a href="https://commons.wikimedia.org/wiki/File:John_H_Conway_2005_(cropped)_(2).jpg">Wikimedia Commons</a></figcaption>
-            </figure>
+            <p>Plain thinning wasn't enough. In the endgame the free space is a few thin winding channels next to one or two big open regions, and a skeleton computed the same way everywhere either loses the channels or sits too close to walls in the open. So before thinning I dilate the obstacles by 35 percent of the local corridor width, measured with a <a href="https://en.wikipedia.org/wiki/Distance_transform">distance transform</a>, clamped between 3 and 50 pixels at the base scale. Wide areas get heavy dilation and the skeleton is forced to their centre. Narrow passages get almost none and survive. When even that fails, and in tight endgames it does, an <a href="https://en.wikipedia.org/wiki/A*_search_algorithm">A*</a> search runs over the raw free pixels with relaxed clearance.</p>
 
             <h2>The AI</h2>
 
-            <p><a href="https://github.com/sean-reid/sprouts/blob/main/src/ai.rs">Move generation</a> works by pathfinding along the skeleton between every pair of nodes that could legally be connected (accounting for the three-connection limit). For each pair, the AI attempts to find a skeleton path first, then tries the relaxed pathfinder if that fails. Each successful path becomes a candidate move. The AI also considers self-connections (curves from a node back to itself) for nodes with two or fewer existing connections.</p>
+            <p>To generate moves, the AI pathfinds along the skeleton between every pair of spots that both have a life left, plus a loop for every spot with two or more, falling back to the free-space A* when the skeleton path fails. Each path is a concrete candidate move. It then abstracts the position into a graph, runs <a href="https://en.wikipedia.org/wiki/Minimax">minimax</a> with <a href="https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning">alpha-beta pruning</a> on the abstract graph, and returns the concrete curve of the best move for drawing. The search is iteratively deepened from depth 1 up to a cap the position chooses, at most 16. The README still says two plies. That was true once.</p>
 
-            <p>The search uses <a href="https://en.wikipedia.org/wiki/Minimax">minimax</a> with <a href="https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning">alpha-beta pruning</a> at two plies of depth. While Sprague-Grundy theory tells us a complete analysis is possible in principle, the branching factor is too large for full computation at game scale, so the AI relies on heuristic evaluation. The tricky part is that the search tree operates on abstract graph representations of the game state, but the actual moves need to be concrete pixel-level curves. The AI generates concrete curves, abstracts them into graph operations for the minimax evaluation, then returns the concrete curve of the best move for rendering.</p>
+            <p>The abstraction is where the approximation lives. When the abstract graph updates after a move it takes the union of the two endpoints' neighbourhoods where the comment next to it says intersection, and it never removes a pair of spots that a new line has just separated into different regions. So the search considers some moves that aren't legal on the real board, and going deeper doesn't fix that. The move it finally plays is always one of the concrete root candidates, so the cost is wasted search and a skewed evaluation rather than an illegal line on the board. It plays a decent game anyway, and I haven't fixed it yet.</p>
 
-            <p>There's an opening book for the first few moves. Early-game strong plays in Sprouts are well-studied and don't need to be recomputed every time.</p>
+            <p>The AI always plays second, and an opening book covers its first reply to the common human openings at 4, 5, and 6 spots. When it draws a curve it also has to choose where the new spot goes. It samples the middle 80 percent of the path, skipping the ends where spots cluster, and takes the point with the greatest clearance from any obstacle, to leave as much room as possible for later moves.</p>
 
-            <p>When the AI draws a curve, it also needs to decide where on that curve to place the new dot. The heuristic samples the middle 80% of the curve (avoiding the endpoints, which are close to existing nodes) and picks the point with the greatest minimum distance to any existing obstacle. The idea is to preserve as much open space as possible for future moves, preventing the AI from accidentally walling itself off.</p>
-
-            <h2>Putting it together</h2>
-
-            <p>The game logic and AI are written in Rust, compiled to <a href="https://webassembly.org/">WebAssembly</a>. The WASM module runs in a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API">Web Worker</a> so that the AI's computation (which can take a few seconds on larger boards) doesn't block the UI thread. The frontend uses HTML5 Canvas for rendering and handles both mouse and touch input, since Sprouts is the kind of game you might play on a phone.</p>
-
-            <p>Difficulty is controlled by the number of starting spots: 4, 5, or 6. More starting spots means a longer game with a larger and more complex move space. With \(n = 6\), the game can last up to \(3(6) - 1 = 17\) moves, and the AI takes noticeably longer to think because the number of candidate moves grows quickly and the skeleton computation is more expensive on a crowded board. For reference, at \(n = 4\) the game lasts between 8 and 11 moves, while at \(n = 5\) it's between 10 and 14.</p>
-
-            <p>The visual design is dark and minimal: near-black background, white lines, green accent for victories and red for losses. The board itself is the interesting visual, and a busy UI would compete with it.</p>
+            <p>The game logic and AI are Rust compiled to <a href="https://webassembly.org/">WebAssembly</a>, running in a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API">Web Worker</a> because a search on a crowded 6-spot board takes a few seconds and shouldn't freeze the canvas. Mouse and touch both work, since this is a game you'd play on a phone. Difficulty is the spot count, 4, 5, or 6.</p>
         </article>
 
     </div>
