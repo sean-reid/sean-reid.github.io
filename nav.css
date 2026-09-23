@@ -69,8 +69,8 @@ body {
   top: 50%;
   transform: translateY(-50%);
   font-size: 0.7rem;
-  color: #bbb;
-  border: 1px solid #ddd;
+  color: #767676;
+  border: 1px solid #ccc;
   border-radius: 3px;
   padding: 0 0.3rem;
   line-height: 1.4;
@@ -84,9 +84,12 @@ body {
 }
 
 .site-nav-random {
+  font: inherit;
   font-size: 0.85rem;
   color: #0366d6;
-  text-decoration: none;
+  background: none;
+  border: 0;
+  padding: 0.6rem 0.25rem;
   white-space: nowrap;
   cursor: pointer;
 }
@@ -149,7 +152,7 @@ body {
 
 .search-result-context {
   font-size: 0.75rem;
-  color: #888;
+  color: #666;
   line-height: 1.4;
 }
 
@@ -163,7 +166,7 @@ body {
 .search-empty {
   padding: 0.8rem;
   font-size: 0.85rem;
-  color: #888;
+  color: #666;
   text-align: center;
 }
 
@@ -172,7 +175,7 @@ body {
   padding: 2rem 1rem;
 }
 
-/* Footer — static on mobile, sticky on desktop */
+/* Footer: static on mobile, sticky on desktop */
 .site-footer {
   background: #fafafa;
   border-top: 1px solid #e0e0e0;
@@ -193,6 +196,7 @@ body {
   color: #333;
   text-decoration: none;
   font-size: 0.95rem;
+  padding: 0.5rem 0;
 }
 
 .site-footer-links a:hover {
@@ -214,7 +218,7 @@ body {
   }
 
   .site-footer-links {
-    gap: 0.4rem 0.6rem;
+    gap: 0 0.9rem;
     font-size: 0.85rem;
   }
 }
