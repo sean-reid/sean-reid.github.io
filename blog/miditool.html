@@ -77,7 +77,7 @@
 
             <p>Pitch-remapping effects share a router that records, per channel and key, which output key each note-on produced, in a fixed 16 by 128 grid with no heap behind it. The matching note-off goes to the note that is sounding. A hot reload keeps the swapped-out graph draining until every note and pedal it opened has closed, so a note held through the swap gets its note-off through the mapping that started it, and up to three old generations drain at once. At the boundary the scheduler watches everything it sends through a note tracker, so shutdown, panic, or a killed scene emits exactly the note-offs and pedal releases needed to silence the DAW and nothing else.</p>
 
-            <p>None of that would have convinced me on its own, so the invariant is property-tested. The harness generates random sequences of up to 32 note-ons and note-offs across two channels and all 128 keys, runs them through an effect and then a flush, and feeds the output into a <code>NoteTracker</code> oracle that has to come out empty. Every effect in the crate goes through it, 62 property tests in all, and CI runs them on every push. That file is why I trust the tool on stage.</p>
+            <p>None of that would have convinced me on its own, so the invariant is property-tested. The harness generates random sequences of up to 32 note-ons and note-offs across two channels and all 128 keys, runs them through an effect and then a flush, and feeds the output into a <code>NoteTracker</code> oracle that has to come out empty. Every effect in the crate goes through it, 62 property tests in all, and CI runs them on every push.</p>
 
             <h2>Scenes, hot reload, scripts</h2>
 

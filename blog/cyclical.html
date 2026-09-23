@@ -67,7 +67,7 @@
 
             <p>The other prune is reachability. With k steps left and a two-semitone move limit, a voice more than 2k semitones from where it started can never get home, so the branch dies. With fixed chord sizes every voice is tracked and this is exact. With flexible sizes it becomes asymmetric. The lowest note can jump up freely by dropping the bass voice, but it can only sink two semitones a step, and the highest note mirrors that. Only the bounded direction is safe to prune.</p>
 
-            <p>The test I trust is the brute-force diff. On a tiny parameter set, one or two notes between MIDI 60 and 65 in cycles of length 4, the test enumerates every valid chord, builds every cycle by naive recursion, canonicalizes them, and diffs that set against what the solver emits. A missing or extra cycle fails the test and prints the first example of each. The solver crate has 22 tests and this is the one that would catch a bad prune.</p>
+            <p>The test that matters is the brute-force diff. On a tiny parameter set, one or two notes between MIDI 60 and 65 in cycles of length 4, the test enumerates every valid chord, builds every cycle by naive recursion, canonicalizes them, and diffs that set against what the solver emits. A missing or extra cycle fails the test and prints the first example of each. The solver crate has 22 tests and this is the one that would catch a bad prune.</p>
 
             <h2>Labels and a dissonance table</h2>
 
