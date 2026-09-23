@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+    <title>OEIS Pi Search - Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/oeis-pi-search.webp">
+    <link rel="stylesheet" href="/nav.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="/" class="site-nav-name">Sean Reid</a>
+    <div class="site-nav-controls">
+      <div class="site-nav-search-wrap"><input type="text" class="site-nav-search" placeholder="Search..." autocomplete="off"><span class="site-nav-search-hint">/</span></div>
+      <a class="site-nav-random">&rarr; Random</a>
+      <div class="search-dropdown"></div>
+    </div>
+  </div>
+</nav>
+<main class="site-content">
+    <div class="container">
+        <header>
+            <h1>OEIS Pi Search</h1>
+            <p class="meta">Where the first terms of any OEIS sequence first appear in a billion digits of pi, answered from a Worker with byte-range reads and no database for the digits</p>
+            <p class="links-row">
+                <a href="https://oeis-pi-search.dwainosaur.com">Live Demo</a>
+                <a href="https://github.com/sean-reid/oeis-pi-search">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <figure>
+                <img decoding="async" fetchpriority="high" src="img/oeis-pi-search.webp" alt="Result page for A000045, the Fibonacci numbers, with the digits 0112358 underlined inside a strip of pi and a table of first positions and occurrence counts for each prefix length">
+                <figcaption>The Fibonacci numbers. The first seven terms, 0112358, first appear at position 4,253,057. The single digit 0 appears 99,993,942 times.</figcaption>
+            </figure>
+
+            <p>Type an OEIS A-number, a sequence name, a few terms, or a string of digits, and the site tells you how far into pi you have to go before the first \(k\) terms appear, for every \(k\) it can manage. The conventions are strict because the question is meaningless without them. Position 1 is the first digit after the decimal point, so the leading 3 is never searched. Terms are concatenated exactly as the OEIS lists them, leading zeros included, and minus signs are dropped. The search covers the first 1,000,000,000 digits and strings up to 12 digits long. For the Fibonacci numbers that means the 8th term, 13, pushes the string to 9 digits and the 10th term, 34, takes it past 12, so the staircase has nine rows.</p>
+
+            <h2>A billion digits in a Worker</h2>
+
+            <p>The site runs on a Cloudflare Worker, which has no disk and a memory limit far below the size of the digits. A billion digits packed two per byte is 500 MB. So the index lives in R2 and every query is a handful of byte-range reads against it, with no database anywhere near the digits.</p>
+
+            <p>For strings of 1 to 8 digits I use direct-address tables. Table \(k\) has \(10^k\) entries of 8 bytes, a first position and a count, indexed by the query read as a number. A query for 31415 is one 8-byte read from table5 at offset \(8 \times 31415\). Table8 is 800 MB and all eight tables together are about 889 MB, which is a lot of storage for a lookup that costs one read, and I think it is the right trade.</p>
+
+            <p>For 9 to 12 digits I use buckets keyed by the 8-digit prefix. Every one of the billion positions that starts a full 8-digit string gets a 6-byte entry, a 32-bit position and a 16-bit code for the four digits that follow, and the entries are grouped by prefix in position order. A 400 MB offsets file says where each group starts. That is about 6 GB of buckets. A 12-digit query reads the prefix's table8 entry and its offset in parallel, then reads the group, which averages ten entries or 60 bytes since each 8-digit prefix shows up about ten times in a billion digits, and filters on the next-digit code. The code also records how many digits were actually available, because the last few positions in the file have fewer than four digits after them, and a query for a string that ends at the very end of the expansion still has to be found. The test suite checks exactly that case.</p>
+
+            <p>Positions are 32-bit, so the format tops out around 4.29 billion digits. Every file is split into 240 MiB shards named <code>table8.bin.000</code>, <code>table8.bin.001</code> and so on, because that was what the upload tooling would take, and a read that crosses a shard boundary becomes two reads. The whole index is about 7.8 GB in R2.</p>
+
+            <h2>One format, two readers</h2>
+
+            <p>The index is built once by a Rust tool that memory-maps the packed digits and builds the eight tables in parallel with a rolling value modulo \(10^{k-1}\). The same crate has a reference reader, and the Worker has a TypeScript reader that does the same steps with R2 range gets. Both read a committed fixture: the first 20,000 digits with tables up to 3 digits and a 3-digit bucket prefix, so the fixture exercises every code path in a few kilobytes. Both are tested against a naive scan over random needles at every query length, 3,000 of them in Rust and 1,500 in TypeScript, plus the partial-tail case and reads that straddle a shard boundary. A change to the layout on one side that the other does not follow fails the tests.</p>
+
+            <p>The digits came from the MIT SIPB mirror of a billion-digit file. I spot-checked stretches of them against pi.delivery, and the manifest records the SHA-256 of the packed file, but I have not checksummed the source against a published reference. If the mirror is wrong somewhere past the stretches I checked, so is the site.</p>
+
+            <h2>Sequences, and a database that blocks</h2>
+
+            <p>The sequence data is a different problem. Every OEIS sequence gets its staircase computed offline against the index, along with a few derived columns for the leaderboards, and the results go into D1, Cloudflare's SQLite. Sequence names are searched with an FTS5 prefix query and ordered by A-number rather than by relevance, because the classic sequences were catalogued first, and for this corpus that beats relevance.</p>
+
+            <p>On the first of every month at 06:17 UTC a workflow downloads the current OEIS dumps, downloads the index from R2, recomputes every staircase, and writes SQL. Then comes the part that took a while to get right. D1 blocks every read on a database while it imports, and the import takes long enough to matter. So there are two databases, and a KV key named <code>live-db</code> names which one serves traffic. The import goes into the other one in chunks of 1,000 statements, each chunk a transaction retried up to three times, and only after the standby has at least 1,000 rows does the workflow flip the key. The Worker caches the pointer for a minute per isolate, so a flip takes effect within about a minute and nobody's query ever hits a database mid-import.</p>
+
+            <p>One thing the site does not show and should: the expected count under the null hypothesis that pi's digits are random. A 12-digit string has \(10^{12}\) possibilities and there are only a billion positions, so the expected number of occurrences is 0.001, and most 12-digit strings are simply absent. A 9-digit string is expected about once. The table shows the observed count next to each row, and without the expected number beside it a reader cannot tell a coincidence from a curiosity. It is also worth saying that "not within 1,000,000,000" is a statement about this file, not about pi.</p>
+
+            <p>Sequence data comes from the <a href="https://oeis.org">OEIS</a> under CC BY-SA 4.0. The site is not affiliated with the OEIS Foundation.</p>
+        </article>
+
+    </div>
+</main>
+<footer class="site-footer">
+  <div class="site-footer-links">
+    <a href="https://github.com/sean-reid">GitHub</a>
+    <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
+    <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
+    <a href="https://socrates-of-athens.github.io">Poetry</a>
+    <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
+  </div>
+</footer>
+<script src="/nav.js"></script>
+</body>
+</html>
