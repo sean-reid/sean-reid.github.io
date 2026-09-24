@@ -45,12 +45,12 @@
         <article>
             <figure>
                 <img decoding="async" fetchpriority="high" src="img/papermaker.webp" alt="Screenshot of Papermaker" width="2560" height="1600">
-                <figcaption>The Papermaker interface.</figcaption>
+                <figcaption>The author and system name fields, with the first page of the compiled PDF below them.</figcaption>
             </figure>
 
             <p>In 2005 three <a href="https://www.csail.mit.edu/">MIT</a> grad students, Jeremy Stribling, Max Krohn, and Dan Aguayo, built <a href="https://pdos.csail.mit.edu/archive/scigen/">SCIgen</a>, which generates fake computer science papers from a <a href="https://en.wikipedia.org/wiki/Context-free_grammar">context-free grammar</a>. They submitted one to the <a href="https://en.wikipedia.org/wiki/SCIgen#Use">World Multiconference on Systemics, Cybernetics and Informatics</a> and it was accepted. It was called "<a href="https://pdos.csail.mit.edu/archive/scigen/rooter.pdf">Rooter: A Methodology for the Typical Unification of Access Points and Redundancy</a>" and it meant nothing at all.</p>
 
-            <p>Papermaker is SCIgen in the browser. One click produces a typeset two-column PDF with a title, abstract, introduction, related work, a methodology, results with figures, a conclusion, and references. The papers have the right shape and the right density of jargon and say nothing. Skimmed the way a tired reviewer skims, they pass.</p>
+            <p>Papermaker is SCIgen in the browser. One click produces a typeset two-column PDF with an abstract, an introduction, related work, results with figures, and references. The papers have the right shape and the right density of jargon and say nothing.</p>
 
             <h2>The grammar</h2>
 
@@ -58,13 +58,13 @@
 
             <h2>Perl to Rust to the browser</h2>
 
-            <p>The original is Perl and writes LaTeX to disk. I rewrote the expansion engine in <a href="https://www.rust-lang.org/">Rust</a> and compiled it to <a href="https://webassembly.org/">WebAssembly</a> with <a href="https://rustwasm.github.io/docs/wasm-pack/">wasm-pack</a>. It's 364 lines: a hash map of rules, a seeded <code>SmallRng</code> so a seed reproduces a paper, the counters, and a recursive expand. The grammar file and the graph grammar are fetched at runtime inside a Web Worker, and the worker fixes capitalization after sentence boundaries and in titles once the expansion is done.</p>
+            <p>The original is Perl and writes LaTeX to disk. I rewrote the expansion engine in <a href="https://www.rust-lang.org/">Rust</a> and compiled it to <a href="https://webassembly.org/">WebAssembly</a> with <a href="https://rustwasm.github.io/docs/wasm-pack/">wasm-pack</a>. The rules go in a hash map and the random source is a seeded <code>SmallRng</code>, so a seed reproduces a paper. The grammar file and the graph grammar are fetched at runtime inside a Web Worker, and the worker fixes capitalization after sentence boundaries and in titles once the expansion is done.</p>
 
             <h2>Figures and the compile</h2>
 
             <p>The figures are my favorite part of the output. SCIgen's grammar emits gnuplot commands and graphviz for them, which was fine on a Unix box in 2005 and is useless in a browser, so a second worker rewrites them. It parses the gnuplot commands into <a href="https://ctan.org/pkg/pgfplots">pgfplots</a> charts of throughput against input size with a few fictional series, seeded from the command text so the same paper gets the same chart, and turns the graphviz figures into <a href="https://tikz.dev/">TikZ</a> flowcharts of boxes labeled with the paper's own component names. The bibliography gets the same treatment. BibTeX can't run, so the worker generates the entries and inlines a <code>thebibliography</code> environment. The data is random and the presentation is right, and a figure looked at on its own passes for an experimental result.</p>
 
-            <p>Then the LaTeX goes to latex.ytotech.com, a free compilation service with CORS enabled, and a PDF comes back. That service is the one piece of the project I don't run. If it goes away, Papermaker stops producing PDFs until I find another one or compile in the browser the way <a href="/blog/eigencircuits.html">eigencircuits</a> does. There are no tests and the build is a shell script.</p>
+            <p>Then the LaTeX goes to latex.ytotech.com, a free compilation service with CORS enabled and the one piece of the project I don't run, and a PDF comes back.</p>
         </article>
 
     </div>
