@@ -52,13 +52,13 @@
 
             <h2>The data</h2>
 
-            <p>The scraped JSON wasn't in the shape <a href="https://www.npmjs.com/package/@jaredreisinger/react-crossword">react-crossword</a> wants, so I wrote a Python script to convert every puzzle once. The output lives in a <a href="https://github.com/sean-reid/nyt-crosswords-data">second repository</a> as one file per date, and the player fetches the file for whichever date you pick straight from GitHub. There's no server. The coverage gaps are inherited from the source: August 10 to November 5, 1978, and August 30, 2015 to May 1, 2016.</p>
+            <p>The scraped JSON wasn't in the shape <a href="https://www.npmjs.com/package/@jaredreisinger/react-crossword">react-crossword</a> wants, so I wrote a Python script to convert every puzzle once. The output lives in a <a href="https://github.com/sean-reid/nyt-crosswords-data">second repository</a> as one file per date, and the player fetches the file for whichever date you pick straight from GitHub. There's no server. The source is missing August 10 to November 5, 1978, and August 30, 2015 to May 1, 2016, so the player is too.</p>
 
             <h2>The player</h2>
 
-            <p>A date picker at the top takes any date from January 1, 1976 to December 1, 2017, and the 1976 puzzle is baked in so there is something on screen while the first fetch happens. When you finish a word correctly the clue turns green and gets crossed out. There are three buttons, Focus, Fill all answers, and Reset. No timer, no scoring, no streaks. I wanted it to feel like a crossword on paper.</p>
+            <p>A date picker at the top takes any date from January 1, 1976 to December 1, 2017, and the 1976 puzzle is baked in so there's something on screen while the first fetch happens. When you finish a word correctly the clue turns green and gets crossed out. The only buttons are Focus, Fill all answers, and Reset. There's no timer or scoring because I wanted it to feel like a crossword on paper.</p>
 
-            <p>I considered building the grid from scratch. react-crossword already handled keyboard navigation, cell highlighting, clue-to-grid sync, and answer checking. Writing all of that from zero would have taken weeks and the result would have been worse. The whole app is 187 lines of React on top of it, plus the date picker. The interesting part was the data conversion, and that part is done.</p>
+            <p>I considered building the grid from scratch instead of using react-crossword, which already handles keyboard navigation and answer checking. Writing all of that from zero would have taken weeks and the result would have been worse.</p>
         </article>
 
     </div>
