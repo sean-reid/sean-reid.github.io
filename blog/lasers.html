@@ -48,21 +48,19 @@
                 <figcaption>A fresh level. The beam stops at the circle that always sits on the straight line to the target.</figcaption>
             </figure>
 
-            <p>A laser fires from the left edge of an 800 by 600 board and a target sits on the right edge. Circles in between block the straight shot, and you place mirrors to bounce the beam around them. Fewer mirrors is a better score. I've seen this as a physical board game in toy shops. On a screen it gets unlimited levels for free.</p>
+            <p>A laser fires from the left edge of an 800 by 600 board and a target sits on the right edge. Circles in between block the straight shot, and you place mirrors to bounce the beam around them. Fewer mirrors is a better score.</p>
 
             <h2>Tracing the beam</h2>
 
-            <p>The beam is a ray and each mirror is a 60-pixel segment. For every mirror I solve the <a href="https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection">ray-segment intersection</a> as a 2x2 linear system and keep the hit only if the ray parameter is positive and the segment parameter is between 0 and 1. For every circle, substituting the ray into \(|\mathbf{o} + t\,\mathbf{d} - \mathbf{c}|^2 = R^2\) gives a quadratic in \(t\), and a non-negative discriminant is a hit. The nearest hit wins. An obstacle or the board edge ends the beam. The target ends it with a win. A mirror with unit normal \(\hat{\mathbf{n}}\) reflects it,</p>
+            <p>The beam is a ray and each mirror is a 60-pixel segment. For every mirror I solve the <a href="https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection">ray-segment intersection</a> as a 2x2 linear system and keep the hit only if the ray parameter is positive and the segment parameter is between 0 and 1. For every circle, substituting the ray into \(|\mathbf{o} + t\,\mathbf{d} - \mathbf{c}|^2 = R^2\) gives a quadratic in \(t\), and a non-negative discriminant is a hit. The nearest hit wins. An obstacle or the board edge stops the beam there, and reaching the target solves the level. A mirror with unit normal \(\hat{\mathbf{n}}\) reflects it,</p>
 
             \[\mathbf{d}' = \mathbf{d} - 2(\mathbf{d} \cdot \hat{\mathbf{n}})\,\hat{\mathbf{n}},\]
 
-            <p>and the trace carries on, up to 50 bounces so two facing mirrors can't hang the page. Mirrors rotate continuously rather than snapping to 45 degrees, and the whole path is retraced every frame while one is still being turned, so the beam sweeps across the board until it lands.</p>
+            <p>and the trace carries on, up to 50 bounces so two facing mirrors can't hang the page. Mirrors rotate continuously rather than snapping to 45 degrees, and the whole path is retraced every frame while one is still being turned, so the beam sweeps across the board until it lands. The beam is the only bright thing on a dark board, and the target turns green when it's hit.</p>
 
             <h2>Levels</h2>
 
-            <p>Each level is random rather than seeded. The first obstacle always goes on the straight line between laser and target, somewhere between 30 and 70 percent of the way across, offset by less than its own radius so the direct shot is blocked. Then 5 plus twice the level number more circles, 18 to 35 pixels in radius, land at random with at least 50 pixels of clearance around the laser and the target and 10 between each other. A circle that can't find a spot in 100 tries is dropped. The layout is base64-encoded into a <code>game</code> parameter in the URL, so a link to the page is a link to that exact puzzle and someone else can try to beat your mirror count on it.</p>
-
-            <p>The whole game is one HTML file drawing to a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API">canvas</a>. The beam is the only bright thing on a dark board, and the target turns green when it's hit. There are no score popups and no particles.</p>
+            <p>Each level is random rather than seeded. The first obstacle always goes on the straight line between laser and target, offset by less than its own radius so the direct shot is blocked. Then 5 plus twice the level number more circles land at random, with clearance around the laser, the target, and each other, and a circle that can't find a spot is dropped. The layout is base64-encoded into a <code>game</code> parameter in the URL, so a link to the page is a link to that exact puzzle and someone else can try to beat your mirror count on it.</p>
         </article>
 
     </div>
