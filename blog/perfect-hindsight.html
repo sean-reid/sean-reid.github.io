@@ -48,9 +48,9 @@
                 <figcaption>Portfolio value on a log scale for one horizon, with the summary table of all 50 horizons below.</figcaption>
             </figure>
 
-            <p>Buy an index fund, hold it for 30 years, retire. Fine. I wanted the other end of the scale: what if you knew, every morning, which S&amp;P 500 stock would go up the most that day, and put everything in it? One stock per day, long only, no margin. How much money is that?</p>
+            <p>Buy an index fund, hold it for 30 years, retire. Fine. I wanted the other end of the scale. What if you knew, every morning, which S&amp;P 500 stock would go up the most that day, and put everything in it? One stock per day, long only, no margin. How much money is that?</p>
 
-            <p>Over 50 years, starting February 13, 1976, a dollar becomes about \(10^{1078}\) dollars. Over one year it's about \(10^{11}\). There are about \(10^{80}\) atoms in the observable universe, so the 50-year number stopped meaning anything around the 8 percent mark. The number is useless as a target. It's useful as a ceiling: no long-only daily strategy on this universe can beat it, and the gap between it and an index fund is a measure of how much return is locked behind information nobody has.</p>
+            <p>Over 50 years, starting February 13, 1976, a dollar becomes about \(10^{1078}\) dollars. Over one year it's about \(10^{11}\). There are about \(10^{80}\) atoms in the observable universe, so the 50-year number stopped meaning anything around the 8 percent mark. The number is a ceiling, and no long-only daily strategy on this universe can beat it.</p>
 
             <h2>The arithmetic</h2>
 
@@ -58,21 +58,19 @@
 
             \[ V_T \;=\; V_0 \prod_{t=1}^{T} \bigl(1 + \max_{i \in S_t}\, r_{i,t}\bigr) \]
 
-            <p>and the annualized rate solves \( V_T = V_0\,(1+r_a)^{T/252} \), so \( r_a = (V_T/V_0)^{252/T} - 1 \). With no transaction cost every day is independent, so the greedy choice is the optimum and there's nothing cleverer to do. I did think about adding a switching cost, which would turn it into a real dynamic program over what you held yesterday, but I haven't built it and the tool has no cost parameter.</p>
+            <p>and the annualized rate solves \( V_T = V_0\,(1+r_a)^{T/252} \), so \( r_a = (V_T/V_0)^{252/T} - 1 \). With no transaction cost every day is independent, so the greedy choice is the optimum and there's nothing cleverer to do. I did think about adding a switching cost, which would turn it into a real dynamic program over what you held yesterday, but I haven't built it.</p>
 
             <p>The rule I actually computed is: all in on the top stock, or cash if every stock fell that day. Cash never happened. With at least 91 stocks in the universe there was always something up, so all 12,605 trading days are a buy, a hold, or a switch, and 12,122 of them are switches. Because the numbers span a thousand orders of magnitude I store and sum \( \log_{10}(1 + r) \) per day rather than multiplying, which is also why the chart is on a log scale. A straight line on it is a constant compounding rate.</p>
 
             <h2>What the data actually is</h2>
 
-            <p>The numbers were computed offline and the page loads a 1.7 MB precomputed JSON. I haven't published the generator, and the repo doesn't name the price source, so take everything below as a description of that file rather than something you can rerun.</p>
+            <p>The numbers were computed offline and the page loads a 1.7 MB precomputed JSON. I haven't published the generator, so take everything below as a description of that file rather than something you can rerun.</p>
 
-            <p>Index membership comes from 389 constituent changes scraped from Wikipedia, the earliest dated July 1976, giving 843 tickers over the period, 661 of which had price data. That's what the footer's "survivorship bias mitigated" flag means, and it overstates things. In 1976 the universe has 91 stocks against a 500-stock index. It reaches 182 in 1980, 308 on average over the full run, and only crosses 500 in 2025. The stocks missing from the early years are mostly ones that were delisted or acquired before whichever data vendor started covering them, which is survivorship bias by another route. The recent decade is close to complete. The 1970s and 80s are not.</p>
+            <p>Index membership comes from 389 constituent changes scraped from Wikipedia, the earliest dated July 1976, giving 843 tickers over the period, 661 of which had price data. In 1976 the universe has 91 stocks against a 500-stock index. It reaches 182 in 1980, 308 on average over the full run, and only crosses 500 in 2025. The stocks missing from the early years are mostly ones that were delisted or acquired before whichever data vendor started covering them, which is survivorship bias by another route.</p>
 
-            <p>There's at least one bad print. The largest single-day return in the file is TIE (Titanium Metals) on April 3, 2012, at 7,213 times, or +721,300 percent. That's a data error, and on its own it contributes 3.9 of the 1,078 orders of magnitude. I've left it in because I can't rerun the generator, and because it makes the point that the headline number is a ceiling on the data, not on the market.</p>
+            <p>There's at least one bad print. The largest single-day return in the file is TIE (Titanium Metals) on April 3, 2012, at 7,213 times, or +721,300 percent. That's a data error, and on its own it contributes 3.9 of the 1,078 orders of magnitude.</p>
 
             <p>The most-held names are not the ones I expected. Cooper Industries (CBE) and Nabors Industries (NBR) each won about 430 days over 50 years, then El Paso (EP), Rockwell Collins (COL), Western Digital (WDC), Goodrich (GR), Micron (MU), and AMD. Volatile stocks dominate because a stock that swings 10 percent in a day is the best performer on a lot of its up days, and the winner-take-all rule never cares about the down days.</p>
-
-            <p>The page shows one horizon at a time, from 1 to 50 years back from February 13, 2026, with the final value, return multiple, annualized rate, trade count, and a bar chart of which stocks were held most. Hovering the line shows that day's stock and its return. The table below lists all 50 horizons and clicking a row switches the chart.</p>
         </article>
 
     </div>
