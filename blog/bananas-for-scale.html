@@ -45,17 +45,17 @@
         <article>
             <figure>
                 <img decoding="async" fetchpriority="high" src="img/bananas-for-scale.webp" alt="Screenshot of Bananas for Scale homepage showing search bar and featured entries" width="2560" height="1600">
-                <figcaption>The homepage. Search for anything, or hit Random and see what you get.</figcaption>
+                <figcaption>The homepage, with the search bar and a few featured entries.</figcaption>
             </figure>
 
-            <p>Bananas for Scale is a reference site. You look up a thing, get its real measurements, and see them restated in units nobody asked for. The International Space Station orbits at 408 kilometers, or about 2.3 million bananas end to end. A blue whale weighs 150,000 kilograms, or 300,000 fully loaded burritos. Every number is a ratio of two real SI values. The site just swaps the unit.</p>
+            <p>Bananas for Scale is a reference site. You look up a thing, get its real measurements, and see them restated in units nobody asked for. The International Space Station orbits at 408 kilometers, or about 2.3 million bananas end to end. A blue whale weighs 150,000 kilograms, or 300,000 fully loaded burritos. Every number is a ratio of two real SI values with the unit swapped.</p>
 
             <figure class="small">
                 <img decoding="async" src="img/cc/cavendish-banana.webp" alt="A Cavendish banana" loading="lazy" width="800" height="559">
-                <figcaption>The Cavendish banana. 0.18 meters. The base unit. <a href="https://commons.wikimedia.org/wiki/File:Cavendish_banana_from_Maracaibo.jpg">Wikimedia Commons</a></figcaption>
+                <figcaption>A Cavendish banana, 0.18 meters, the base unit. <a href="https://commons.wikimedia.org/wiki/File:Cavendish_banana_from_Maracaibo.jpg">Wikimedia Commons</a></figcaption>
             </figure>
 
-            <p>There are 1,147 things across 66 categories, from a grain of rice to the Andromeda Galaxy, with 6,707 measurements between them (length, mass, speed, volume, whatever applies). Against those sit 1,339 units across 14 dimensions. A golden retriever is 30 kilograms. Nicolas Cage is 84 kilograms. A Subway Footlong is 0.3048 meters. Each unit carries a singular and a plural ("1 golden retriever", "2.5 golden retrievers") and a dimension tag, so mass units only ever pair with mass measurements and length with length.</p>
+            <p>There are 1,147 things, from a grain of rice to the Andromeda Galaxy, each with whatever measurements apply (length, mass, speed, volume). Against those sit 1,339 units. A golden retriever is 30 kilograms. Nicolas Cage is 84 kilograms. A Subway Footlong is 0.3048 meters. Each unit carries a singular and a plural ("1 golden retriever", "2.5 golden retrievers") and a dimension tag, so mass units only ever pair with mass measurements and length with length.</p>
 
             <figure>
                 <img decoding="async" src="img/bananas-for-scale-entry.webp" alt="Screenshot of the Giraffe entry on Bananas for Scale, showing measurements converted to silly units" loading="lazy" width="2560" height="1600">
@@ -64,21 +64,21 @@
 
             <h2>Picking the right wrong unit</h2>
 
-            <p>Not every unit works for every measurement. A giraffe that is 0.000003 Eiffel Towers tall is a useless number. For a measurement \(m\) and a unit \(u\), both in SI, the converted value is \(v = m / u\), and I call it comprehensible if \(10^{-30} \leq v \leq 10^{30}\). That's a wide window. It exists to throw out the infinities and the zeroes, not to keep the numbers small.</p>
+            <p>Not every unit works for every measurement. A giraffe that is 0.000003 Eiffel Towers tall is a useless number. For a measurement \(m\) and a unit \(u\), both in SI, the converted value is \(v = m / u\), and I call it comprehensible if \(10^{-30} \leq v \leq 10^{30}\). The window is wide on purpose, so it only throws out the infinities and the zeroes.</p>
 
-            <p>Each measurement shows two or three conversions. The first two come from the comprehensible pool. With probability 0.6 there's a third, drawn from outside the window on purpose. Picks come from a seeded PRNG (<a href="https://gist.github.com/tommyettinger/46a874533244883189143505d203312c">Mulberry32</a>, seeded with a <a href="https://en.wikipedia.org/wiki/Daniel_J._Bernstein">djb2</a> hash of the thing's slug and the measurement id), so the same entry shows the same conversions on every load and the build is reproducible. The Remix button draws a new seed and repicks in the browser. The 17 vitest cases in the repo all cover this picker and the ratio arithmetic. Nothing tests the data.</p>
+            <p>Each measurement shows two or three conversions. The first two come from the comprehensible pool. With probability 0.6 there's a third, drawn from outside the window on purpose. Picks come from a seeded PRNG (<a href="https://gist.github.com/tommyettinger/46a874533244883189143505d203312c">Mulberry32</a>, seeded with a <a href="https://en.wikipedia.org/wiki/Daniel_J._Bernstein">djb2</a> hash of the thing's slug and the measurement id), so the same entry shows the same conversions on every load and the build is reproducible. The Remix button draws a new seed and repicks in the browser.</p>
 
             <h2>Static all the way down</h2>
 
             <p>A SQLite database holds the things, measurements, categories, and units. At build time <a href="https://nextjs.org/">Next.js</a> reads it, runs the conversion for every measurement of every thing, and writes out 1,147 thing pages and 66 category pages. The database doesn't exist at runtime. The deployed site is a folder of HTML, CSS, JavaScript, and a search index on GitHub Pages.</p>
 
-            <p>Search works the same way. A build script writes a JSON index of names, categories, and aliases. The client loads it and runs <a href="https://lucaong.github.io/minisearch/">MiniSearch</a> with prefix matching, a fuzzy tolerance of 0.2, and names boosted 3x over aliases at 2x and categories at 1x. The overlay shows up to eight results grouped by category.</p>
+            <p>Search works the same way. A build script writes a JSON index of names, categories, and aliases. The client loads it and runs <a href="https://lucaong.github.io/minisearch/">MiniSearch</a> with prefix and fuzzy matching, and names weighted above aliases and categories. The overlay shows up to eight results grouped by category.</p>
 
             <h2>The data problem</h2>
 
-            <p>Curating 1,147 entries took more time than the code. A blue whale's length is well documented. The mass of a cumulus cloud is not. Every measurement needed a real SI value from a source I could point at, which meant specifications, papers, and redoing unit conversions by hand to check I wasn't off by a power of ten. Some things have one measurement. Others have five or six: length, mass, wingspan, top speed, cruising altitude.</p>
+            <p>Curating 1,147 entries took more time than the code. A blue whale's length is easy to find, the mass of a cumulus cloud less so. Every measurement needed a real SI value from a source I could point at, which meant reading specifications and papers, then redoing the unit conversions by hand to check I wasn't off by a power of ten. Some things have one measurement. Others have five or six: length, mass, wingspan, top speed, cruising altitude.</p>
 
-            <p>The site covers things from subatomic particles to the observable universe, so the number formatter has to span the whole range. Above a million it writes "1.2 million" or "340 billion". Between 1 and 999,999 it uses comma separators. Small values get one decimal, and very small ones become "710 millionths" or "5 trillionths". There are about a dozen branches, and I tuned them by reading the actual output across the dataset until nothing looked wrong.</p>
+            <p>The site covers things from subatomic particles to the observable universe, so the number formatter has to span the whole range. Above a million it writes "1.2 million" or "340 billion". Between 1 and 999,999 it uses comma separators. Small values get one decimal, and very small ones become "710 millionths" or "5 trillionths".</p>
         </article>
 
     </div>
