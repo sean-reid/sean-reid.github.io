@@ -45,12 +45,12 @@
         <article>
             <figure>
                 <img decoding="async" fetchpriority="high" src="img/haiku.webp" alt="Screenshot of Haiku" width="2560" height="1600">
-                <figcaption>A generated haiku.</figcaption>
+                <figcaption>One poem from the ocean theme, with the New button and Auto toggle under it.</figcaption>
             </figure>
 
             <p>I wanted a screensaver that wrote poetry. Not well, necessarily, but with the right shape and at least a passing resemblance to something a person might say. So this page makes a new <a href="https://en.wikipedia.org/wiki/Haiku">haiku</a> every ten seconds, fades it in over a slowly moving background, and never stops.</p>
 
-            <p>The hard constraint is 5, 7, 5 syllables. Picking random words and hoping they add up almost never works, and when it does the result is word salad. I needed the syllable budget enforced exactly and I needed the three lines to sound like they belonged to the same poem.</p>
+            <p>The hard constraint is 5, 7, 5 syllables. Picking random words and hoping they add up almost never works. The syllable budget has to be exact, and the three lines have to sound like they belong to the same poem.</p>
 
             <h2>The grammar</h2>
 
@@ -60,11 +60,11 @@
 
             <h2>Themes</h2>
 
-            <p>Early versions drew from one big pool. The poems scanned fine and felt random. Snow in line one, the ocean in line two, a forest in line three. So I split the vocabulary into eight themes (winter, spring, summer, autumn, ocean, mountain, night sky, forest), each with its own nouns, verbs, and adjectives. One theme is chosen per poem and every line draws from it. Only when the theme has no word that fits does the filler fall back to general words of three syllables or fewer.</p>
+            <p>Early versions drew from one big pool. The poems scanned fine and felt random, snow in line one and the ocean in line two. So I split the vocabulary into eight themes (winter, spring, summer, autumn, ocean, mountain, night sky, forest), each with its own nouns, verbs, and adjectives. One theme is chosen per poem and every line draws from it. Only when the theme has no word that fits does the filler fall back to general words of three syllables or fewer.</p>
 
-            <p>Repetition breaks the effect faster than anything else. The same noun in lines one and three, or "the" opening every line, reads as mechanical. I track every word used across the poem and block exact repeats and stem repeats, where one word is a prefix of the other and the shared part is at least three letters. So "drift" in line one blocks "drifting" in line three. Determiners count too, so "the" appears at most once per poem. Only prepositions and conjunctions may repeat. After filling, "a" becomes "an" when the next word starts with a vowel.</p>
+            <p>The same noun in lines one and three, or "the" opening every line, reads as mechanical. I track every word used across the poem and block exact repeats and stem repeats, where one word is a prefix of the other and the shared part is at least three letters. So "drift" in line one blocks "drifting" in line three. Determiners count too, so "the" appears at most once per poem. Only prepositions and conjunctions may repeat. After filling, "a" becomes "an" when the next word starts with a vowel.</p>
 
-            <p>The auto cycle is ten seconds. A New button skips ahead, and an Auto toggle pauses the cycle. The old poem blurs out and the new one reveals one line at a time, 280 ms apart. Behind it are three blurred colour orbs drifting over a gradient. The whole thing is one HTML file and the JSON word bank, three commits.</p>
+            <p>The auto cycle is ten seconds. A New button skips ahead, and an Auto toggle pauses the cycle. The old poem blurs out and the new one reveals one line at a time, 280 ms apart, over a dark gradient with a few blurred color blobs drifting across it.</p>
         </article>
 
     </div>
