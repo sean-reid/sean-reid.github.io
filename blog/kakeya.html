@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+    <title>Kakeya - Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/kakeya.webp">
+    <link rel="stylesheet" href="/nav.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="description" content="The Kakeya needle problem told in pictures that are computations: Perron trees, P&amp;aacute;l joins, and a needle that never leaves the set it sweeps">
+    <link rel="canonical" href="https://sean-reid.github.io/blog/kakeya.html">
+    <link rel="alternate" type="application/atom+xml" title="Sean Reid" href="/feed.xml">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Sean Reid">
+    <meta property="og:title" content="Kakeya">
+    <meta property="og:description" content="The Kakeya needle problem told in pictures that are computations: Perron trees, P&amp;aacute;l joins, and a needle that never leaves the set it sweeps">
+    <meta property="og:url" content="https://sean-reid.github.io/blog/kakeya.html">
+    <meta property="og:image" content="https://sean-reid.github.io/blog/img/kakeya.webp">
+    <meta property="article:published_time" content="2026-09-23">
+    <meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="/" class="site-nav-name">Sean Reid</a>
+    <div class="site-nav-controls">
+      <div class="site-nav-search-wrap"><input type="search" class="site-nav-search" placeholder="Search..." aria-label="Search projects" autocomplete="off"><span class="site-nav-search-hint" aria-hidden="true">/</span></div>
+      <button type="button" class="site-nav-random">Random</button>
+      <div class="search-dropdown" role="listbox" aria-label="Search results"></div>
+    </div>
+  </div>
+</nav>
+<main class="site-content">
+    <div class="container">
+        <header>
+            <h1>Kakeya</h1>
+            <p class="meta">The Kakeya needle problem told in pictures that are computations: Perron trees, P&aacute;l joins, and a needle that never leaves the set it sweeps</p>
+            <p class="links-row">
+                <a href="https://sean-reid.github.io/kakeya/">Live Demo</a>
+                <a href="https://github.com/sean-reid/kakeya">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <figure>
+                <img decoding="async" fetchpriority="high" src="img/kakeya.webp" alt="Three fans of thin gray triangles meeting at a small central triangle, with a red needle turning inside the lower fan and sliders for direction, cuts, detour length and pace" width="2560" height="1600">
+                <figcaption>The playground at 32 slivers per fan. The tree covers about 0.40 square units and the detours, drawn short here, another 0.35. The half disc the needle would sweep on its own is 1.57.</figcaption>
+            </figure>
+
+            <p>In 1917 Soichi Kakeya asked how little area you need to turn a unit needle all the way around in the plane, so that it ends up pointing the opposite way. Swing it about one end and it sweeps a half disc, \(\pi/2 \approx 1.5708\). Kakeya's guess was the deltoid, the three-cusped curve traced by a point on a circle rolling inside one three times its size. A needle of length \(4r\) fits inside it with both ends on the curve and turns fully around while staying tangent. Its area is \(2\pi r^2\), which for a unit needle is \(\pi/8 \approx 0.3927\), a quarter of the half disc.</p>
+
+            <p>In 1928 <a href="https://en.wikipedia.org/wiki/Kakeya_set">Besicovitch</a> showed there's no least area at all. Cut a triangle into slivers, slide them into each other, and the needle can still turn through every direction the triangle covered, in as little room as you like. Perron simplified the construction the same year, and the trick for carrying the needle between slivers is due to P&aacute;l (Math. Ann. 83, 1921). Every picture on the page is a computation, and the needle follows a program that can't draw a position outside the set even by accident.</p>
+
+            <h2>Sliding slivers</h2>
+
+            <p>Start with an equilateral triangle of height 1, apex up. Its base is \(2/\sqrt{3}\) and its area \(1/\sqrt{3} \approx 0.5774\). The apex sees the base through 60 degrees, so a needle pivoting about the apex turns through 60 degrees of directions inside it. Cut it from the apex into \(2^k\) slivers. Each sliver is a thin triangle carrying its own range of directions, and a unit needle still turns about its apex inside it.</p>
+
+            <p>Now slide the slivers horizontally so they overlap. The scheme, in the form Falconer presents it, works on the base intervals alone. Pair adjacent groups. Each group carries a heart, a similar triangle scaled by a factor \(\alpha\) between one half and one, and the right group of the pair moves left so the two hearts sit side by side as halves of one parent triangle, then pulls back by \((1 - \alpha)\) times that parent's base. Only the right member of each pair ever moves, and the heart width grows by \(2\alpha\) at each stage. One stage takes a union of area \(A\) to \((3\alpha^2 - 4\alpha + 2)A\), and after \(k\) stages the union over the original triangle is at most</p>
+
+            \[ \alpha^{2k} + \frac{2(1-\alpha)^2 (1 - \alpha^{2k})}{1 - \alpha^2}. \]
+
+            <p>I measure the union at depths 1 to 5 and check it against that bound from both sides. It can't exceed the bound, and it has to land within 80 percent of it, which is what confirms the translations went where they should.</p>
+
+            <h2>Measuring area twice</h2>
+
+            <p>The numbers on the page come from a generated table, and a number only makes it into the table if two independent methods agree on it. The first is exact polygon clipping using a Martinez union, merged pairwise in a tree because a single union of hundreds of overlapping slivers ran out of memory. The second is grid sampling: count cells whose center lies in some sliver, at cells of 0.003 and again at 0.0015, and the two grids have to agree within 0.02 before either counts. Then the clipped area and the grid area have to agree within 0.02, or the script throws and writes nothing. For each depth the overlap \(\alpha\) is chosen by a coarse grid over 0.55 to 0.9, keeping whichever gave the smallest union.</p>
+
+            <p>At depth 1 the best \(\alpha\) is 0.65 and one fan covers 0.3854. At depth 9 it is 0.85 and one fan covers 0.1186. The full figure is three fans, rotated by 0, 120 and 240 degrees about the centroid of the heart triangle so the three hearts coincide, and its area falls from 0.6668 at depth 1 to 0.2939 at depth 9. The site's counter reads the same table.</p>
+
+            <h2>Detours</h2>
+
+            <p>Turning inside a sliver is fine, but the slivers have been slid apart, so the needle has to get from the apex of one to the apex of the next along a parallel line some distance \(d\) away. P&aacute;l's move is to slide far out along the needle's own line, a distance \(N\), tilt by a small angle \(\sigma\) toward the target line, slide across, and tilt back. The only area swept is two circular sectors of radius 1 and angle \(\sigma\), so the cost is exactly \(\sigma\), and \(\sigma\) is about \(d/N\). Double the detour and the cost halves. At depth 2 a detour of 1,000 needle lengths brings the whole figure's join budget under 0.003.</p>
+
+            <p>The sweep chains all \(3 \cdot 2^k\) slivers with a join between each consecutive pair, the middle fan traversed with the needle reversed since directions only matter mod 180 degrees, and the total turn comes out to \(\pi\) to twelve decimal places. With detours of 100 needle lengths the joins cost between 0.012 and 0.025 over the whole sweep, depending on depth. Tree plus joins first undercuts the deltoid at depth 7, where it comes to 0.3311. On the page the detours start short so they stay in frame, and the slider stretches them out to 100.</p>
+
+            <h2>The needle as a program</h2>
+
+            <p>Every needle on the page is a unit segment evaluated from a program made of two primitives, a slide along its own line and a turn about a pivot, at some arc length along the program. Nothing else can move it. So the question of whether the animation ever cheats reduces to whether the program stays in the set, and that I test by sampling. At 1,500 instants across the whole sweep, the needle is sampled every 0.02 of its length and each point has to lie inside some sliver, some join sector, or a strip of half-width 0.002 around one of the travel lines. It's a sampled check with a tolerance rather than a proof. A flood fill over the drawn set at depth 3 reaches every filled cell, so the figure is one piece.</p>
+
+            <p>The story on the page ends by pointing at the 2025 result of Wang and Zahl, which is a different problem. The needle problem is about area and was settled in the plane by 1928. The Kakeya set conjecture is about the Hausdorff dimension of sets containing a unit segment in every direction, and what Wang and Zahl proved is that in three dimensions such a set has dimension 3.</p>
+        </article>
+
+    </div>
+</main>
+<footer class="site-footer">
+      <div class="site-footer-links">
+        <a href="https://github.com/sean-reid">GitHub</a>
+        <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
+        <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
+        <a href="https://socrates-of-athens.github.io">Poetry</a>
+        <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
+        <a href="/feed.xml">Feed</a>
+      </div>
+    </footer>
+<script src="/nav.js"></script>
+</body>
+</html>

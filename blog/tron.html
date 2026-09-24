@@ -8,15 +8,26 @@
     <link rel="preload" as="image" href="img/tron.webp">
     <link rel="stylesheet" href="/nav.css">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="description" content="A lightcycle game where riding close to walls makes you faster, against bots that pick moves by flood fill.">
+    <link rel="canonical" href="https://sean-reid.github.io/blog/tron.html">
+    <link rel="alternate" type="application/atom+xml" title="Sean Reid" href="/feed.xml">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Sean Reid">
+    <meta property="og:title" content="Tron">
+    <meta property="og:description" content="A lightcycle game where riding close to walls makes you faster, against bots that pick moves by flood fill.">
+    <meta property="og:url" content="https://sean-reid.github.io/blog/tron.html">
+    <meta property="og:image" content="https://sean-reid.github.io/blog/img/tron.webp">
+    <meta property="article:published_time" content="2026-04-06">
+    <meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
 <nav class="site-nav">
   <div class="site-nav-inner">
     <a href="/" class="site-nav-name">Sean Reid</a>
     <div class="site-nav-controls">
-      <div class="site-nav-search-wrap"><input type="text" class="site-nav-search" placeholder="Search..." autocomplete="off"><span class="site-nav-search-hint">/</span></div>
-      <a class="site-nav-random">&rarr; Random</a>
-      <div class="search-dropdown"></div>
+      <div class="site-nav-search-wrap"><input type="search" class="site-nav-search" placeholder="Search..." aria-label="Search projects" autocomplete="off"><span class="site-nav-search-hint" aria-hidden="true">/</span></div>
+      <button type="button" class="site-nav-random">Random</button>
+      <div class="search-dropdown" role="listbox" aria-label="Search results"></div>
     </div>
   </div>
 </nav>
@@ -24,7 +35,7 @@
     <div class="container">
         <header>
             <h1>Tron</h1>
-            <p class="meta">Lightcycle game with Voronoi AI</p>
+            <p class="meta">A lightcycle game where riding close to walls makes you faster, against bots that pick moves by flood fill.</p>
             <p class="links-row">
                 <a href="https://sean-reid.github.io/tron/">Live Demo</a>
                 <a href="https://github.com/sean-reid/tron">Source</a>
@@ -33,70 +44,44 @@
 
         <article>
             <figure>
-                <img decoding="async" fetchpriority="high" src="img/tron.webp" alt="Screenshot of Tron">
-                <figcaption>Tron lightcycle game.</figcaption>
+                <img decoding="async" fetchpriority="high" src="img/tron.webp" alt="Screenshot of Tron" width="2560" height="1600">
+                <figcaption>The player's cyan cycle and several bots mid-game, with the walls they've left behind.</figcaption>
             </figure>
 
-            <p>Two lightcycles race across a grid. Each leaves a wall behind it. Hit any wall and you die. The game is from the 1982 <a href="https://en.wikipedia.org/wiki/Tron">Tron film</a>, and it's been reimplemented countless times, but I wanted to build one with a competent AI opponent and a speed mechanic that rewards risky play.</p>
-
-            <figure class="small">
-                <img decoding="async" src="img/cc/voronoi-euclidean.svg" alt="Voronoi diagram" loading="lazy">
-                <figcaption>A Voronoi diagram. The AI bots use Voronoi territory evaluation to maximize claimable space. <a href="https://commons.wikimedia.org/wiki/File:Euclidean_Voronoi_diagram.svg">Wikimedia Commons</a></figcaption>
-            </figure>
+            <p>Lightcycles race across a grid and each leaves a wall behind it. Hit any wall and you die. The game is from the 1982 <a href="https://en.wikipedia.org/wiki/Tron">Tron</a> film. Mine has a speed mechanic that rewards risky riding and bots that pick a direction for a reason. You play against a pack of them, one per 700 cells of arena up to 25. Controls are WASD or arrows on desktop and swipe on a phone.</p>
 
             <h2>Wall riding</h2>
 
-            <p>The speed boost is the most important design decision. When your cycle is close to a wall, it accelerates. The closer you ride, the faster you go. This creates a risk-reward loop: safe play in open space is slow, while threading the needle along existing walls lets you cover ground faster and claim more territory. The cycle pulses visually when boosted so you can feel the speed without checking a number.</p>
+            <p>The speed boost is the design idea. Whenever any wall or another cycle's trail is within 3 cells of you in any of the four cardinal directions, your cycle accelerates toward 1.7 times base speed, ramping over about six ticks so the change doesn't jolt. Base speed is one cell every 80 ms. Your own trail doesn't count, because the cell directly behind you is always your own fresh wall and you'd be boosting permanently. So threading along existing walls is fast and one mistake from death. The cycle pulses at 6 Hz while boosted. The bots use the same rule, which means they can outrun you in a corridor.</p>
 
-            <p>The boost applies to the AI too. It uses the same physics. When the bot rides its own walls or yours, it speeds up. This means the AI can sometimes outrun you in tight corridors, which keeps matches tense even when you think you have a spatial advantage.</p>
-
-            <h2>Voronoi territory</h2>
-
-            <p>The AI decides where to go by computing a <a href="https://en.wikipedia.org/wiki/Voronoi_diagram">Voronoi partition</a> of the remaining open space. Given a set of sites \(P = \{p_1, p_2, \ldots, p_n\}\) in the plane, the <strong>Voronoi diagram</strong> partitions the space into cells, one per site, such that every point in a cell is closer to its site than to any other. Formally, the Voronoi cell for site \(p_i\) is:</p>
-
-            \[V_i = \{x : d(x, p_i) \leq d(x, p_j) \text{ for all } j \neq i\}\]
-
-            <p>In continuous geometry with Euclidean distance, this produces the familiar polygon tessellation. In a Tron grid, the sites are the two players' current positions and the distance function \(d\) is not Euclidean but geodesic: the shortest path length through unoccupied cells, respecting walls as impassable obstacles. This turns each Voronoi cell into the set of grid squares that a given player can reach before the other.</p>
-
-            <p>Conceptually, the AI asks: "if both players expanded outward from their current positions as fast as possible, how much space would each one claim?" The player who can reach more cells owns more territory. Let \(A_i\) denote the area (cell count) of \(V_i\). The bot evaluates each candidate direction \(m \in \{\text{up}, \text{down}, \text{left}, \text{right}\}\) by simulating one step in that direction and computing the resulting territory split. Its decision rule is a greedy maximization of reachable area:</p>
-
-            \[m^* = \arg\max_{m} \; A_{\text{bot}}(m)\]
-
-            <p>where \(A_{\text{bot}}(m)\) is the bot's Voronoi cell area after taking move \(m\).</p>
-
-            <p>This is a well-known heuristic in lightcycle AI. It works because the game is fundamentally about space control. A player who gets trapped in a smaller region than their opponent will eventually run out of room. The Voronoi approach approximates an optimal partition without needing to search deep into the game tree.</p>
-
-            <p>Computing a true Voronoi diagram in continuous space is an \(O(n \log n)\) operation, classically solved by <a href="https://en.wikipedia.org/wiki/Fortune%27s_algorithm">Fortune's sweep-line algorithm</a>. On a discrete grid with obstacles, the equivalent is a <strong>BFS flood fill</strong>: both players' positions are enqueued simultaneously, and the search expands outward one cell at a time, marking each cell for whichever player reaches it first. This is effectively a discrete geodesic Voronoi computation. It runs in \(O(W \times H)\) time for a grid of width \(W\) and height \(H\), which is fast enough to compute every frame without any perceptible lag.</p>
-
-            <p>The bot doesn't look ahead multiple turns. It's purely reactive, one step of lookahead with the Voronoi heuristic. Despite this, it plays well. It rarely traps itself, it chases you into corners when it has the advantage, and it knows when to sacrifice a corridor to secure a larger region.</p>
+            <h2>Picking a direction</h2>
 
             <figure class="small">
-                <img decoding="async" src="img/cc/voronoi-coloured.svg" alt="Colored Voronoi diagram in 2D showing territory partitions" loading="lazy">
-                <figcaption>A colored 2D Voronoi diagram. Each cell contains all points closest to its seed. <a href="https://commons.wikimedia.org/wiki/File:Coloured_Voronoi_2D.svg">Wikimedia Commons</a></figcaption>
+                <img decoding="async" src="img/cc/voronoi-euclidean.svg" alt="Voronoi diagram" loading="lazy">
+                <figcaption>A Voronoi diagram in the plane. The bots compute the grid version of this, with path length through open cells in place of straight-line distance. <a href="https://commons.wikimedia.org/wiki/File:Euclidean_Voronoi_diagram.svg">Wikimedia Commons</a></figcaption>
             </figure>
 
-            <h2>Persistence and respawning</h2>
+            <p>The bots use the standard Voronoi heuristic for this game. For each direction that doesn't kill it immediately, the bot asks how many cells it could reach before anyone else if everyone raced outward from where they are. It answers with a multi-source breadth-first search: the bot's candidate next cell and every other living cycle's current cell go into one queue at the same time, the search expands one ring per step, and each open cell is marked for whoever gets there first. The score for that direction is the count of cells the bot claimed. It picks the highest, prefers to keep going straight on a tie, and then commits to that direction for 3 ticks so it doesn't dither. The fill visits every cell at most once, so it's linear in the arena size, and the claimed buffer and queue are preallocated typed arrays that get reused. The bot is seeded at the cell it's about to move into while the opponents are seeded where they stand, so its territory estimate runs a cell optimistic.</p>
 
-            <p>When the bot dies, its trail walls stay on the board for two seconds before fading. Then it respawns. This means the arena accumulates debris over time. Old walls from dead bots become new obstacles, making the playing field progressively more constrained. Your score accumulates across games based on survival time, so there's an incentive to keep going even after a loss.</p>
+            <p>It looks one ply ahead. It rarely traps itself and will cut you off when it has the space advantage, but it has no idea that a corridor it's entering will close behind it three moves from now.</p>
 
-            <h2>Implementation</h2>
+            <h2>Death and debris</h2>
 
-            <p>The game is written in <a href="https://www.typescriptlang.org/">TypeScript</a> and built with <a href="https://vitejs.dev/">Vite</a>. The codebase is organized into modules for the engine, entities, rendering, and game systems. There's a proper test suite using <a href="https://vitest.dev/">Vitest</a>. Audio (both sound effects and music) uses the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API">Web Audio API</a>, with toggle buttons in the corner for people who prefer silence.</p>
-
-            <p>The visual style leans into the neon-on-black aesthetic of the source material. Cyan glows against a near-black background. The HUD uses monospace type with text-shadow for a CRT feel. Points, best time, and game count sit in the top-left corner. Controls are WASD or arrow keys on desktop, swipe on mobile. The whole thing runs on <a href="https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API">Canvas 2D</a> at a smooth framerate.</p>
+            <p>When a bot dies its trail stays on the board as an obstacle for two seconds, then vanishes the instant the bot respawns somewhere else. While you survive, the arena keeps filling with other people's walls. Your score is the number of seconds you survived, added up across games, with your longest run tracked separately.</p>
         </article>
 
     </div>
 </main>
 <footer class="site-footer">
-  <div class="site-footer-links">
-    <a href="https://github.com/sean-reid">GitHub</a>
-    <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
-    <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
-    <a href="https://socrates-of-athens.github.io">Poetry</a>
-    <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
-  </div>
-</footer>
+      <div class="site-footer-links">
+        <a href="https://github.com/sean-reid">GitHub</a>
+        <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
+        <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
+        <a href="https://socrates-of-athens.github.io">Poetry</a>
+        <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
+        <a href="/feed.xml">Feed</a>
+      </div>
+    </footer>
     <script src="/nav.js"></script>
 </body>
 </html>

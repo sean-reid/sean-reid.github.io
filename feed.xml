@@ -1,0 +1,436 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Sean Reid</title>
+  <link href="https://sean-reid.github.io/"/>
+  <link href="https://sean-reid.github.io/feed.xml" rel="self"/>
+  <id>https://sean-reid.github.io/</id>
+  <updated>2026-09-23T00:00:00Z</updated>
+  <author><name>Sean Reid</name></author>
+  <entry>
+    <title>Time</title>
+    <link href="https://sean-reid.github.io/blog/time.html"/>
+    <id>https://sean-reid.github.io/blog/time.html</id>
+    <updated>2026-09-23T00:00:00Z</updated>
+    <summary>Two clocks, one on Earth and one on a ship you fly around the Sun, a neutron star, or Sagittarius A*, with the drift between them computed from real geodesics</summary>
+  </entry>
+  <entry>
+    <title>Squares</title>
+    <link href="https://sean-reid.github.io/blog/squares.html"/>
+    <id>https://sean-reid.github.io/blog/squares.html</id>
+    <updated>2026-09-23T00:00:00Z</updated>
+    <summary>A photo redrawn as a squared rectangle, where Kirchhoff's laws pick every square size and a search over planar networks picks the arrangement</summary>
+  </entry>
+  <entry>
+    <title>Kakeya</title>
+    <link href="https://sean-reid.github.io/blog/kakeya.html"/>
+    <id>https://sean-reid.github.io/blog/kakeya.html</id>
+    <updated>2026-09-23T00:00:00Z</updated>
+    <summary>The Kakeya needle problem told in pictures that are computations: Perron trees, P&amp;aacute;l joins, and a needle that never leaves the set it sweeps</summary>
+  </entry>
+  <entry>
+    <title>OEIS Pi Search</title>
+    <link href="https://sean-reid.github.io/blog/oeis-pi-search.html"/>
+    <id>https://sean-reid.github.io/blog/oeis-pi-search.html</id>
+    <updated>2026-09-23T00:00:00Z</updated>
+    <summary>Where the first terms of any OEIS sequence first appear in a billion digits of pi, answered from a Worker with byte-range reads and no database for the digits</summary>
+  </entry>
+  <entry>
+    <title>Rhythm</title>
+    <link href="https://sean-reid.github.io/blog/rhythm.html"/>
+    <id>https://sean-reid.github.io/blog/rhythm.html</id>
+    <updated>2026-09-23T00:00:00Z</updated>
+    <summary>Drum patterns from Markov chains stacked on Markov chains, with the whole piece carried in its URL</summary>
+  </entry>
+  <entry>
+    <title>Cyclical</title>
+    <link href="https://sean-reid.github.io/blog/cyclical.html"/>
+    <id>https://sean-reid.github.io/blog/cyclical.html</id>
+    <updated>2026-09-23T00:00:00Z</updated>
+    <summary>An exhaustive search for chord progressions that loop back to their first chord, streamed from Rust in a Web Worker</summary>
+  </entry>
+  <entry>
+    <title>Polish Notation</title>
+    <link href="https://sean-reid.github.io/blog/polish-notation.html"/>
+    <id>https://sean-reid.github.io/blog/polish-notation.html</id>
+    <updated>2026-09-23T00:00:00Z</updated>
+    <summary>A converter between Łukasiewicz's parenthesis-free notation and conventional logic notation, with LaTeX output</summary>
+  </entry>
+  <entry>
+    <title>Wason</title>
+    <link href="https://sean-reid.github.io/blog/wason.html"/>
+    <id>https://sean-reid.github.io/blog/wason.html</id>
+    <updated>2026-09-23T00:00:00Z</updated>
+    <summary>A daily puzzle built on Wason's selection task, generated in the browser from the date alone</summary>
+  </entry>
+  <entry>
+    <title>LaTeX Preview</title>
+    <link href="https://sean-reid.github.io/blog/latex-preview.html"/>
+    <id>https://sean-reid.github.io/blog/latex-preview.html</id>
+    <updated>2026-09-23T00:00:00Z</updated>
+    <summary>A LaTeX editor that compiles to PDF in the browser, with pdfTeX in WebAssembly and a self-hosted TeX Live subset</summary>
+  </entry>
+  <entry>
+    <title>URL Extension Service</title>
+    <link href="https://sean-reid.github.io/blog/urls.html"/>
+    <id>https://sean-reid.github.io/blog/urls.html</id>
+    <updated>2026-09-23T00:00:00Z</updated>
+    <summary>A URL lengthener that encodes the destination inside the long link, so it needs no database and nothing expires</summary>
+  </entry>
+  <entry>
+    <title>Pikiwedia</title>
+    <link href="https://sean-reid.github.io/blog/pikiwedia.html"/>
+    <id>https://sean-reid.github.io/blog/pikiwedia.html</id>
+    <updated>2026-09-23T00:00:00Z</updated>
+    <summary>A proxy that serves live Wikipedia with its word onsets swapped, the same way on every visit</summary>
+  </entry>
+  <entry>
+    <title>The Infinite Keynote</title>
+    <link href="https://sean-reid.github.io/blog/keynote.html"/>
+    <id>https://sean-reid.github.io/blog/keynote.html</id>
+    <updated>2026-09-23T00:00:00Z</updated>
+    <summary>A fictional tech keynote that streams forever, where the clock is the only state viewers share</summary>
+  </entry>
+  <entry>
+    <title>JamStream</title>
+    <link href="https://sean-reid.github.io/blog/jamstream.html"/>
+    <id>https://sean-reid.github.io/blog/jamstream.html</id>
+    <updated>2026-08-08T00:00:00Z</updated>
+    <summary>A desktop app for playing music together over the internet, on a server that rents itself for the evening and then deletes itself.</summary>
+  </entry>
+  <entry>
+    <title>miditool</title>
+    <link href="https://sean-reid.github.io/blog/miditool.html"/>
+    <id>https://sean-reid.github.io/blog/miditool.html</id>
+    <updated>2026-07-11T00:00:00Z</updated>
+    <summary>Sits between my keyboard and the DAW and rewrites what I play, with 52 seeded effects and a hot-reloading KDL config.</summary>
+  </entry>
+  <entry>
+    <title>Unquote</title>
+    <link href="https://sean-reid.github.io/blog/unquote.html"/>
+    <id>https://sean-reid.github.io/blog/unquote.html</id>
+    <updated>2026-07-11T00:00:00Z</updated>
+    <summary>Exact, keyword, and semantic search over 3.7 million lines of film dialogue, all stored in one ClickHouse server.</summary>
+  </entry>
+  <entry>
+    <title>Randomify</title>
+    <link href="https://sean-reid.github.io/blog/randomify.html"/>
+    <id>https://sean-reid.github.io/blog/randomify.html</id>
+    <updated>2026-07-11T00:00:00Z</updated>
+    <summary>Draws one random song from a corpus built out of MusicBrainz and links it on eight streaming services</summary>
+  </entry>
+  <entry>
+    <title>How Will I Die</title>
+    <link href="https://sean-reid.github.io/blog/how-will-i-die.html"/>
+    <id>https://sean-reid.github.io/blog/how-will-i-die.html</id>
+    <updated>2026-07-11T00:00:00Z</updated>
+    <summary>What people of your age, sex, and country eventually die of, projected forward from WHO mortality data</summary>
+  </entry>
+  <entry>
+    <title>Movie Quotes</title>
+    <link href="https://sean-reid.github.io/blog/movie-quotes.html"/>
+    <id>https://sean-reid.github.io/blog/movie-quotes.html</id>
+    <updated>2026-07-11T00:00:00Z</updated>
+    <summary>A three-choice film quote quiz whose wrong answers are picked by sentence embeddings.</summary>
+  </entry>
+  <entry>
+    <title>Eigencircuits</title>
+    <link href="https://sean-reid.github.io/blog/eigencircuits.html"/>
+    <id>https://sean-reid.github.io/blog/eigencircuits.html</id>
+    <updated>2026-07-11T00:00:00Z</updated>
+    <summary>A fake arXiv for mathematics. A seeded grammar writes the papers and pdfTeX compiles them in the browser.</summary>
+  </entry>
+  <entry>
+    <title>Rebase</title>
+    <link href="https://sean-reid.github.io/blog/rebase.html"/>
+    <id>https://sean-reid.github.io/blog/rebase.html</id>
+    <updated>2026-07-11T00:00:00Z</updated>
+    <summary>A daily puzzle where you assign number bases, some of them irrational, to four digit strings.</summary>
+  </entry>
+  <entry>
+    <title>Antipodal</title>
+    <link href="https://sean-reid.github.io/blog/antipodal.html"/>
+    <id>https://sean-reid.github.io/blog/antipodal.html</id>
+    <updated>2026-07-11T00:00:00Z</updated>
+    <summary>A globe that shows the weather at any point and at its antipode, over 85 years of ERA5 reanalysis.</summary>
+  </entry>
+  <entry>
+    <title>Voting</title>
+    <link href="https://sean-reid.github.io/blog/voting.html"/>
+    <id>https://sean-reid.github.io/blog/voting.html</id>
+    <updated>2026-05-12T00:00:00Z</updated>
+    <summary>Four voting methods checked against Arrow's criteria by enumerating every three-voter profile.</summary>
+  </entry>
+  <entry>
+    <title>Gardener's Dilemma</title>
+    <link href="https://sean-reid.github.io/blog/gardeners-dilemma.html"/>
+    <id>https://sean-reid.github.io/blog/gardeners-dilemma.html</id>
+    <updated>2026-05-12T00:00:00Z</updated>
+    <summary>A two-player harvesting game with the Collatz sequence as its clock.</summary>
+  </entry>
+  <entry>
+    <title>Pulse</title>
+    <link href="https://sean-reid.github.io/blog/pulse.html"/>
+    <id>https://sean-reid.github.io/blog/pulse.html</id>
+    <updated>2026-05-09T00:00:00Z</updated>
+    <summary>Heart rate, breathing rate, and HRV estimated from a webcam in the browser, with the pulse painted back onto the face.</summary>
+  </entry>
+  <entry>
+    <title>Clowns and Mimes</title>
+    <link href="https://sean-reid.github.io/blog/clowns-and-mimes.html"/>
+    <id>https://sean-reid.github.io/blog/clowns-and-mimes.html</id>
+    <updated>2026-05-05T00:00:00Z</updated>
+    <summary>Team tag in a dark labyrinth on a torus, a M&amp;ouml;bius strip, or a Klein bottle. The server decides every freeze.</summary>
+  </entry>
+  <entry>
+    <title>Sounds</title>
+    <link href="https://sean-reid.github.io/blog/sounds.html"/>
+    <id>https://sean-reid.github.io/blog/sounds.html</id>
+    <updated>2026-05-05T00:00:00Z</updated>
+    <summary>A voxel world where the music is generated from the biome you're standing in.</summary>
+  </entry>
+  <entry>
+    <title>Fourier Phase</title>
+    <link href="https://sean-reid.github.io/blog/fourier.html"/>
+    <id>https://sean-reid.github.io/blog/fourier.html</id>
+    <updated>2026-04-26T00:00:00Z</updated>
+    <summary>Two images pushed to share one Fourier amplitude spectrum, and they still look like themselves</summary>
+  </entry>
+  <entry>
+    <title>String</title>
+    <link href="https://sean-reid.github.io/blog/string.html"/>
+    <id>https://sean-reid.github.io/blog/string.html</id>
+    <updated>2026-04-21T00:00:00Z</updated>
+    <summary>Turns a photo into a few thousand chords between pins on a circle, then prints the build guide.</summary>
+  </entry>
+  <entry>
+    <title>Mastery</title>
+    <link href="https://sean-reid.github.io/blog/mastery.html"/>
+    <id>https://sean-reid.github.io/blog/mastery.html</id>
+    <updated>2026-04-16T00:00:00Z</updated>
+    <summary>100 skills scored by hand on 19 difficulty axes, with 12 challenges you can try in the browser.</summary>
+  </entry>
+  <entry>
+    <title>Deconflict</title>
+    <link href="https://sean-reid.github.io/blog/deconflict.html"/>
+    <id>https://sean-reid.github.io/blog/deconflict.html</id>
+    <updated>2026-04-10T00:00:00Z</updated>
+    <summary>Assigns WiFi channels by coloring an interference graph built from a floorplan.</summary>
+  </entry>
+  <entry>
+    <title>Discern</title>
+    <link href="https://sean-reid.github.io/blog/discern.html"/>
+    <id>https://sean-reid.github.io/blog/discern.html</id>
+    <updated>2026-04-07T00:00:00Z</updated>
+    <summary>A real-or-generated photo game that rates players and images against each other with Elo.</summary>
+  </entry>
+  <entry>
+    <title>Tron</title>
+    <link href="https://sean-reid.github.io/blog/tron.html"/>
+    <id>https://sean-reid.github.io/blog/tron.html</id>
+    <updated>2026-04-06T00:00:00Z</updated>
+    <summary>A lightcycle game where riding close to walls makes you faster, against bots that pick moves by flood fill.</summary>
+  </entry>
+  <entry>
+    <title>Severed</title>
+    <link href="https://sean-reid.github.io/blog/severed.html"/>
+    <id>https://sean-reid.github.io/blog/severed.html</id>
+    <updated>2026-04-05T00:00:00Z</updated>
+    <summary>Cut submarine cables on a map of 930 metros and 1,644 links and see which cities lose bandwidth</summary>
+  </entry>
+  <entry>
+    <title>Points</title>
+    <link href="https://sean-reid.github.io/blog/points.html"/>
+    <id>https://sean-reid.github.io/blog/points.html</id>
+    <updated>2026-04-01T00:00:00Z</updated>
+    <summary>Click points on a grid and get the simplest integer-coefficient curve through them.</summary>
+  </entry>
+  <entry>
+    <title>Gravity Well Arena</title>
+    <link href="https://sean-reid.github.io/blog/gravity.html"/>
+    <id>https://sean-reid.github.io/blog/gravity.html</id>
+    <updated>2026-03-29T00:00:00Z</updated>
+    <summary>A top-down shooter where the closer you fly to a black hole, the faster the rest of the arena runs</summary>
+  </entry>
+  <entry>
+    <title>Lacuna</title>
+    <link href="https://sean-reid.github.io/blog/lacuna.html"/>
+    <id>https://sean-reid.github.io/blog/lacuna.html</id>
+    <updated>2026-03-29T00:00:00Z</updated>
+    <summary>A two-player game where you draw the board as you play and score the regions you close off.</summary>
+  </entry>
+  <entry>
+    <title>Sprouts</title>
+    <link href="https://sean-reid.github.io/blog/sprouts.html"/>
+    <id>https://sean-reid.github.io/blog/sprouts.html</id>
+    <updated>2026-03-29T00:00:00Z</updated>
+    <summary>Conway and Paterson's pen-and-paper game in the browser, against an AI that finds its moves on a morphological skeleton.</summary>
+  </entry>
+  <entry>
+    <title>Captcha Royale</title>
+    <link href="https://sean-reid.github.io/blog/captcha-royale.html"/>
+    <id>https://sean-reid.github.io/blog/captcha-royale.html</id>
+    <updated>2026-03-29T00:00:00Z</updated>
+    <summary>A battle royale where every round is a procedurally generated CAPTCHA and a wrong answer knocks you out</summary>
+  </entry>
+  <entry>
+    <title>Crossword Generator</title>
+    <link href="https://sean-reid.github.io/blog/crossword-generator.html"/>
+    <id>https://sean-reid.github.io/blog/crossword-generator.html</id>
+    <updated>2026-03-29T00:00:00Z</updated>
+    <summary>Crossword grids as a SAT problem, plus a CLI that turns them into print-ready puzzle books</summary>
+  </entry>
+  <entry>
+    <title>Antibook</title>
+    <link href="https://sean-reid.github.io/blog/antibook.html"/>
+    <id>https://sean-reid.github.io/blog/antibook.html</id>
+    <updated>2026-03-29T00:00:00Z</updated>
+    <summary>Project Gutenberg books with every word I could invert replaced by its antonym.</summary>
+  </entry>
+  <entry>
+    <title>Bananas for Scale</title>
+    <link href="https://sean-reid.github.io/blog/bananas-for-scale.html"/>
+    <id>https://sean-reid.github.io/blog/bananas-for-scale.html</id>
+    <updated>2026-03-29T00:00:00Z</updated>
+    <summary>A static reference site that restates real measurements in bananas, golden retrievers, and other useless units.</summary>
+  </entry>
+  <entry>
+    <title>Tongue Simulator</title>
+    <link href="https://sean-reid.github.io/blog/tongue-simulator.html"/>
+    <id>https://sean-reid.github.io/blog/tongue-simulator.html</id>
+    <updated>2026-03-29T00:00:00Z</updated>
+    <summary>Type a sentence and watch a simulated tongue, jaw, and velum move through it while the browser speaks.</summary>
+  </entry>
+  <entry>
+    <title>Crochet Pattern Generator</title>
+    <link href="https://sean-reid.github.io/blog/crochet-pattern-generator.html"/>
+    <id>https://sean-reid.github.io/blog/crochet-pattern-generator.html</id>
+    <updated>2026-03-29T00:00:00Z</updated>
+    <summary>Draw one side of a shape and get row-by-row amigurumi stitch counts for it.</summary>
+  </entry>
+  <entry>
+    <title>Meta Tic-Tac-Toe</title>
+    <link href="https://sean-reid.github.io/blog/meta-tictactoe.html"/>
+    <id>https://sean-reid.github.io/blog/meta-tictactoe.html</id>
+    <updated>2026-03-29T00:00:00Z</updated>
+    <summary>Ultimate tic-tac-toe against an alpha-beta search written in Rust and compiled to WebAssembly.</summary>
+  </entry>
+  <entry>
+    <title>Entropy Bus</title>
+    <link href="https://sean-reid.github.io/blog/entropy-bus.html"/>
+    <id>https://sean-reid.github.io/blog/entropy-bus.html</id>
+    <updated>2026-03-29T00:00:00Z</updated>
+    <summary>A racing game where the bus goes faster the less predictable your typing is</summary>
+  </entry>
+  <entry>
+    <title>What ____ Are You?</title>
+    <link href="https://sean-reid.github.io/blog/what-are-you.html"/>
+    <id>https://sean-reid.github.io/blog/what-are-you.html</id>
+    <updated>2026-03-29T00:00:00Z</updated>
+    <summary>A personality quiz where the category is a parameter and the answer comes from Wikipedia.</summary>
+  </entry>
+  <entry>
+    <title>Dependencies</title>
+    <link href="https://sean-reid.github.io/blog/dependencies.html"/>
+    <id>https://sean-reid.github.io/blog/dependencies.html</id>
+    <updated>2026-03-29T00:00:00Z</updated>
+    <summary>Races two ways of finding which declared dependencies a build actually needs.</summary>
+  </entry>
+  <entry>
+    <title>FrankenPeanuts</title>
+    <link href="https://sean-reid.github.io/blog/frankenpeanuts.html"/>
+    <id>https://sean-reid.github.io/blog/frankenpeanuts.html</id>
+    <updated>2026-03-29T00:00:00Z</updated>
+    <summary>Four random Peanuts panels from 1950 to 2000, stitched into a new strip on every reload.</summary>
+  </entry>
+  <entry>
+    <title>Haiku</title>
+    <link href="https://sean-reid.github.io/blog/haiku.html"/>
+    <id>https://sean-reid.github.io/blog/haiku.html</id>
+    <updated>2026-03-29T00:00:00Z</updated>
+    <summary>A screensaver that generates a new haiku every ten seconds from a small grammar.</summary>
+  </entry>
+  <entry>
+    <title>BrainRotter</title>
+    <link href="https://sean-reid.github.io/blog/brainrotter.html"/>
+    <id>https://sean-reid.github.io/blog/brainrotter.html</id>
+    <updated>2026-03-29T00:00:00Z</updated>
+    <summary>Fills a page with grammatical brainrot from a weighted grammar and a 2,277-term lexicon.</summary>
+  </entry>
+  <entry>
+    <title>NYT Crosswords</title>
+    <link href="https://sean-reid.github.io/blog/nyt-crosswords.html"/>
+    <id>https://sean-reid.github.io/blog/nyt-crosswords.html</id>
+    <updated>2026-03-29T00:00:00Z</updated>
+    <summary>An ad-free browser player for New York Times crosswords from 1976 to 2017.</summary>
+  </entry>
+  <entry>
+    <title>Flow</title>
+    <link href="https://sean-reid.github.io/blog/flow.html"/>
+    <id>https://sean-reid.github.io/blog/flow.html</id>
+    <updated>2026-03-29T00:00:00Z</updated>
+    <summary>An RSVP speed reader that starts slow and ramps up, so the opening sentence lands.</summary>
+  </entry>
+  <entry>
+    <title>Perfect Hindsight</title>
+    <link href="https://sean-reid.github.io/blog/perfect-hindsight.html"/>
+    <id>https://sean-reid.github.io/blog/perfect-hindsight.html</id>
+    <updated>2026-03-29T00:00:00Z</updated>
+    <summary>What a dollar becomes if you hold the best S&amp;P 500 stock every single trading day.</summary>
+  </entry>
+  <entry>
+    <title>Wikipedia Unscrambler</title>
+    <link href="https://sean-reid.github.io/blog/wikipedia-unscrambler.html"/>
+    <id>https://sean-reid.github.io/blog/wikipedia-unscrambler.html</id>
+    <updated>2026-03-29T00:00:00Z</updated>
+    <summary>A word game that scrambles a passage from one of yesterday's most-read Wikipedia articles</summary>
+  </entry>
+  <entry>
+    <title>Anagram Solver</title>
+    <link href="https://sean-reid.github.io/blog/anagram.html"/>
+    <id>https://sean-reid.github.io/blog/anagram.html</id>
+    <updated>2026-03-29T00:00:00Z</updated>
+    <summary>Every way to rearrange a phrase into real words, ranked so the good ones come first.</summary>
+  </entry>
+  <entry>
+    <title>Lasers</title>
+    <link href="https://sean-reid.github.io/blog/lasers.html"/>
+    <id>https://sean-reid.github.io/blog/lasers.html</id>
+    <updated>2026-03-29T00:00:00Z</updated>
+    <summary>Place and rotate mirrors to bounce a laser around obstacles and into a target</summary>
+  </entry>
+  <entry>
+    <title>Papermaker</title>
+    <link href="https://sean-reid.github.io/blog/papermaker.html"/>
+    <id>https://sean-reid.github.io/blog/papermaker.html</id>
+    <updated>2026-03-29T00:00:00Z</updated>
+    <summary>SCIgen's fake computer science papers, generated in the browser and typeset to PDF.</summary>
+  </entry>
+  <entry>
+    <title>The Count of Monte Carlo</title>
+    <link href="https://sean-reid.github.io/blog/the-count-of-monte-carlo.html"/>
+    <id>https://sean-reid.github.io/blog/the-count-of-monte-carlo.html</id>
+    <updated>2026-03-29T00:00:00Z</updated>
+    <summary>Random characters settle into the text of Dumas one letter at a time.</summary>
+  </entry>
+  <entry>
+    <title>Creature Garden</title>
+    <link href="https://sean-reid.github.io/blog/creature-garden.html"/>
+    <id>https://sean-reid.github.io/blog/creature-garden.html</id>
+    <updated>2026-03-29T00:00:00Z</updated>
+    <summary>A single-file ecosystem sandbox where procedural creatures eat, breed, and starve on a canvas.</summary>
+  </entry>
+  <entry>
+    <title>Random Game</title>
+    <link href="https://sean-reid.github.io/blog/random-game.html"/>
+    <id>https://sean-reid.github.io/blog/random-game.html</id>
+    <updated>2026-03-29T00:00:00Z</updated>
+    <summary>Tells you what to guess next in a closest-number-wins game with other players.</summary>
+  </entry>
+  <entry>
+    <title>License Plate Game</title>
+    <link href="https://sean-reid.github.io/blog/licenseplategame.html"/>
+    <id>https://sean-reid.github.io/blog/licenseplategame.html</id>
+    <updated>2026-03-29T00:00:00Z</updated>
+    <summary>Type the three letters from a plate and get the shortest words that contain them in order.</summary>
+  </entry>
+</feed>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+    <title>Time - Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/time.webp">
+    <link rel="stylesheet" href="/nav.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="description" content="Two clocks, one on Earth and one on a ship you fly around the Sun, a neutron star, or Sagittarius A*, with the drift between them computed from real geodesics">
+    <link rel="canonical" href="https://sean-reid.github.io/blog/time.html">
+    <link rel="alternate" type="application/atom+xml" title="Sean Reid" href="/feed.xml">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Sean Reid">
+    <meta property="og:title" content="Time">
+    <meta property="og:description" content="Two clocks, one on Earth and one on a ship you fly around the Sun, a neutron star, or Sagittarius A*, with the drift between them computed from real geodesics">
+    <meta property="og:url" content="https://sean-reid.github.io/blog/time.html">
+    <meta property="og:image" content="https://sean-reid.github.io/blog/img/time.webp">
+    <meta property="article:published_time" content="2026-09-23">
+    <meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="/" class="site-nav-name">Sean Reid</a>
+    <div class="site-nav-controls">
+      <div class="site-nav-search-wrap"><input type="search" class="site-nav-search" placeholder="Search..." aria-label="Search projects" autocomplete="off"><span class="site-nav-search-hint" aria-hidden="true">/</span></div>
+      <button type="button" class="site-nav-random">Random</button>
+      <div class="search-dropdown" role="listbox" aria-label="Search results"></div>
+    </div>
+  </div>
+</nav>
+<main class="site-content">
+    <div class="container">
+        <header>
+            <h1>Time</h1>
+            <p class="meta">Two clocks, one on Earth and one on a ship you fly around the Sun, a neutron star, or Sagittarius A*, with the drift between them computed from real geodesics</p>
+            <p class="links-row">
+                <a href="https://time.dwainosaur.com">Live Demo</a>
+                <a href="https://github.com/sean-reid/time">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <figure>
+                <img decoding="async" fetchpriority="high" src="img/time.webp" alt="The time site with the ship orbiting Sagittarius A* at twice the innermost stable orbit, two clock faces, and a drift readout of minus 13.64 minutes" width="2560" height="1600">
+                <figcaption>Orbiting Sagittarius A* at twice the innermost stable orbit, moving at 0.47 c. About forty minutes into the flight the ship's clock is 13.64 minutes behind Earth's, and Earth is running 1.49 times faster.</figcaption>
+            </figure>
+
+            <p>One clock on the page sits at sea level on Earth and shows your actual local time. The other left Earth in sync with it when the page loaded and is now on a ship around whichever body you picked. The number in between is how far they've drifted apart. I already have a <a href="gravity.html">game on this site</a> with a time dilation mechanic. Here every number comes from general relativity or from a cited measurement.</p>
+
+            <h2>Geodesics near compact bodies</h2>
+
+            <p>Around black holes, neutron stars, magnetars and white dwarfs the ship follows exact equatorial geodesics of the Kerr metric in Boyer-Lindquist coordinates, with Schwarzschild as the zero-spin case. I work in units where \(G = c = M = 1\), so \(r\) is in gravitational radii. In the equatorial plane the metric components are</p>
+
+            \[ g_{tt} = -\left(1 - \frac{2}{r}\right), \quad g_{t\phi} = -\frac{2a}{r}, \quad g_{\phi\phi} = r^2 + a^2 + \frac{2a^2}{r}, \quad g_{rr} = \frac{r^2}{r^2 - 2r + a^2}. \]
+
+            <p>Energy and angular momentum per unit mass are conserved, so \(dt/d\tau\) and \(d\phi/d\tau\) come straight from them at each radius and the only thing to integrate is \(r\). I use RK4 in proper time with a step that is the smallest of a few limits: at most 0.02 radians of \(\phi\), at most 0.2 percent of \(r\), and at most 5 percent of the gap between \(r\) and the horizon. The last one is what keeps a plunge from stepping through the horizon in one go. A body dropped from rest at \(r = 10\) reaches the horizon in the textbook proper time to within half a percent, and the integrator recovers Mercury's perihelion advance to within 5 percent of \(6\pi GM / (a(1-e^2)c^2)\), which is the 43 arcseconds per century.</p>
+
+            <p>A kick changes the ship's velocity by a chosen amount, applied prograde, retrograde, outward or inward. Velocity has to be measured by someone, and I apply it in the frame of the zero angular momentum observer at the ship's radius, the observer who is dragged around with spacetime but has no angular momentum of their own. That's the only frame that still makes sense inside the ergosphere, where nothing can hold still. The velocity is converted from that frame to a four-velocity, the kick added, the speed capped at 0.999 c, and the constants of motion rebuilt. Holding station puts the ship at rest in the same frame, so inside the ergosphere of a spinning hole it holds its radius while dragged space sweeps it around. The panel shows the thrust that takes, in g, and it grows without bound at the horizon.</p>
+
+            <p>The Kerr formulas for the innermost stable orbit and the photon orbit are from <a href="https://ui.adsabs.harvard.edu/abs/1972ApJ...178..347B">Bardeen, Press and Teukolsky 1972</a>. At spin 0, 0.9 and 1 the prograde ISCO comes in from 6 to 2.3209 to 1 gravitational radii and the retrograde one goes out to 9. I've only checked the hover acceleration in Kerr at zero spin, where it matches the Schwarzschild formula.</p>
+
+            <h2>Newton for the neighborhood</h2>
+
+            <p>Around the Sun, the planets and the Moon the ship moves under Newtonian gravity from the central body and its companions, which follow their real Kepler ellipses from published elements and sit where they are today. Its clock runs at the first-order rate: one minus the summed potentials over \(c^2\), times \(\sqrt{1 - v^2/c^2}\). The terms I drop are second order in the potential, around a part in \(10^{16}\) at Earth's distance from the Sun, and the drift readouts here are microseconds a day, so first order is plenty. The reference on Earth isn't free either. In Earth scenes coordinate time is geocentric and Earth's clock runs slow by \(L_G = 6.969290134 \times 10^{-10}\). Everywhere else it carries its full share of the solar potential, \(L_B = 1.550519768 \times 10^{-8}\). Both are IAU defining constants. From them and the GPS orbit the site gets the number GPS engineers correct for: 45.7 microseconds a day gained from altitude, 7.2 lost to speed, 38.6 net.</p>
+
+            <p>The Newtonian regime has a hole. You can kick the ship to 0.999 c around the Sun and it will obey Newton's laws with only the special relativistic factor on its clock. Nothing in that regime knows about relativistic dynamics, so a fast flight around a planet comes out wrong. A scene is also only right out to the Hill sphere of the last body it pulls with, about 1.5 million km for the Earth and Moon scenes. Beyond that the Sun would take over and nothing stands in for it, so the page says so.</p>
+
+            <h2>The speed dial</h2>
+
+            <p>Time can be sped up in steps from real time to a year per second. The problem is that tight orbits need small steps: a geodesic orbit takes about 320 integrator steps and a Newtonian one about 3,142, and a frame can afford roughly 20,000. So for the orbit the ship is on right now, I compute the fastest warp the integrator can honor at 60 frames a second and hide anything faster. Then, separately, a meter records how many simulated seconds each real frame actually advanced, over the last 12 frames, ignoring any frame longer than 0.25 s as a stall. If the achieved rate trails the setting by more than 5 percent, the page shows the achieved number instead of the setting. Kick into a tighter orbit and the dial pulls itself down after a moment.</p>
+
+            <p>The plate the scene is drawn on is stretched by the metric: radial spacing follows proper distance from the horizon, so the isochrone rings crowd toward it. Distances are to scale, zoom is logarithmic, and a scale bar with its light travel time is always on screen. Every mass, radius, spin, and orbital element in the body picker cites a source, and the list of sources is on the <a href="https://time.dwainosaur.com/how">how page</a>.</p>
+        </article>
+
+    </div>
+</main>
+<footer class="site-footer">
+      <div class="site-footer-links">
+        <a href="https://github.com/sean-reid">GitHub</a>
+        <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
+        <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
+        <a href="https://socrates-of-athens.github.io">Poetry</a>
+        <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
+        <a href="/feed.xml">Feed</a>
+      </div>
+    </footer>
+<script src="/nav.js"></script>
+</body>
+</html>

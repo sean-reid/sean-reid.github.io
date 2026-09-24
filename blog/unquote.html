@@ -8,15 +8,26 @@
     <link rel="preload" as="image" href="img/unquote.webp">
     <link rel="stylesheet" href="/nav.css">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="description" content="Exact, keyword, and semantic search over 3.7 million lines of film dialogue, all stored in one ClickHouse server.">
+    <link rel="canonical" href="https://sean-reid.github.io/blog/unquote.html">
+    <link rel="alternate" type="application/atom+xml" title="Sean Reid" href="/feed.xml">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Sean Reid">
+    <meta property="og:title" content="Unquote">
+    <meta property="og:description" content="Exact, keyword, and semantic search over 3.7 million lines of film dialogue, all stored in one ClickHouse server.">
+    <meta property="og:url" content="https://sean-reid.github.io/blog/unquote.html">
+    <meta property="og:image" content="https://sean-reid.github.io/blog/img/unquote.webp">
+    <meta property="article:published_time" content="2026-07-11">
+    <meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
 <nav class="site-nav">
   <div class="site-nav-inner">
     <a href="/" class="site-nav-name">Sean Reid</a>
     <div class="site-nav-controls">
-      <div class="site-nav-search-wrap"><input type="text" class="site-nav-search" placeholder="Search..." autocomplete="off"><span class="site-nav-search-hint">/</span></div>
-      <a class="site-nav-random">&rarr; Random</a>
-      <div class="search-dropdown"></div>
+      <div class="site-nav-search-wrap"><input type="search" class="site-nav-search" placeholder="Search..." aria-label="Search projects" autocomplete="off"><span class="site-nav-search-hint" aria-hidden="true">/</span></div>
+      <button type="button" class="site-nav-random">Random</button>
+      <div class="search-dropdown" role="listbox" aria-label="Search results"></div>
     </div>
   </div>
 </nav>
@@ -24,7 +35,7 @@
     <div class="container">
         <header>
             <h1>Unquote</h1>
-            <p class="meta">Hybrid exact, keyword, and semantic search over 3.7 million lines of film dialogue, all inside one ClickHouse database</p>
+            <p class="meta">Exact, keyword, and semantic search over 3.7 million lines of film dialogue, all stored in one ClickHouse server.</p>
             <p class="links-row">
                 <a href="https://unquote.dwainosaur.com">Live Demo</a>
                 <a href="https://github.com/sean-reid/unquote">Source</a>
@@ -33,101 +44,80 @@
 
         <article>
             <figure>
-                <img decoding="async" fetchpriority="high" src="img/unquote.webp" alt="Screenshot of Unquote showing search results and a phrase statistics card for the query 'i have a bad feeling about this'">
-                <figcaption>Results for "i have a bad feeling about this." The phrase card counts nine films and eleven occurrences, first in The Empire Strikes Back (1980), with histograms of where in a film the line lands and what share of each decade's films say it.</figcaption>
+                <img decoding="async" fetchpriority="high" src="img/unquote.webp" alt="Screenshot of Unquote showing search results and a phrase statistics card for the query 'i have a bad feeling about this'" width="2560" height="1600">
+                <figcaption>Results for "i have a bad feeling about this". The phrase card counts nine films and eleven occurrences, first in The Empire Strikes Back (1980), with histograms of where in a film the line lands and what share of each decade's films say it.</figcaption>
             </figure>
 
-            <p>Unquote searches the dialogue of 2,644 films. Type a quote and it finds the line. Type the quote the way you misremember it and it finds the line you meant. Describe a scene in words no character ever says ("a boy in leg braces outruns the bullies chasing him") and it finds the moment. The app is <a href="https://svelte.dev/docs/kit">SvelteKit</a>; everything else, the text, the 384-dimension line vectors, the 768-dimension scene vectors, the <a href="https://arxiv.org/abs/1603.09320">HNSW</a> indexes over all of them, and the analytics, lives in a single <a href="https://clickhouse.com/">ClickHouse</a> server. There is no separate vector database.</p>
+            <p>I built Unquote to settle quote arguments. It searches the dialogue of 2,644 films for a quote, for a misremembered version of it, or for a scene described in words no character says ("a boy in leg braces outruns the bullies chasing him"). The front end is <a href="https://svelte.dev/docs/kit">SvelteKit</a>. Everything else, the text, 3.7 million line vectors, 620,000 scene vectors, the <a href="https://arxiv.org/abs/1603.09320">HNSW</a> indexes over them, and the analytics, lives in one <a href="https://clickhouse.com/">ClickHouse</a> server.</p>
 
-            <h2>The corpus</h2>
+            <h2>Getting the text</h2>
 
-            <p>Film metadata (titles, years, vote counts, posters, genres, keywords) comes from <a href="https://www.themoviedb.org/">TMDb</a>. Dialogue is parsed from the publicly available transcript pages on <a href="https://www.springfieldspringfield.co.uk/">Springfield! Springfield!</a>: the extractor replays the site's search to find each film's slug, checks the year, and splits the script container on <code>&lt;br&gt;</code> boundaries into subtitle cues. Every HTTP response is cached on disk under a SHA1-of-URL key, and the pipeline runs offline against that cache; network access requires an explicit <code>ALLOW_NETWORK=1</code>, so a bug can never turn into a crawl.</p>
+            <p>Film metadata comes from <a href="https://www.themoviedb.org/">TMDb</a>. Dialogue is parsed from the transcript pages on <a href="https://www.springfieldspringfield.co.uk/">Springfield! Springfield!</a>. The extractor finds each film's slug through the site's own search, checks the year, and splits the script on <code>&lt;br&gt;</code> tags into subtitle cues. Every HTTP response is cached on disk under a SHA1 of its URL and everything downstream runs against that cache. Going to the network needs <code>ALLOW_NETWORK=1</code>, because I've had a bug turn into a crawl before and didn't want another.</p>
 
-            <p>Films the primary source misses or mangles get better text through rescue and upgrade passes: <a href="https://imsdb.com/">IMSDb</a> screenplay drafts, a second transcript site, and an <a href="https://www.opensubtitles.com/">OpenSubtitles</a> layer that drains a checkpointed download queue at five subtitle files per day, the free-tier allowance. A replacement only ships if it scores better than what it replaces. The pipeline is a chain of standalone stages reading and writing JSONL artifacts, so any stage reruns in isolation; a dev slice of the top 300 films by votes keeps iteration fast, and <code>FULL=1</code> selects everything.</p>
+            <p>The primary source misses or mangles a lot of films, including ones people search first. So there are rescue and upgrade passes: <a href="https://imsdb.com/">IMSDb</a> screenplay drafts, a second transcript site, and an <a href="https://www.opensubtitles.com/">OpenSubtitles</a> queue that downloads five subtitle files a day, which is the free tier. A replacement only ships if it scores better than what it replaces. Each stage reads and writes JSONL, so any one of them reruns on its own.</p>
 
             <h2>Cues are not lines</h2>
 
             <figure class="small">
-                <img decoding="async" src="img/cc/charade-subtitles.webp" alt="Frame from Charade (1963) with two subtitle lines, each beginning with a dash to mark a different speaker" loading="lazy">
-                <figcaption>Two speakers sharing one subtitle frame in Charade (1963), each turn marked with a leading dash. <a href="https://commons.wikimedia.org/wiki/File:Example_of_subtitles_(Charade,_1963).jpg">Wikimedia Commons</a></figcaption>
+                <img decoding="async" src="img/cc/charade-subtitles.webp" alt="Frame from Charade (1963) with two subtitle lines, each beginning with a dash to mark a different speaker" loading="lazy" width="1600" height="865">
+                <figcaption>Two speakers in one subtitle frame from Charade (1963). The utterance builder splits this into two lines. <a href="https://commons.wikimedia.org/wiki/File:Example_of_subtitles_(Charade,_1963).jpg">Wikimedia Commons</a></figcaption>
             </figure>
 
-            <p>Subtitle cues are display fragments, not spoken lines. Sentences split across cues, two speakers share one cue behind <code>- </code> markers, sound labels ride along in brackets, and OCR damage from ripped subtitles is everywhere. The utterance builder rebuilds spoken lines from ordered cues: dash-marked speaker turns split apart, a fragment that starts lowercase merges into the previous buffer unless it ended on a hard stop (dialogue never continues a sentence past <code>?</code> or <code>!</code>), and an ellipsis handing off to an ellipsis rejoins one thought split for timing ("Get busy living... / ...or get busy dying.").</p>
+            <p>Subtitle cues are display fragments. Sentences split across cues, two speakers share a cue behind <code>- </code> markers, and OCR damage is everywhere. The utterance builder rebuilds spoken lines from ordered cues. Dash-marked turns split apart. A fragment that starts lowercase merges into the previous buffer unless that buffer ended on <code>?</code> or <code>!</code>. An ellipsis handing off to an ellipsis rejoins one thought split for timing ("Get busy living... / ...or get busy dying.").</p>
 
-            <p>Lyrics get run detection: music-marked cues act as anchors, nearby anchors bridge into intervals, and interval edges extend over unpunctuated neighbors, with wider gaps for Music-genre films whose marking is spottier. A second detector catches entirely unmarked songs by their shape, long runs of title-case cues that never end in punctuation, but only unconditionally at sixteen cues or more, because Interstellar's recited "Do not go gentle" reads exactly like a verse. OCR repair is gated the same way: the classic subtitle confusion of capital I and lowercase l ("lf you build it", "wouIdn't") is rewritten only in films showing at least three instances of the signature, so a clean transcript where "lt." is a lowercased Lieutenant is never touched. Stage directions, speaker labels, title cards fused into cues, and credits all go. What remains is about 3.7 million utterances, each carrying its film position as a 0-to-1 <code>arc</code>.</p>
+            <p>Lyrics were the worst of it. Music-marked cues act as anchors, nearby anchors bridge into intervals, and interval edges extend over unpunctuated neighbors. A second detector catches unmarked songs by shape, long runs of title-case cues that never end in punctuation, but it only fires unconditionally at sixteen cues or more, because Interstellar's recited "Do not go gentle" reads exactly like a verse. OCR repair is gated the same way. The capital I and lowercase l confusion ("lf you build it", "wouIdn't") is rewritten only in films showing at least three instances of it, so a clean transcript where "lt." is a lowercased Lieutenant is never touched. What remains is 3,728,457 utterances across 2,644 films, each carrying its position in the film as a 0-to-1 <code>arc</code>.</p>
 
-            <h2>Transcript health</h2>
+            <p>Every film also gets a quality score from punctuation density, hit rate against a thousand-word English dictionary, OCR artifacts per thousand cues, and mean cue length, weighted 0.3, 0.3, 0.3, 0.1. The worst decile carries a <code>downrank</code> flag, and a transcript with over 200 tokens and a dictionary rate under 0.2 is flagged as not English. Both flags gate the fuzzier search arms.</p>
 
-            <p>Every film gets a quality score from punctuation density, hit rate against a thousand-word common-English dictionary, OCR artifacts per thousand cues, and mean cue length, weighted 0.3, 0.3, 0.3, 0.1. The worst decile carries a <code>downrank</code> flag; a transcript with over 200 tokens and a dictionary rate under 0.2 is flagged as not English regardless of how clean it looks. Both flags load into ClickHouse and gate the fuzzier search surfaces, since a wrong-language transcript matches its own language, not meaning.</p>
+            <h2>Vectors in ClickHouse</h2>
 
-            <h2>Embeddings</h2>
+            <p>Lines embed with <a href="https://huggingface.co/BAAI/bge-small-en-v1.5">bge-small-en-v1.5</a> (384 dimensions, mean pooling). Beats, scene summaries, and segments embed with <a href="https://huggingface.co/BAAI/bge-base-en-v1.5">bge-base-en-v1.5</a> (768). The same models have to encode stored rows and live queries, so the web app runs quantized <a href="https://onnx.ai/">ONNX</a> ports of both through <a href="https://huggingface.co/docs/transformers.js">Transformers.js</a>, warmed at boot. The corpus itself embeds on an Apple GPU through <a href="https://sbert.net/">sentence-transformers</a> on <a href="https://developer.apple.com/metal/pytorch/">MPS</a>, 3.4x faster than the JavaScript path, and I check that the two paths agree to a per-row cosine of at least 0.999.</p>
 
-            <figure class="small">
-                <img decoding="async" src="img/cc/tsne-word-embeddings.webp" alt="t-SNE scatter plot of word embeddings colored by part of speech, with labeled clusters" loading="lazy">
-                <figcaption>A <a href="https://en.wikipedia.org/wiki/T-distributed_stochastic_neighbor_embedding">t-SNE</a> projection of word embeddings from 19th-century literature. Text with related meaning lands near itself in embedding space, which is the property every fuzzy arm of the search relies on. <a href="https://commons.wikimedia.org/wiki/File:T-SNE_visualisation_of_word_embeddings_generated_using_19th_century_literature.png">Wikimedia Commons</a></figcaption>
-            </figure>
+            <p>The <code>lines</code> table is a MergeTree ordered by <code>(movie_id, seq)</code> with two skipping indexes: a <a href="https://clickhouse.com/docs/optimize/skipping-indexes">tokenbf_v1</a> bloom filter over the normalized text for keyword search, and a <a href="https://clickhouse.com/docs/engines/table-engines/mergetree-family/annindexes">vector_similarity</a> HNSW index over the embedding, cosine distance, bf16 so it takes half the memory. HNSW answers a nearest-neighbor query in under 100 ms where a brute-force scan takes over a second. Loads never touch live tables. Each load writes staging tables without the index, builds the index once after all rows land, then swaps with <code>EXCHANGE TABLES</code>. The scene-level tables build their indexes one at a time under a memory cap, because two HNSW builds in parallel have taken the box down.</p>
 
-            <p>Lines embed with <a href="https://huggingface.co/BAAI/bge-small-en-v1.5">bge-small-en-v1.5</a> (384 dimensions, mean pooling); beats, scene summaries, and segments embed with <a href="https://huggingface.co/BAAI/bge-base-en-v1.5">bge-base-en-v1.5</a> (768 dimensions). Queries follow the bge retrieval convention and get the prefix "Represent this sentence for searching relevant passages:" while passages do not. The same models must encode stored rows and live queries, so the contract is a shared constant: the web app runs quantized <a href="https://onnx.ai/">ONNX</a> ports of both models through <a href="https://huggingface.co/docs/transformers.js">Transformers.js</a>, warmed at server boot so no user pays the cold start, with a small LRU cache over query vectors.</p>
+            <h2>Ranking</h2>
 
-            <p>The corpus itself embeds on an Apple GPU through <a href="https://sbert.net/">sentence-transformers</a> on <a href="https://developer.apple.com/metal/pytorch/">MPS</a>, 3.4x faster than the JavaScript reference implementation, which stays around as the definition of the encoding: any new runtime or model change must pass a validator requiring per-row cosine of at least 0.999 against reference vectors before its output ships. After a text-touching pipeline change, a reconcile stage copies vectors for unchanged rows byte for byte and re-embeds only what changed.</p>
-
-            <h2>ClickHouse as the vector database</h2>
-
-            <figure class="small">
-                <img decoding="async" src="img/cc/hnsw-graph.webp" alt="Diagram of a hierarchical navigable small world graph showing a query descending through three layers to its nearest neighbor" loading="lazy">
-                <figcaption>HNSW search descends from a sparse top layer to the full graph, greedily walking toward the query at each level. <a href="https://commons.wikimedia.org/wiki/File:Hierarchical_Navigable_Small_World_(HNSW).png">Wikimedia Commons</a></figcaption>
-            </figure>
-
-            <p>The <code>lines</code> table is a MergeTree ordered by <code>(movie_id, seq)</code> with two skipping indexes: a <a href="https://clickhouse.com/docs/optimize/skipping-indexes">tokenbf_v1</a> bloom filter over the normalized text for keyword search, and a <a href="https://clickhouse.com/docs/engines/table-engines/mergetree-family/annindexes">vector_similarity</a> HNSW index over the embedding column, cosine distance, bf16-quantized so the index takes half the memory. The HNSW index answers nearest-neighbor queries in under 100 ms where a brute-force scan takes over a second. Data loads never touch the live tables: each load writes staging tables without the vector index, adds and materializes the index once after all rows land, then swaps with <code>EXCHANGE TABLES</code>, so the running site never sees a partial corpus. The ladder tables build their indexes one at a time under a hard memory cap, because parallel HNSW builds have taken the box down.</p>
-
-            <h2>Four arms and a fusion</h2>
-
-            <p>A search fans out to parallel arms. The title arm catches queries that are exactly a film title. The exact arm finds verbatim substring matches with <code>position()</code> over normalized text. The keyword arm requires every query token via <code>hasToken()</code>, with tokens split on apostrophes because ClickHouse's tokenizer indexes "you're" as "you" and "re". The semantic arm embeds the query and takes the hundred nearest line vectors. The ranked lists merge with <a href="https://plg.uwaterloo.ca/~gvcormac/cormacksigir09-rrf.pdf">reciprocal rank fusion</a>:</p>
+            <p>A search fans out to arms that run in parallel. The title arm catches queries that are a film title. The exact arm finds verbatim substrings with <code>position()</code> over normalized text. The keyword arm requires every query token via <code>hasToken()</code>, splitting on apostrophes because ClickHouse's tokenizer indexes "you're" as "you" and "re". The semantic arm embeds the query and takes the hundred nearest line vectors. The lists merge with <a href="https://plg.uwaterloo.ca/~gvcormac/cormacksigir09-rrf.pdf">reciprocal rank fusion</a> (Cormack, Clarke, and Buettcher, 2009):</p>
 
             \[ \text{score}(d) = \sum_{\text{arms}} \frac{1}{k + r(d)}, \qquad k = 60 \]
 
-            <p>RRF scores top out around 0.05, and any hit the exact arm surfaced gets a flat +1, so verbatim matches always outrank fuzzy ones. Within the exact set the ordering is fame: identical lines embed identically, so among films that all say the queried words verbatim every arm's ranking is an arbitrary tie-break, and TMDb vote count is the only real signal left. A film that repeats a line ("May the Force be with you" four times in one movie) collapses to its best occurrence with a count. The results page draws a divider after the "strong" hits, at the largest relative score drop in the top 20 when that drop is at least 1.5x. And when the top hit came from the semantic arm alone and sits one to three word-substitutions from the query, it gets marked as the line you were probably trying to remember.</p>
+            <p>RRF scores top out around 0.05, and any hit the exact arm found gets a flat +1, so verbatim matches always outrank fuzzy ones. Within the exact set, the order is fame. Identical lines embed identically, so among films that all say the words every arm ties, and TMDb vote count is the only signal left. A film that repeats a line ("May the Force be with you" four times in one movie) collapses to its best occurrence with a count. A divider goes after the strong hits, at the largest relative score drop in the top 20 when that drop is at least 1.5x. When the top hit came from the semantic arm alone and sits one to three word substitutions from the query, it gets marked as the line you were probably trying to remember, with the changed words highlighted by a word-level alignment. A curated list handles the famous misquotes ("Luke, I am your father") the same way.</p>
 
-            <h2>When nothing matches verbatim</h2>
+            <p>A query matching verbatim lines in at least eight films earns a phrase card instead: film and occurrence counts, the earliest film to say it, a histogram of where in a film's arc it lands, and per-decade usage normalized by how many corpus films each decade has, so thin coverage of the 1940s can't look like a trend.</p>
 
-            <p>A query with no exact match is a memory of meaning, not of words: a described scene, or a line split across speakers. Two more arms join. The beats arm searches exchange-width windows of dialogue (twelve utterances, stride six, so every line belongs to about two beats). The summaries arm searches generated scene summaries, which matter because they are phrased in the register memories are: event language, where the actual dialogue only shares words with your memory by luck. Both embed in the same 768-dimension space against the same query vector, so their cosine distances merge directly into one list, and summary hits map back to the beat opening the summarized span, so ranking uses the summary but the screen only ever shows real dialogue. These moment hits are weighted to outrank lines that merely share vocabulary with the query.</p>
+            <p>I check search quality against 53 real remembered-quote queries, each of which has to put its film in the top few results. Three still miss, one of them because the transcript says "dare ya" where everyone remembers "dare you".</p>
 
-            <h2>The context ladder</h2>
+            <h2>Scenes, and what a scene resembles</h2>
 
-            <p>Above the line sits a ladder of derived context. Beats are the overlapping twelve-line windows. Segments are scene-sized spans cut where consecutive beats stop resembling each other: a boundary opens where the cosine between adjacent beat vectors falls below the film's own mean minus one standard deviation, \( \mu - \sigma \), subject to a two-to-twelve beat size range. A segment's vector is the L2-normalized mean of its member beats; a film's vector is the normalized mean of its segments. Film-to-film similarity scores every segment's best match against the other film, minus that segment's mean best across all films so dialogue that matches everything contributes nothing, then blends 70/30 with TMDb metadata similarity over genres, decade, and keywords. The top twelve neighbors per film load into ClickHouse, and the film vectors project to a 2D map with <a href="https://arxiv.org/abs/1802.03426">UMAP</a>, seeded for a deterministic layout.</p>
+            <p>A query with no exact match is usually a memory of a scene rather than of words. Two more arms join in that case. The beats arm searches windows of twelve utterances at stride six, so every line belongs to about two beats. The summaries arm searches generated scene summaries, which matter because they describe what happens rather than what's said, which is how people remember scenes. Both embed in the same 768-dimension space, so their distances merge into one list, and a summary hit maps back to the beat opening the summarized span. Ranking uses the summary, the screen only shows real dialogue.</p>
 
-            <h2>Genericness</h2>
+            <p>Above beats sit segments, scene-sized spans cut where consecutive beats stop resembling each other. A boundary opens where the cosine between adjacent beat vectors falls below the film's own mean minus one standard deviation. A segment's vector is the normalized mean of its beats, a film's vector the normalized mean of its segments. Film-to-film similarity scores each segment's best match against the other film, subtracts that segment's mean best across all films so dialogue that matches everything contributes nothing, then blends 70/30 with TMDb similarity over genres, decade, and keywords. The top twelve neighbors per film load into ClickHouse.</p>
 
-            <p>Universal filler (greetings, arguments, "How is it? Horrible") sits near everything in embedding space and wins raw-cosine matching everywhere it appears. So every beat and every summary carries a genericness score: the mean cosine similarity to its top 32 nearest cross-film rows. Exact all-pairs at full corpus is around \(6 \times 10^{17}\) flops, a day of GPU, so the statistic is estimated against a fixed seeded sample of 10,240 rows; generic rows have thousands of near-neighbors and hit the sample everywhere, distinctive rows miss it everywhere, and the ordering the ranking needs is preserved. Downstream surfaces subtract it so only distinctive resonance wins.</p>
+            <p>Universal filler (greetings, arguments, "How is it? Horrible") sits near everything in embedding space and wins raw-cosine matching. So every beat and every summary carries a genericness score, the mean cosine to its top 32 nearest cross-film rows, and the scene-level surfaces subtract it. I estimate it against a fixed seeded sample of 10,240 rows rather than computing it exactly, though the full all-pairs product over 619,859 beats at 768 dimensions is about \(6 \times 10^{14}\) flops, a minute or so on the same GPU, and would have been fine.</p>
 
-            <h2>Bridges between films</h2>
-
-            <p>Every film page has a "what does this part remind you of" timeline: clicking a scene fetches its summary, its dialogue, and the nearest moments across the library, one per film. Comparing two whole films goes further. The bridge page (<code>/movie/a/vs/b</code>) finds candidate parallels in summary space, requiring a candidate to be a spike, at least 0.05 above what its scene scores against the whole other film on average, because a franchise's shared texture is a plateau, high everywhere and peaked nowhere. Each surviving candidate must then be corroborated in dialogue space: the best beat pair inside the two scenes has to clear a consensus floor, with genericness subtracted on both sides so films never bridge through their most ordinary scenes. Greedy one-to-one assignment stops magnet moments repeating, and fewer than two passing pairs renders an honest empty state. The thresholds were tuned on a comparison harness where unrelated controls (Toy Story vs Se7en) must go empty while related pairs keep three to five parallels.</p>
+            <p>Every film page has a timeline where clicking a scene shows its summary, its dialogue, and the nearest moment in each other film. Comparing two whole films (<code>/movie/a/vs/b</code>) finds candidate parallels in summary space, requiring a candidate to be a spike at least 0.05 above what its scene scores against the whole other film on average, because a franchise's shared texture is high everywhere and peaked nowhere. Each candidate then has to be corroborated in dialogue space, with genericness subtracted on both sides so films never bridge through their most ordinary scenes. Fewer than two passing pairs shows an empty page. I tuned the thresholds on a comparison harness where Toy Story vs Se7en has to come out empty while related pairs keep three to five parallels.</p>
 
             <h2>The generated layer</h2>
 
-            <p>Scene summaries and each film's five signature lines come from <a href="https://claude.com/claude-code">Claude</a> run headless (<code>claude -p</code>) by a pipeline driver, and nothing it says is trusted. Five-quote picks must match a real transcript line, either verbatim or snapping to the nearest line above a similarity floor; anything else is dropped, and a film whose picks all fail stays unbanked so the next run retries it. Summaries are generated per segment window under a prompt that forbids proper nouns not present in the window, spoilers imported from outside it, and judgment words, and requires per-claim evidence as seq ranges; a lint checks all of it, and failing rows regenerate with their findings attached as feedback. The store is append-only JSONL keyed by input hash and prompt version, so corpus growth or a prompt bump regenerates only what changed, and a batch that hits a refusal bisects down to the single offending window and generates the rest.</p>
-
-            <h2>Misquotes, phrases, near misses</h2>
-
-            <p>A curated list catches famous misquotes: searching "Luke, I am your father" shows the actual line ("No, I am your father.") with the changed words highlighted by a word-level alignment. A query matching verbatim lines in at least eight distinct films earns a phrase card instead, computed corpus-wide in one aggregate query: film and occurrence counts, the earliest film to say it, a histogram of where in a film's arc the phrase lands, and per-decade usage normalized by how many corpus films each decade has, so uneven coverage cannot masquerade as a trend. Search quality is pinned by an eval suite of 53 real remembered-quote queries, each asserting its film appears in the top few results, run as a <a href="https://playwright.dev/">Playwright</a> scoreboard.</p>
+            <p>Scene summaries and each film's five signature lines are generated offline by a language model driven headless from the build, and nothing it says is trusted. Five-quote picks must match a real transcript line or they're dropped. Summaries are generated per segment window under a prompt that forbids proper nouns absent from the window, spoilers, and judgment words, and requires per-claim evidence as seq ranges. A lint rejects rows that break any of it. The store is append-only JSONL keyed by input hash and prompt version, so a prompt bump regenerates only what changed.</p>
 
             <h2>One box</h2>
 
-            <p>Production is a single <a href="https://www.netcup.com/">netcup</a> VPS (8 vCPU, 16 GB) running three containers under <a href="https://docs.docker.com/compose/">Docker Compose</a>: ClickHouse, the SvelteKit node server with the model weights baked into the image, and <a href="https://caddyserver.com/">Caddy</a> for TLS, compression, and security headers. ClickHouse binds to localhost only; the app connects as a user that can read the corpus and insert only into the analytics tables, and data pushes arrive over SSH into the staging-swap path. Analytics are first-party and cookie-free: visitors count by an <a href="https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function">FNV-1a</a> hash of IP and truncated user agent that rotates daily and never stores its inputs, and both <a href="https://en.wikipedia.org/wiki/Do_Not_Track">Do Not Track</a> and <a href="https://globalprivacycontrol.org/">Global Privacy Control</a> are honored. All server data derives from local pipeline artifacts, so there are no backups; a lost box rebuilds from scratch, provisioning script through DNS, in under an hour.</p>
+            <p>Production is a single <a href="https://www.netcup.com/">netcup</a> VPS running ClickHouse, the SvelteKit server with the model weights baked into the image, and <a href="https://caddyserver.com/">Caddy</a> for TLS. ClickHouse binds to localhost, and the app connects as a user that can read the corpus and insert only into the analytics tables. Analytics are first-party and cookie-free, counting visitors by a hash of IP and truncated user agent that rotates daily. A lost box rebuilds from the local pipeline artifacts and the provisioning script in under an hour.</p>
         </article>
 
     </div>
 </main>
 <footer class="site-footer">
-  <div class="site-footer-links">
-    <a href="https://github.com/sean-reid">GitHub</a>
-    <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
-    <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
-    <a href="https://socrates-of-athens.github.io">Poetry</a>
-    <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
-  </div>
-</footer>
+      <div class="site-footer-links">
+        <a href="https://github.com/sean-reid">GitHub</a>
+        <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
+        <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
+        <a href="https://socrates-of-athens.github.io">Poetry</a>
+        <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
+        <a href="/feed.xml">Feed</a>
+      </div>
+    </footer>
 <script src="/nav.js"></script>
 </body>
 </html>

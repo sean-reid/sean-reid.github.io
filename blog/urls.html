@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+    <title>URL Extension Service - Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/urls.webp">
+    <link rel="stylesheet" href="/nav.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="description" content="A URL lengthener that encodes the destination inside the long link, so it needs no database and nothing expires">
+    <link rel="canonical" href="https://sean-reid.github.io/blog/urls.html">
+    <link rel="alternate" type="application/atom+xml" title="Sean Reid" href="/feed.xml">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Sean Reid">
+    <meta property="og:title" content="URL Extension Service">
+    <meta property="og:description" content="A URL lengthener that encodes the destination inside the long link, so it needs no database and nothing expires">
+    <meta property="og:url" content="https://sean-reid.github.io/blog/urls.html">
+    <meta property="og:image" content="https://sean-reid.github.io/blog/img/urls.webp">
+    <meta property="article:published_time" content="2026-09-23">
+    <meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="/" class="site-nav-name">Sean Reid</a>
+    <div class="site-nav-controls">
+      <div class="site-nav-search-wrap"><input type="search" class="site-nav-search" placeholder="Search..." aria-label="Search projects" autocomplete="off"><span class="site-nav-search-hint" aria-hidden="true">/</span></div>
+      <button type="button" class="site-nav-random">Random</button>
+      <div class="search-dropdown" role="listbox" aria-label="Search results"></div>
+    </div>
+  </div>
+</nav>
+<main class="site-content">
+    <div class="container">
+        <header>
+            <h1>URL Extension Service</h1>
+            <p class="meta">A URL lengthener that encodes the destination inside the long link, so it needs no database and nothing expires</p>
+            <p class="links-row">
+                <a href="https://urls.dwainosaur.com">Live Demo</a>
+                <a href="https://github.com/sean-reid/urls">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <figure>
+                <img decoding="async" fetchpriority="high" src="img/urls.webp" alt="The urls.dwainosaur.com form with the Chess game style selected and a 1,000 character link rendered as 89 moves of algebraic notation" width="2560" height="1600">
+                <figcaption>A Wikipedia link extended to 1,000 characters in the chess style. The 89 moves are not a legal game.</figcaption>
+            </figure>
+
+            <p>URL shorteners die and take their links with them. I built the opposite. You give urls.dwainosaur.com a destination and a length from 100 to 2,000 characters, and it hands back a link that long. The destination is encoded in the link itself, so the redirector keeps no state. It runs as a Cloudflare Worker with no database, and a link made today resolves for as long as the domain does.</p>
+
+            <p>The hard part was making one codec whose output passes as eighteen different kinds of ugly URL. The styles include an enterprise API path, a chess game in algebraic notation, the digits of pi, a DNA sequence, a GPS trail, a policy document with clause numbers, a Windows desktop path, and a query string full of tracking parameters. Every one of them has to carry arbitrary bytes and decode back to exactly the same string.</p>
+
+            <h2>Frame and digits</h2>
+
+            <p>The destination goes through two layers before any style sees it. The frame is a version byte, the UTF-8 bytes of the URL, and a CRC32 over both in a four byte trailer. The version byte is 0x01 and there's no version 2 yet, but if I ever change the encoding, old links keep working. Resolving a link means trying every carrier in turn until one round-trips, and the CRC is what rejects a wrong carrier that happens to find digits in the path.</p>
+
+            <p>The framed bytes then become digits in the carrier's radix. I didn't want bigints in the Worker, so the encoding is fixed width. Each group of four bytes is a 32-bit number, written in exactly as many digits as the radix needs to hold \(2^{32}\): 4 digits in radix 256, 8 in hex, 10 in decimal, 16 in the radix 4 alphabet of a DNA sequence. A fixed-width byte count leads the stream, sized for a payload of up to 8,192 bytes, which is two digits in radix 256 and four in decimal. The last group is padded with random bytes rather than zeros, so the padding doesn't show up as the same token at the end of every link. The decoder reads the byte count, takes that many groups, and ignores everything after, so a carrier can pad to any length it likes with plausible junk.</p>
+
+            <h2>Carriers</h2>
+
+            <p>A carrier renders digits into a path, plus a query string if it wants one, at a target length, and parses the path back into digits. The enterprise carrier maps each byte to one of 256 plural nouns (accounts, blueprints, gateways, allocations), and between runs of two to five data words it drops in <code>regions/eu-west-1</code> or <code>tenants/tnt-8b8aa7</code> as filler. Those words aren't in the data alphabet, so the parser skips them.</p>
+
+            <p>The chess carrier has an alphabet of exactly 256 moves: pawn pushes to ranks 3 through 6, knight, bishop, and rook moves to every square, 24 queen moves, and eight extras like O-O and Qxd8+. Move numbers are a prefix the parser strips. The games aren't legal. Both sides play Be3 on consecutive plies and bishops teleport across the board, and I decided nobody would check. The pi carrier opens with <code>/pi/3.1415926535</code>, spends the data digits in chunks of 5 to 12, and once the payload is done resumes the real digits of pi from the eleventh decimal onward. It has 2,200 digits on file, more than a 2,000 character link can use.</p>
+
+            <p>The tracking carrier puts the data in query parameters named sid, cid, tok, trace, and six others, in base 36, and pads with utm_source, fbclid, gclid, and _hsenc values of the right shapes and lengths. The GPS carrier writes decimal digits into lat, lng, alt, and hdg segments, and its parser takes every signed decimal it finds. It doesn't bound the values, so the output has longitudes like -362.27721 in it.</p>
+
+            <h2>Length</h2>
+
+            <p>The carriers share a path builder that adds data segments unconditionally and filler only while it fits, so the requested length is a ceiling. Some styles can't get under it. In the enterprise style a byte costs one word plus a slash, so <code>https://example.com/</code> requested at 300 characters comes back at 488 and the response flags it as the minimum. DNA is worse, at 16 letters per four bytes before any exon or codon annotation.</p>
+
+            <p>Resolving is a 301 with a one year cache and a noindex header. Before redirecting I run the decoded destination through the same validator as the input: http or https only, no credentials, no private addresses or localhost, and not this domain, so a link can't be extended again into a chain.</p>
+        </article>
+
+    </div>
+</main>
+<footer class="site-footer">
+      <div class="site-footer-links">
+        <a href="https://github.com/sean-reid">GitHub</a>
+        <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
+        <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
+        <a href="https://socrates-of-athens.github.io">Poetry</a>
+        <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
+        <a href="/feed.xml">Feed</a>
+      </div>
+    </footer>
+<script src="/nav.js"></script>
+</body>
+</html>

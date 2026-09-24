@@ -8,15 +8,26 @@
     <link rel="preload" as="image" href="img/deconflict.webp">
     <link rel="stylesheet" href="/nav.css">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="description" content="Assigns WiFi channels by coloring an interference graph built from a floorplan.">
+    <link rel="canonical" href="https://sean-reid.github.io/blog/deconflict.html">
+    <link rel="alternate" type="application/atom+xml" title="Sean Reid" href="/feed.xml">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Sean Reid">
+    <meta property="og:title" content="Deconflict">
+    <meta property="og:description" content="Assigns WiFi channels by coloring an interference graph built from a floorplan.">
+    <meta property="og:url" content="https://sean-reid.github.io/blog/deconflict.html">
+    <meta property="og:image" content="https://sean-reid.github.io/blog/img/deconflict.webp">
+    <meta property="article:published_time" content="2026-04-10">
+    <meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
 <nav class="site-nav">
   <div class="site-nav-inner">
     <a href="/" class="site-nav-name">Sean Reid</a>
     <div class="site-nav-controls">
-      <div class="site-nav-search-wrap"><input type="text" class="site-nav-search" placeholder="Search..." autocomplete="off"><span class="site-nav-search-hint">/</span></div>
-      <a class="site-nav-random">&rarr; Random</a>
-      <div class="search-dropdown"></div>
+      <div class="site-nav-search-wrap"><input type="search" class="site-nav-search" placeholder="Search..." aria-label="Search projects" autocomplete="off"><span class="site-nav-search-hint" aria-hidden="true">/</span></div>
+      <button type="button" class="site-nav-random">Random</button>
+      <div class="search-dropdown" role="listbox" aria-label="Search results"></div>
     </div>
   </div>
 </nav>
@@ -24,7 +35,7 @@
     <div class="container">
         <header>
             <h1>Deconflict</h1>
-            <p class="meta">WiFi channel assignment via graph coloring, with signal propagation modeling and combinatorial optimization</p>
+            <p class="meta">Assigns WiFi channels by coloring an interference graph built from a floorplan.</p>
             <p class="links-row">
                 <a href="https://deconflict.app/">Live Demo</a>
                 <a href="https://github.com/sean-reid/deconflict">Source</a>
@@ -33,117 +44,78 @@
 
         <article>
             <figure>
-                <img decoding="async" fetchpriority="high" src="img/deconflict.webp" alt="Screenshot of Deconflict showing four access points on an office floorplan with signal heatmap and AP properties panel">
-                <figcaption>Four access points on an office floorplan. The heatmap shows signal strength from excellent (green) to dead (red). The solver has assigned non-conflicting 5 GHz channels to each AP.</figcaption>
+                <img decoding="async" fetchpriority="high" src="img/deconflict.webp" alt="Screenshot of Deconflict showing four access points on an office floorplan with signal heatmap and AP properties panel" width="2560" height="1600">
+                <figcaption>Four access points on an office floorplan. Green is strong signal, red is dead, and each AP has a 5 GHz channel none of its neighbors share.</figcaption>
             </figure>
 
-            <p>When two WiFi access points broadcast on the same frequency and their coverage areas overlap, they contend for airtime and throughput drops. The channel assignment problem asks: given a set of APs with known positions and coverage radii, assign each AP a channel from a finite pool such that no two overlapping APs share a channel. This is vertex coloring on the interference graph. Deconflict builds that graph from a floorplan, solves it with several coloring algorithms, and renders the signal field as a heatmap so you can see both the coverage and the conflicts.</p>
+            <p>Two WiFi access points on the same channel with overlapping coverage contend for airtime, and both lose throughput. If I know where the APs are and how far each one reaches, picking channels so that no two overlapping APs share one is vertex coloring on an interference graph. The planner builds that graph from a floorplan, colors it, and draws the signal field on the same picture so I can see the coverage and the conflicts together.</p>
 
             <h2>The interference graph</h2>
 
-            <p>The interference graph \(G = (V, E)\) has one vertex per AP. Two vertices share an edge if the corresponding APs can interfere: their 3D Euclidean distance is less than the sum of their coverage radii. For APs on the same floor, distance is planar. For APs on different floors, the vertical offset (sum of ceiling heights and slab thicknesses between them) enters as a third coordinate, so \(d = \sqrt{\Delta x^2 + \Delta y^2 + \Delta z^2}\). Each edge carries a weight representing the degree of overlap:</p>
+            <p>One vertex per AP. Two APs get an edge when their distance is less than the sum of their coverage radii. On one floor that's the planar distance. Across floors I add the vertical offset (ceiling heights plus slab thicknesses between them) as a third coordinate. Each edge carries an overlap fraction:</p>
 
             \[\operatorname{overlap}(u, v) = \min\!\left(1,\; \frac{r_u + r_v - d(u,v)}{\min(r_u, r_v)}\right)\]
 
-            <p>This ranges from 0 (circles barely touching) to 1 (one circle fully contained in the other). Cross-floor edges are further attenuated by floor slab loss: the overlap is scaled by \(10^{-A/10}\) where \(A\) is the cumulative dB attenuation through intervening slabs. Edges with effective coupling below 1% are pruned, which keeps the graph sparse without discarding meaningful interference.</p>
+            <p>It's 0 when the circles barely touch. The clamp kicks in once \(d\) drops to the larger radius, which is when the smaller AP sits on the edge of the bigger one's circle. Full containment would score 2 without the clamp, so a 1 doesn't mean one circle is inside the other.</p>
 
-            <p>Each frequency band (2.4 GHz, 5 GHz, 6 GHz) produces an independent subgraph, since signals on different bands do not interfere. The solver colors each subgraph separately with its own channel pool, then merges the assignments.</p>
+            <p>Before coloring I compute the attenuated signal between each pair: inverse quartic in the 3D distance, then wall or slab loss as \(10^{-L/10}\) with \(L\) in dB. Pairs below 0.005 lose their edge. Each band (2.4, 5, and 6 GHz) is its own subgraph with its own channel pool, since signals on different bands don't interfere.</p>
 
-            <figure class="small">
-                <img decoding="async" src="img/cc/map-coloring.webp" alt="Graph coloring applied to a map" loading="lazy">
-                <figcaption>Graph coloring on a map: adjacent regions get distinct colors. The same structure appears in WiFi planning, where "adjacent" means "close enough to interfere." <a href="https://commons.wikimedia.org/wiki/File:Map_coloring_via_graphs.png">Wikimedia Commons</a></figcaption>
-            </figure>
+            <h2>Coloring it</h2>
 
-            <h2>Vertex coloring</h2>
+            <p>Finding the chromatic number is NP-hard, so the default solver is <a href="https://en.wikipedia.org/wiki/DSatur">DSatur</a> (Brelaz, 1979). Pick the uncolored vertex whose neighbors already use the most distinct colors, break ties by degree and then by index, and give it the lowest channel none of its neighbors has. It's exact on bipartite graphs and does well on the sparse, near-planar graphs a floorplan produces. When every channel is taken by some neighbor, it falls back to the channel the fewest neighbors use. That count ignores the overlap fractions, which only decide which edges survive pruning and feed the throughput estimate later.</p>
 
-            <p>Given a graph \(G\) and a set of \(k\) colors (channels), a proper \(k\)-coloring assigns a color to each vertex such that no two adjacent vertices share a color. The <a href="https://en.wikipedia.org/wiki/Chromatic_number">chromatic number</a> \(\chi(G)\) is the smallest \(k\) for which a proper coloring exists. Finding \(\chi(G)\) is <a href="https://en.wikipedia.org/wiki/NP-hardness">NP-hard</a> in general, so the app uses heuristic algorithms that find good colorings quickly, alongside an exact solver that finds \(\chi(G)\) when the graph is small enough.</p>
-
-            <p>The primary algorithm is <a href="https://en.wikipedia.org/wiki/DSatur">DSatur</a> (Degree of Saturation), introduced by Brelaz in 1979. It maintains for each uncolored vertex \(v\) a saturation count \(\operatorname{sat}(v) = |\{c : \exists\, u \in N(v),\; \operatorname{color}(u) = c\}|\), the number of distinct colors already assigned to neighbors of \(v\). At each step, the algorithm selects the uncolored vertex with the highest saturation (breaking ties by structural degree, then by index for determinism), and assigns it the lowest-numbered channel that does not conflict with any neighbor. This greedy strategy colors the most constrained vertices first, which tends to use fewer colors than naive ordering. DSatur produces optimal colorings on bipartite graphs and empirically finds near-optimal solutions on the sparse, near-planar graphs that arise in WiFi planning.</p>
-
-            <p>When the channel pool is exhausted and a vertex has no conflict-free option, the solver falls back to the channel that minimizes the sum of overlap weights with same-colored neighbors. This graceful degradation means the algorithm always produces an assignment, even when \(\chi(G)\) exceeds the available channels. The total co-channel contention is minimized rather than treated as a hard failure.</p>
-
-            <p>Three additional algorithms are available for comparison. <a href="https://en.wikipedia.org/wiki/Greedy_coloring">Welsh-Powell</a> sorts vertices by degree (descending) and colors greedily, which gives an upper bound of \(\Delta + 1\) colors where \(\Delta\) is the maximum degree. A plain greedy algorithm colors vertices in input order. A <a href="https://en.wikipedia.org/wiki/Backtracking">backtracking</a> solver with arc consistency and MRV (Minimum Remaining Values) branching finds the exact chromatic number by trying \(k = 1, 2, \ldots\) up to the greedy baseline, pruning the search with domain reduction. It times out at 5 seconds, returning the best solution found.</p>
+            <p><a href="https://en.wikipedia.org/wiki/Greedy_coloring">Welsh-Powell</a> and plain greedy are there for comparison. The exact solver is backtracking with MRV branching and forward checking. It picks the vertex with the smallest remaining domain, tries each color, deletes that color from the domains of uncolored neighbors, and backs out if any domain empties. It tries \(k = 1, 2, \ldots\) up to the greedy count and gives up after 5 seconds. There's no arc consistency. Forward checking was enough for the graph sizes a building produces.</p>
 
             <figure class="small">
                 <img decoding="async" src="img/cc/wifi-channels.svg" alt="2.4 GHz WiFi channel overlap diagram" loading="lazy">
-                <figcaption>2.4 GHz WiFi channels and their frequency overlap. Only channels 1, 6, and 11 are non-overlapping, so \(\chi(G) \leq 3\) suffices for 2.4 GHz in most deployments. 5 GHz offers 24 non-overlapping channels, making conflicts rarer. <a href="https://commons.wikimedia.org/wiki/File:2.4_GHz_Wi-Fi_channels_(802.11b,g_WLAN).svg">Wikimedia Commons</a></figcaption>
+                <figcaption>The 2.4 GHz channels overlap in frequency, and only 1, 6, and 11 are clear of each other, so that band's pool is effectively three colors. 5 GHz has 24. <a href="https://commons.wikimedia.org/wiki/File:2.4_GHz_Wi-Fi_channels_(802.11b,g_WLAN).svg">Wikimedia Commons</a></figcaption>
             </figure>
 
-            <h2>Signal propagation model</h2>
+            <h2>The heatmap</h2>
 
-            <p>The heatmap needs a signal strength estimate at every point on the floor. The propagation model combines free-space path loss with material-specific wall attenuation.</p>
-
-            <p>Signal power at distance \(d\) from an AP with coverage radius \(r\) follows an inverse quartic model:</p>
+            <p>Signal at distance \(d\) from an AP with coverage radius \(r\) is</p>
 
             \[S(d) = \frac{1}{1 + \left(\frac{d}{r}\right)^4}\]
 
-            <p>The quartic exponent (path loss exponent \(n = 4\)) reflects empirical indoor propagation, which decays faster than free-space inverse-square due to multipath and absorption. The coverage radius \(r\) is derived from the <a href="https://en.wikipedia.org/wiki/Link_budget">link budget</a>:</p>
+            <p>The quartic is the indoor path loss exponent \(n = 4\). I get \(r\) from the <a href="https://en.wikipedia.org/wiki/Link_budget">link budget</a>, \(r = 10^{(P_{\mathrm{tx}} - \mathrm{PL}_0 - P_{\mathrm{rx}}) / (10n)}\), with the 1 m reference loss \(\mathrm{PL}_0\) at 40, 47, and 49 dB for the three bands from <a href="https://en.wikipedia.org/wiki/ITU_model_for_indoor_attenuation">ITU-R P.1238</a> and a receiver sensitivity of -85 dBm.</p>
 
-            \[r = 10^{\,(P_{\mathrm{tx}} - \mathrm{PL}_0 - P_{\mathrm{rx}}) \,/\, (10n)}\]
+            <p>Walls come from a ray march through the wall mask. I step from the AP to the pixel with <a href="https://en.wikipedia.org/wiki/Digital_differential_analyzer_(graphics_algorithm)">DDA</a> and add dB for every step that lands in wall material, at a per-meter rate for each of six materials (drywall is 25 dB/m, concrete 60, metal 120). The heatmap then scales the signal by \(10^{-L_{\mathrm{wall}}/20}\). That should be \(10^{-L/10}\) for a power loss in dB, which is what the interference graph uses, so the heatmap and the optimizer halve the wall loss and draw walls more transparent than the graph thinks they are.</p>
 
-            <p>where \(P_{\mathrm{tx}}\) is transmit power, \(\mathrm{PL}_0\) is reference path loss at 1 meter (40 dB at 2.4 GHz, 47 dB at 5 GHz, 49 dB at 6 GHz per <a href="https://en.wikipedia.org/wiki/ITU_model_for_indoor_attenuation">ITU-R P.1238</a>), and \(P_{\mathrm{rx}} = -85\) dBm is receiver sensitivity.</p>
+            <p>A full ray march per pixel is too slow for dragging an AP around. Instead I precompute a polar attenuation field per AP: 720 angular slices of half a degree each, with cumulative dB stored every 3 world units of radius. Each pixel then costs an atan2 and a table read. The Cartesian grid I replaced needed about 20 million DDA steps per AP. The polar field needs about 360 thousand. During a drag it drops to 360 slices and coarser buckets.</p>
 
-            <p>Wall attenuation is computed by <a href="https://en.wikipedia.org/wiki/Digital_differential_analyzer_(graphics_algorithm)">DDA ray marching</a> from the AP to the evaluation point. The algorithm steps through a discrete grid of wall pixels, accumulating dB loss at each wall crossing. Six wall materials have distinct attenuation rates \(\alpha_m\) (dB per meter of thickness): drywall 25, glass 17, wood 33, brick 35, concrete 60, metal 120. The total wall loss is a line integral of material attenuation along the ray path, discretized as a Riemann sum over grid steps:</p>
+            <h2>Placing the APs</h2>
 
-            \[L_{\mathrm{wall}} = \sum_{i} \alpha_{m(i)} \cdot \Delta s_i\]
+            <p>Given \(k\) APs and a floorplan, where should they go? I sample the interior, weighted by device density when rooms are labeled (a conference room pulls harder than a stairwell).</p>
 
-            <p>where \(m(i)\) is the material at step \(i\) and \(\Delta s_i\) is the step length in meters. The received signal combines path loss and wall attenuation:</p>
+            <p>The first pass is signal-weighted <a href="https://en.wikipedia.org/wiki/Lloyd%27s_algorithm">Lloyd's algorithm</a>, seeded with <a href="https://en.wikipedia.org/wiki/K-means%2B%2B">k-means++</a>. Each sample goes to the AP with the strongest signal at that point. The optimizer uses a tighter, steeper falloff than the heatmap here, \(\max(0, (1 - d/1.5r)^2)\) times the wall factor. Each AP moves to the weighted centroid of its samples, with weight \((1 + 3\,\mathrm{deficit}) \times \mathrm{density}\) where deficit is one minus the best signal at that sample. The factor of 3 pulls APs toward dead zones. Centroids snap to the nearest interior pixel, and it stops when no AP moves more than 1 px.</p>
 
-            \[S_{\mathrm{received}}(d) = S(d) \cdot 10^{-L_{\mathrm{wall}} / 20}\]
+            <p>Lloyd's gets stuck in whatever basin the wall geometry puts it in, so a <a href="https://en.wikipedia.org/wiki/Particle_swarm_optimization">particle swarm</a> of 20 particles then explores around it for 60 iterations. Inertia decays linearly from 0.9 to 0.4, and both the cognitive and social coefficients are 1.5. Positions are clamped to the interior. Last, coordinate descent tries each AP in 8 directions at a step of 5 px, halving down to 0.5 px, and keeps any move that improves coverage.</p>
 
-            <p>For cross-floor APs, the 3D distance enters the path loss calculation, and each intervening floor slab contributes additional attenuation (8-35 dB per slab depending on material and frequency band).</p>
+            <p>All three passes read one wall attenuation cache, a Float32Array of dB loss from each source grid cell to each sample point. When an AP moves, only its column is invalidated. The optimizer evaluates tens of thousands of candidate positions against it.</p>
 
-            <p>To make the heatmap interactive, the app precomputes a polar attenuation field around each AP: 720 angular slices (0.5 degrees each) with cumulative dB stored at each radial distance. This reduces per-pixel wall lookup from a full ray march to an O(1) table read via atan2 and distance indexing, achieving roughly 55x speedup over naive ray casting.</p>
+            <h2>Throughput</h2>
 
-            <h2>Coverage optimization</h2>
+            <p>For each AP I estimate</p>
 
-            <p>Given k APs and a floorplan, where should the APs go to maximize coverage? This is a continuous optimization problem on a constrained domain (the building interior). The app uses a three-stage pipeline, each stage refining the previous solution.</p>
+            \[T_{\mathrm{eff}} = \frac{R_{\mathrm{phy}} \cdot \eta}{1 + \displaystyle\sum_{j \in \mathcal{N}_c(i)} s_{ij}}\]
 
-            <figure class="small">
-                <img decoding="async" src="img/cc/voronoi-euclidean.svg" alt="Voronoi diagram" loading="lazy">
-                <figcaption>A Voronoi tessellation. Lloyd's algorithm iteratively moves generators to the centroids of their Voronoi cells. In Deconflict, cells are weighted by signal deficit so APs migrate toward weak-coverage areas. <a href="https://commons.wikimedia.org/wiki/File:Euclidean_Voronoi_diagram.svg">Wikimedia Commons</a></figcaption>
-            </figure>
+            <p>where \(R_{\mathrm{phy}}\) is the PHY rate for the AP's standard, stream count, and channel width, \(\eta = 0.5\) covers MAC overhead, and \(s_{ij}\) is the attenuated signal between AP \(i\) and each AP \(j\) on the same channel. The denominator is the effective number of contending transmitters. Three co-channel APs at full overlap each get a third of the airtime. The \(s_{ij}\) are the same numbers the graph pruning uses.</p>
 
-            <p><strong>Stage 1: Signal-weighted <a href="https://en.wikipedia.org/wiki/Lloyd%27s_algorithm">Lloyd's algorithm</a>.</strong> This is k-means clustering adapted for coverage. Initialization uses <a href="https://en.wikipedia.org/wiki/K-means%2B%2B">k-means++</a> (each successive seed chosen with probability proportional to squared distance from existing seeds). Each Lloyd iteration assigns each sample point \(s\) to the AP \(a^* = \arg\max_a S_{\mathrm{received}}(s, a)\), then computes a weighted centroid per cluster:</p>
-
-            \[\mathbf{c}_a = \frac{\sum_{s \in C_a} w_s \cdot \mathbf{s}}{\sum_{s \in C_a} w_s}, \qquad w_s = 1 + 3\,(1 - S_{\mathrm{received}}(s, a^*))\]
-
-            <p>The \(3\times\) deficit penalty pulls APs toward dead zones rather than letting them cluster where coverage is already adequate. The AP moves to the nearest interior pixel to \(\mathbf{c}_a\). The algorithm converges when no AP moves more than 1 pixel, typically within 30 iterations. The result is a locally optimal <a href="https://en.wikipedia.org/wiki/Voronoi_diagram">Voronoi tessellation</a> of the interior weighted by signal deficit.</p>
-
-            <p><strong>Stage 2: <a href="https://en.wikipedia.org/wiki/Particle_swarm_optimization">Particle swarm optimization</a>.</strong> PSO explores the neighborhood around the Lloyd's solution to escape local optima caused by wall geometry. A swarm of 20 particles, each representing a candidate AP configuration, evolves over 60 iterations. The velocity update for particle \(p\) in dimension \(d\) is:</p>
-
-            \[v_{pd} \leftarrow \omega\, v_{pd} + c_1 r_1 (\mathbf{p}^{\,\mathrm{best}}_{pd} - x_{pd}) + c_2 r_2 (\mathbf{g}^{\,\mathrm{best}}_d - x_{pd})\]
-
-            <p>where \(\omega\) is inertia (linearly decayed from 0.9 to 0.4 to shift from exploration to exploitation), \(c_1 = c_2 = 1.5\) are cognitive and social coefficients, and \(r_1, r_2 \sim U(0,1)\). Positions are constrained to the building interior.</p>
-
-            <p><strong>Stage 3: Coordinate descent.</strong> A local polish that tries moving each AP in 8 directions (cardinal and diagonal) at decreasing step sizes (5, 2.5, 1.25, ... down to 0.5 pixels), accepting any move that improves coverage. This finds the nearest local optimum at sub-pixel resolution.</p>
-
-            <p>All three stages share a precomputed wall attenuation cache: a Float32Array mapping (source grid cell, sample point) pairs to dB loss, built once by DDA ray marching. When an AP moves, only its column of the cache is invalidated. This amortization is critical because the optimizer evaluates tens of thousands of candidate positions.</p>
-
-            <h2>Co-channel throughput estimation</h2>
-
-            <p>When two APs share a channel and their signals overlap, they contend for airtime. The effective throughput for each drops in proportion to the interference. The model computes overlap from the attenuated signal strength between each pair of co-channel APs (accounting for walls and floor slabs), then estimates effective throughput as:</p>
-
-            \[T_{\mathrm{eff}} = \frac{R_{\mathrm{phy}} \cdot \eta}{1 + \displaystyle\sum_{j \in \mathcal{N}_c(i)} \operatorname{overlap}(i, j)}\]
-
-            <p>where \(R_{\mathrm{phy}}\) is the physical layer rate (determined by WiFi standard, MIMO stream count, and channel width), \(\eta \approx 0.5\) accounts for MAC overhead, and \(\mathcal{N}_c(i)\) is the set of APs sharing a channel with AP \(i\). The denominator is the effective number of contending transmitters: if three APs share a channel with full overlap, each gets a third of the airtime. The overlap values come from the same attenuated signal model used in graph construction, so the throughput estimate is consistent with the interference graph that drives channel assignment.</p>
-
-            <h2>Implementation</h2>
-
-            <p>The frontend is <a href="https://svelte.dev/">Svelte 5</a> with <a href="https://svelte.dev/docs/kit">SvelteKit</a>, rendering to HTML5 Canvas. The solver, geometry, and channel logic are separate TypeScript packages in a monorepo. The coloring algorithms, optimizer, and heatmap renderer each run in <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API">Web Workers</a> so the UI stays responsive during computation. Wall detection uses <a href="https://en.wikipedia.org/wiki/Optical_character_recognition">OCR</a> (Tesseract.js) to mask text labels, adaptive thresholding via integral images, morphological closing, and flood fill. The app includes a database of 101 real AP models from 14 vendors with per-band TX power and MIMO specifications. It supports multi-floor buildings with per-floor floorplans, wall masks, and slab materials. The whole thing runs client-side and deploys to <a href="https://pages.cloudflare.com/">Cloudflare Pages</a>.</p>
+            <p>Wall detection from a floorplan image runs Tesseract.js to mask out text labels, then adaptive thresholding, morphological closing, and a flood fill. There's a database of 101 AP models from 14 vendors with per-band transmit power and MIMO streams, which is where \(P_{\mathrm{tx}}\) comes from. The solver, optimizer, and heatmap each run in a Web Worker so the canvas keeps responding while they work.</p>
         </article>
 
     </div>
 </main>
 <footer class="site-footer">
-  <div class="site-footer-links">
-    <a href="https://github.com/sean-reid">GitHub</a>
-    <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
-    <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
-    <a href="https://socrates-of-athens.github.io">Poetry</a>
-    <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
-  </div>
-</footer>
+      <div class="site-footer-links">
+        <a href="https://github.com/sean-reid">GitHub</a>
+        <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
+        <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
+        <a href="https://socrates-of-athens.github.io">Poetry</a>
+        <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
+        <a href="/feed.xml">Feed</a>
+      </div>
+    </footer>
     <script src="/nav.js"></script>
 </body>
 </html>

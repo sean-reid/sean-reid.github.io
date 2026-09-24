@@ -8,15 +8,26 @@
     <link rel="preload" as="image" href="img/lacuna.webp">
     <link rel="stylesheet" href="/nav.css">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="description" content="A two-player game where you draw the board as you play and score the regions you close off.">
+    <link rel="canonical" href="https://sean-reid.github.io/blog/lacuna.html">
+    <link rel="alternate" type="application/atom+xml" title="Sean Reid" href="/feed.xml">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Sean Reid">
+    <meta property="og:title" content="Lacuna">
+    <meta property="og:description" content="A two-player game where you draw the board as you play and score the regions you close off.">
+    <meta property="og:url" content="https://sean-reid.github.io/blog/lacuna.html">
+    <meta property="og:image" content="https://sean-reid.github.io/blog/img/lacuna.webp">
+    <meta property="article:published_time" content="2026-03-29">
+    <meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
 <nav class="site-nav">
   <div class="site-nav-inner">
     <a href="/" class="site-nav-name">Sean Reid</a>
     <div class="site-nav-controls">
-      <div class="site-nav-search-wrap"><input type="text" class="site-nav-search" placeholder="Search..." autocomplete="off"><span class="site-nav-search-hint">/</span></div>
-      <a class="site-nav-random">&rarr; Random</a>
-      <div class="search-dropdown"></div>
+      <div class="site-nav-search-wrap"><input type="search" class="site-nav-search" placeholder="Search..." aria-label="Search projects" autocomplete="off"><span class="site-nav-search-hint" aria-hidden="true">/</span></div>
+      <button type="button" class="site-nav-random">Random</button>
+      <div class="search-dropdown" role="listbox" aria-label="Search results"></div>
     </div>
   </div>
 </nav>
@@ -24,7 +35,7 @@
     <div class="container">
         <header>
             <h1>Lacuna</h1>
-            <p class="meta">Two-player online strategy game of planar construction and enclosure</p>
+            <p class="meta">A two-player game where you draw the board as you play and score the regions you close off.</p>
             <p class="links-row">
                 <a href="https://sean-reid.github.io/lacuna/">Live Demo</a>
                 <a href="https://github.com/sean-reid/lacuna">Source</a>
@@ -33,88 +44,51 @@
 
         <article>
             <figure>
-                <img decoding="async" fetchpriority="high" src="img/lacuna.webp" alt="Screenshot of Lacuna">
-                <figcaption>Lacuna's lobby screen.</figcaption>
+                <img decoding="async" fetchpriority="high" src="img/lacuna.webp" alt="Screenshot of Lacuna" width="2560" height="1600">
+                <figcaption>The lobby. One player creates a game and sends the link.</figcaption>
             </figure>
 
-            <p>Lacuna is a two-player strategy game where the board is constructed during play. Instead of starting with a grid or hex map, players start with an empty circle. Over the course of 30 to 60 minutes, they draw colored strands inside the circle, building up a <a href="https://en.wikipedia.org/wiki/Planar_graph">planar graph</a> whose topology determines the score. When a region becomes completely enclosed by strands of a single player's color, it becomes a "Lacuna" and scores for that player.</p>
+            <p>Lacuna starts as an empty circle with 12 anchor points around the rim. Two players take turns drawing strands inside it, and the strands become the board. When a region ends up bounded entirely by one player's strands, it seals, becomes a Lacuna, and scores for that player. Strands can't cross, so the space fills up and late moves have to fit between what's already drawn.</p>
 
-            <p>Formally, a graph \(G = (V, E)\) is <strong>planar</strong> if it can be embedded in the plane \(\mathbb{R}^2\) such that no two edges intersect except at shared endpoints. The game enforces planarity as a hard constraint: strands cannot cross. The circle boundary and all placed strands together form a planar subdivision of the disk \(D^2\), and the scoring mechanism operates on the faces of this subdivision.</p>
+            <p>I designed the game and its rules from scratch. You could play it with two pens and a printed circle, and the <a href="https://github.com/sean-reid/lacuna/blob/main/lacuna-rulebook.pdf">rulebook</a> is written so that you can, but tracking which regions have closed and who owns their boundaries is tedious by hand, and the web version does that for you.</p>
 
-            <p>I designed the game and its rules from scratch. The physical version would be playable with colored pens and a printed circle, but the topology tracking and scoring would be tedious to do by hand. The digital implementation handles all of that automatically.</p>
+            <h2>A turn</h2>
 
-            <figure class="small">
-                <img decoding="async" src="img/cc/graph-6n.svg" alt="A planar graph" loading="lazy">
-                <figcaption>A planar graph. Lacuna's strands and boundary form a similar structure, and the topology engine enumerates its faces to detect enclosed regions. <a href="https://commons.wikimedia.org/wiki/File:6n-graf.svg">Wikimedia Commons</a></figcaption>
-            </figure>
+            <p>Every anchor starts with two free sockets. On your turn you draw two tokens from a bag holding nine each of 1, 2, and 3, keep one as your tension value \(t\), and put the other back. You then pick \(k\) between 1 and \(t\), place a new node inside one open region, and draw \(k\) strands from it to \(k\) distinct vertices on that region's boundary that still have a free socket. Each of those vertices loses a socket and the new node gets \(k - 1\). Every move spends exactly one socket net, and there are 24 to begin with, so a game is at most 24 moves. It ends when the player to move has no legal single-strand move. The second player can swap colors after the first move, the usual pie rule.</p>
 
-            <h2>How a turn works</h2>
+            <p>A region seals when no part of its boundary is an arc of the outer circle and every strand on it is one color. Touching the rim at an anchor is fine. A rim arc of any length disqualifies it. Your score is the total boundary length of your Lacunae, counted in strand occurrences. A strand that borders the same region on both sides counts twice.</p>
 
-            <p>At the start of each turn, the active player draws a tension token, choosing one of two options. The tension value determines how many strands the player can place that turn. They then position a node inside a region and trace paths from that node to vertices on the circular boundary, using intermediate waypoints to route around existing strands. Strands cannot cross. As the game progresses, the available space fills up and routing becomes increasingly constrained. The early game feels open and strategic; the late game feels like threading a needle.</p>
+            <h2>Finding the faces</h2>
 
-            <p>Each placed strand adds edges and vertices to the planar graph. If a turn places \(k\) strands from a single interior node to \(k\) boundary vertices, the graph gains one new vertex (the interior node), \(k\) new edges, and potentially splits existing faces. By Euler's formula for connected planar graphs,</p>
+            <p>After each move I need every face of the planar graph formed by the 12 rim arcs and the strands, and for each face whether it touches the rim and what colors are on it. I do this with a half-edge traversal. Each arc and each strand becomes two directed half-edges. At every vertex I sort the outgoing half-edges by departure angle, clockwise. To walk a face from the half-edge \(u \to v\), I find the twin \(v \to u\) in \(v\)'s sorted list and take the next entry. Following that rule from every unvisited half-edge until it comes back to itself traces each face exactly once.</p>
 
-            \[V - E + F = 2\]
+            <p>Strands curve through waypoints, so the direction a strand leaves a vertex is not the direction of the chord to its other end. Sorting by the chord gives the wrong rotation system when two curved strands leave the same node, and the traversal then merges two faces or invents one. So I take the angle to the first waypoint, which matches what is on screen.</p>
 
-            <p>where \(V\) is the number of vertices, \(E\) the number of edges, and \(F\) the number of faces (including the exterior face). Each new edge that connects two existing vertices without passing through a third increases \(E\) by 1 and \(F\) by 1, since it bisects an existing face. The number of faces therefore grows monotonically as strands are placed: if the graph has \(E\) edges and \(V\) vertices, there are exactly \(F = E - V + 2\) faces. This is the quantity the scoring engine must enumerate after every move.</p>
+            <p>Finding the twin is a linear scan of the vertex's neighbor list, so the whole thing is \(O(E \cdot \Delta)\) rather than \(O(E)\), where \(\Delta\) is the largest degree. With at most 24 moves and no vertex of degree more than five, it doesn't matter.</p>
 
-            <p>The game ends when no legal moves remain or when the tension token supply runs out. The planarity constraint means that, by <a href="https://en.wikipedia.org/wiki/Planar_graph#Maximal_planar_graphs">the edge bound for simple planar graphs</a>, the total number of edges can never exceed \(3V - 6\). In practice the game ends well before this theoretical maximum, because the geometric embedding inside a fixed circle constrains routing long before the combinatorial limit is reached.</p>
+            <p>One face is the outside of the circle, and it has to be excluded. I build a polygon for each face out of the rim arcs and the strands' smoothed waypoints and test whether the point just above the top of the circle falls inside. If that finds nothing, I fall back to the face with the most rim arcs.</p>
 
-            <h2>Detecting enclosed regions</h2>
+            <p>A face is a Lacuna if it has no arc half-edges, is not the exterior, has all its strand half-edges in one color, and has at least three of them.</p>
 
-            <p>The core technical problem is determining, after each strand is placed, which regions of the circle have been enclosed and what colors their boundaries are. The strands and the circle boundary together form a planar graph. The <a href="https://en.wikipedia.org/wiki/Planar_graph#Euler's_formula">faces of that graph</a> (the regions between strands) need to be enumerated, and each face's boundary needs to be traced to check whether all edges belong to a single player.</p>
+            <h2>Drawing</h2>
 
-            <figure class="small">
-                <img decoding="async" src="img/cc/jordan-curve.svg" alt="Illustration of the Jordan curve theorem" loading="lazy">
-                <figcaption>The Jordan curve theorem: a simple closed curve divides the plane into interior and exterior regions. <a href="https://commons.wikimedia.org/wiki/File:Jordan_curve_theorem.svg">Wikimedia Commons</a></figcaption>
-            </figure>
+            <p>The board is SVG. Each strand is a DOM element, so hover, selection, and figuring out which region was clicked come from the browser. The strands are drawn through their waypoints with two rounds of <a href="https://en.wikipedia.org/wiki/Chaikin%27s_algorithm">Chaikin corner cutting</a>, which replaces each corner with points at 25% and 75% along the adjacent segments. Two rounds is enough to look like thread pulled between pins and still stay close to where the player drew. The face polygons for the exterior test use the same smoothed points, so hit-testing agrees with what's rendered.</p>
 
-            <p>The theoretical foundation here is the <strong>Jordan curve theorem</strong>: any simple closed curve \(C\) in \(\mathbb{R}^2\) divides the plane into exactly two connected components, an interior and an exterior, with \(C\) as their common boundary. In Lacuna, the circular boundary is the outermost Jordan curve. Each time a player's strands form a simple closed walk within the planar graph, they create a new Jordan curve that encloses a region. A face \(f\) of the planar graph is a Lacuna for player \(i\) if every edge on the boundary \(\partial f\) belongs to player \(i\). More precisely, let \(\text{color}: E \to \{1, 2, \varnothing\}\) assign each edge to a player or to the neutral boundary. Then face \(f\) scores for player \(i\) if and only if</p>
-
-            \[\text{color}(e) \in \{i, \varnothing\} \quad \text{for all } e \in \partial f\]
-
-            <p>where boundary edges (arcs of the circle) are treated as neutral and compatible with either player.</p>
-
-            <p>The face enumeration algorithm walks the planar graph using a <strong>half-edge traversal</strong> (also called the next-edge or face-tracing algorithm from the <a href="https://en.wikipedia.org/wiki/Doubly_connected_edge_list">doubly connected edge list</a> data structure). For each directed half-edge \(\vec{e} = (u, v)\), the algorithm follows the next half-edge incident to \(v\) in clockwise order around \(v\). When it returns to the starting half-edge having traced a complete boundary cycle, it has identified one face. For a planar graph with \(V\) vertices and \(E\) edges, there are exactly \(2E\) half-edges, and each half-edge belongs to exactly one face boundary, so the total work to enumerate all faces is \(O(E)\).</p>
-
-            <p>This computation has to be fast. Players expect to see immediately whether their move created a Lacuna. The tricky cases involve strands that share vertices, strands that touch the boundary at multiple points, and degenerate face configurations where a very small region is created between closely spaced strands. Getting the edge-traversal logic correct for all these cases took significant testing.</p>
-
-            <h2>Rendering with SVG</h2>
-
-            <p>The board is rendered in <a href="https://developer.mozilla.org/en-US/docs/Web/SVG">SVG</a> rather than Canvas. The primary reason is hit-testing: in SVG, each strand is a DOM element with native event handling. Selecting a strand, highlighting it on hover, or detecting which region the user clicked in all come from the DOM for free. In Canvas, all of this would need to be reimplemented with manual coordinate math and spatial indexing.</p>
-
-            <p>Strands are drawn through waypoints using <a href="https://en.wikipedia.org/wiki/Subdivision_surface">Chaikin's corner-cutting algorithm</a>. Chaikin smoothing iteratively replaces sharp corners with smooth curves by subdividing each segment and cutting corners at 25%/75% positions. After a few iterations, the result is a smooth curve that passes near (but not exactly through) the original waypoints. This gives the strands an organic quality, like thread stretched between pins, rather than the angular look of straight line segments between points.</p>
-
-            <h2>Multiplayer</h2>
-
-            <p>Lacuna is played online between two players. The game state is synchronized in real time through <a href="https://firebase.google.com/docs/database">Firebase Realtime Database</a>. One player creates a game and receives a shareable link. The other player opens the link and joins. <a href="https://firebase.google.com/docs/auth/web/anonymous-auth">Firebase Anonymous Authentication</a> assigns each player an identity without requiring account creation.</p>
-
-            <p>Because Lacuna is strictly turn-based (only one player can act at a time), there are no concurrency issues to resolve. The game state is a single Firebase document containing all nodes, strands, scores, and turn information. Each move is an atomic write that both clients observe in real time.</p>
-
-            <h2>The rulebook and visual output</h2>
-
-            <p>The repository includes a formal <a href="https://github.com/sean-reid/lacuna/blob/main/lacuna-rulebook.pdf">rulebook</a>, written in <a href="https://www.latex-project.org/">LaTeX</a> and compiled to PDF. Writing unambiguous game rules is a different kind of challenge from writing code. Every edge case needs to be addressed in a way that a player can understand without a computer to adjudicate.</p>
-
-            <p>One thing I like about Lacuna is that the finished boards are visually interesting. Every game produces a different pattern of colored curves partitioning the circle into regions. The results tend to look like stained glass or river deltas. There's an aesthetic payoff to a game where the artifact you build during play is the board itself.</p>
-
-            <h2>Complexity</h2>
-
-            <p>Lacuna's gameplay touches on several problems known to be computationally hard. Determining the optimal move in a two-player planar enclosure game is related to problems in the complexity class <a href="https://en.wikipedia.org/wiki/PSPACE"><strong>PSPACE</strong></a>. Many two-player combinatorial games with perfect information are <a href="https://en.wikipedia.org/wiki/PSPACE-complete">PSPACE-complete</a> to solve optimally, including generalized versions of <a href="https://en.wikipedia.org/wiki/Hex_(board_game)">Hex</a> and <a href="https://en.wikipedia.org/wiki/Go_(game)">Go</a>. Lacuna shares structural features with both: like Hex, it involves path connectivity on a planar surface; like Go, it involves territorial enclosure.</p>
-
-            <p>Even the sub-problem of testing whether a given partial board admits a move that encloses a new region has connections to planar graph augmentation. The question "can player \(i\) add at most \(k\) edges to enclose a new face whose boundary is monochromatic?" requires searching over planar embeddings and is unlikely to admit a simple greedy solution. For practical play the search space is bounded by the geometric constraints of the circle, but the underlying combinatorial problem scales poorly with board complexity, which is part of what makes the game strategically rich.</p>
+            <p>Games are two-player over <a href="https://firebase.google.com/docs/database">Firebase Realtime Database</a> with anonymous auth. One player creates a game and shares a link. The whole game is one document, and each move is one update that both clients see. There's a spectator mode for anyone else with the link. Only one player can act at a time, so writes never conflict.</p>
         </article>
 
     </div>
 </main>
 <footer class="site-footer">
-  <div class="site-footer-links">
-    <a href="https://github.com/sean-reid">GitHub</a>
-    <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
-    <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
-    <a href="https://socrates-of-athens.github.io">Poetry</a>
-    <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
-  </div>
-</footer>
+      <div class="site-footer-links">
+        <a href="https://github.com/sean-reid">GitHub</a>
+        <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
+        <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
+        <a href="https://socrates-of-athens.github.io">Poetry</a>
+        <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
+        <a href="/feed.xml">Feed</a>
+      </div>
+    </footer>
     <script src="/nav.js"></script>
 </body>
 </html>

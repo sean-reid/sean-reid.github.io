@@ -1,0 +1,168 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica', 'Arial', sans-serif;
+    line-height: 1.6;
+    color: #1a1a1a;
+    background: #fafafa;
+    padding: 0;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.intro {
+    margin-bottom: 3rem;
+}
+
+.intro h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.75rem;
+}
+
+.intro p {
+    max-width: 640px;
+    color: #333;
+    margin-bottom: 0.6rem;
+}
+
+.intro-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.25rem;
+    margin-top: 1rem;
+}
+
+.intro-links a {
+    color: #0366d6;
+    text-decoration: none;
+    font-size: 0.95rem;
+    padding: 0.5rem 0;
+}
+
+.intro-links a:hover {
+    text-decoration: underline;
+}
+
+.projects,
+.group {
+    margin-bottom: 3rem;
+}
+
+.projects h2,
+.group h2 {
+    font-size: 1.3rem;
+    font-weight: 500;
+    margin-bottom: 1.25rem;
+    color: #333;
+}
+
+.featured-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+}
+
+.project {
+    padding: 1.5rem;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    transition: box-shadow 0.2s;
+}
+
+.project:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.project-name {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 0.5rem;
+}
+
+.project-desc {
+    color: #555;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.project-link {
+    display: flex;
+    text-decoration: none;
+    color: inherit;
+}
+
+.project-link .project {
+    flex: 1;
+}
+
+.project-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0 3rem;
+}
+
+.project-list li {
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.project-list a {
+    display: block;
+    min-height: 44px;
+    padding: 0.6rem 0;
+    color: #1a1a1a;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color 0.2s;
+}
+
+.project-list a:hover .project-list-name {
+    color: #0366d6;
+}
+
+.project-list .list-desc {
+    color: #666;
+    font-size: 0.8rem;
+    margin-left: 0.25rem;
+}
+
+a:focus-visible,
+button:focus-visible {
+    outline: 2px solid #0366d6;
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .intro h1 {
+        font-size: 1.6rem;
+    }
+
+    .featured-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .project {
+        padding: 1.25rem;
+    }
+
+    .project-list {
+        grid-template-columns: 1fr;
+    }
+}

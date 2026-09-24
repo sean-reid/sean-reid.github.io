@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+    <title>Pikiwedia - Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/pikiwedia.webp">
+    <link rel="stylesheet" href="/nav.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="description" content="A proxy that serves live Wikipedia with its word onsets swapped, the same way on every visit">
+    <link rel="canonical" href="https://sean-reid.github.io/blog/pikiwedia.html">
+    <link rel="alternate" type="application/atom+xml" title="Sean Reid" href="/feed.xml">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Sean Reid">
+    <meta property="og:title" content="Pikiwedia">
+    <meta property="og:description" content="A proxy that serves live Wikipedia with its word onsets swapped, the same way on every visit">
+    <meta property="og:url" content="https://sean-reid.github.io/blog/pikiwedia.html">
+    <meta property="og:image" content="https://sean-reid.github.io/blog/img/pikiwedia.webp">
+    <meta property="article:published_time" content="2026-09-23">
+    <meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="/" class="site-nav-name">Sean Reid</a>
+    <div class="site-nav-controls">
+      <div class="site-nav-search-wrap"><input type="search" class="site-nav-search" placeholder="Search..." aria-label="Search projects" autocomplete="off"><span class="site-nav-search-hint" aria-hidden="true">/</span></div>
+      <button type="button" class="site-nav-random">Random</button>
+      <div class="search-dropdown" role="listbox" aria-label="Search results"></div>
+    </div>
+  </div>
+</nav>
+<main class="site-content">
+    <div class="container">
+        <header>
+            <h1>Pikiwedia</h1>
+            <p class="meta">A proxy that serves live Wikipedia with its word onsets swapped, the same way on every visit</p>
+            <p class="links-row">
+                <a href="https://pikiwedia.dwainosaur.com">Live Demo</a>
+                <a href="https://github.com/sean-reid/pikiwedia">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <figure>
+                <img decoding="async" fetchpriority="high" src="img/pikiwedia.webp" alt="The Wikipedia article on ham sandwiches rendered by Pikiwedia with the title Sam handwich, the tab labeled Tarticle, and the infobox listing a caple of origin of United Nikgdom" width="2560" height="1600">
+                <figcaption>The Ham sandwich article as Pikiwedia serves it. The layout, images, and stylesheets are Wikipedia's own. Only the text has been touched.</figcaption>
+            </figure>
+
+            <p>Pikiwedia is a Cloudflare Worker that proxies English Wikipedia and spoonerizes it. The <a href="https://pikiwedia.dwainosaur.com/wiki/Ham_sandwich">Ham sandwich</a> article comes back as Sam handwich, "Karious vinds of mustard and nayommaise are also moccon", and the history section reports that Catrick Nonnolly was the first to hoduce a pram, breese and chead mish. Everything else on the page is Wikipedia's. Stylesheets, scripts, and images load from Wikimedia's own hosts, so when Wikipedia changes its skin, Pikiwedia changes with it.</p>
+
+            <p>Most of the project went into making the output pronounceable and making it come out the same every time someone loads the page.</p>
+
+            <h2>Onsets</h2>
+
+            <p>A spoonerism swaps onsets, the consonants before the first vowel, not first letters. Swapping letters turns "cheese and vegetables" into "vheese and cegetables". Swapping onsets gives "veese and chegetables". So the splitter walks forward until it hits a vowel and takes everything before it: "ch" from cheese, "str" from strong. Y counts as a vowel except at the start of a word, so "years" splits as y plus ears, and q keeps its u, so "queen" is qu plus een rather than q plus ueen.</p>
+
+            <p>Plain onset swaps get dull, so about half the time an eligible word does something else. It can swap its onset with its own next consonant, keeping doubled letters doubled: toppings becomes pottings and common becomes moccon. It can form a three-way chain with the next two eligible words and rotate the onsets among them. A word with no onset, like onion, can only take part in a chain, where it both gives and receives. In a bare pair it strands a headless fragment. Or the swap takes a chunk rather than an onset: the onset plus the first vowel run, and sometimes the consonants after that, so "western" and "supermarkets" become "supern" and "westermarkets". The chunk's remainder has to open on a vowel, or the receiving word ends up with "pre" glued onto "ght". The rest of the time it's a straight onset swap with a partner up to three words ahead, provided no punctuation or digit sits between them.</p>
+
+            <p>Every candidate then passes a speakability check that rejects onsets English doesn't use: an initial x, an initial ck, four consonants in a row, or k before another consonant. "Xettures" fails and "chegetables" passes. If a swap fails the check, both words are left alone.</p>
+
+            <p>Long words come out as rubble, so the odds fall with length. A word of eight letters or fewer takes part with probability 0.78, and past twelve letters 0.12. Stopwords, anything under three letters, acronyms like NASA, and mixed-case names like McDonald are skipped. Ordinary capitalized names are not, which is how Patrick Connolly became Catrick Nonnolly. A swapped word takes the case of the slot it lands in, so a swap across a sentence boundary still capitalizes correctly.</p>
+
+            <h2>The same page every time</h2>
+
+            <p>A spoonerism that changed on every reload would feel broken, and the tab title and search suggestions come from the same text, so they'd stop matching the page. Nothing in the engine calls Math.random. Each run of text is hashed with FNV-1a together with the article title and a counter of which text block it is, and the hash seeds a mulberry32 generator. The same block of the same article always comes out the same way. The title is transmuted first and unconditionally, and its rendering is pinned across the page along with its head noun. Once the title is Sam handwich, every "sandwich" in the article is a handwich and every "ham sandwich" a "sam handwich". A small curated dictionary sits underneath: Wikipedia is always Pikiwedia, encyclopedia is enfrycodepia, the Talk tab is Alk, and disambiguation is disgamibutation.</p>
+
+            <h2>Proxying Wikipedia</h2>
+
+            <p>The rewriter walks the HTML by hand and copies markup through byte for byte, sending only text nodes to the engine. Script, style, code, math, and SVG are skipped, as are references, citations, IPA transcriptions, navboxes, and anything with a non-English lang attribute. Human-readable attributes (title, alt, aria-label, placeholder) are transmuted too, which is how the image captions and link tooltips read as parody. Entities are lifted out before tokenizing and put back after, so &amp;nbsp; survives as itself rather than being decoded into a space. The license notice in the footer stays verbatim, with a parody credit added beside it.</p>
+
+            <p>Wikipedia's HTML has one feature that broke my first parser. Parsoid puts whole tags inside attribute values. A figure carries a data-mw attribute holding JSON, and the JSON holds escaped HTML with its own title attributes and closing angle brackets. A regex over the tag text matched those nested attribute names and rewrote them, and a naive scan for the next > ended the tag in the middle of the JSON. So the tag finder tracks quote state and parses attributes positionally.</p>
+
+            <p>Search was its own problem. The typeahead calls a JSON API, and I rewrite only the display fields in the response (title, description, excerpt, snippet, and a few others) while leaving the key that holds the real slug alone, so navigation still resolves upstream. Then it turned out that clicking a suggestion sends the display title to Special:Search as a query, and Wikipedia has never heard of "Cist of locktails". The proxy remembers every display-to-slug pair it emits in the Cache API and answers those clicks with a redirect to the real article.</p>
+
+            <p>Wikipedia also serves a different skin to phones, Minerva instead of Vector, decided by user agent. The Worker classifies the visitor as phone or not (iPads count as desktop) and fetches upstream with a matching Chrome or iPhone Safari user agent, plus a Pikiwedia tag and the repo URL as a contact address. Cloudflare caches the upstream HTML for an hour without the device class in the key, so a phone and a laptop hitting the same article within the hour can get each other's skin.</p>
+        </article>
+
+    </div>
+</main>
+<footer class="site-footer">
+      <div class="site-footer-links">
+        <a href="https://github.com/sean-reid">GitHub</a>
+        <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
+        <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
+        <a href="https://socrates-of-athens.github.io">Poetry</a>
+        <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
+        <a href="/feed.xml">Feed</a>
+      </div>
+    </footer>
+<script src="/nav.js"></script>
+</body>
+</html>

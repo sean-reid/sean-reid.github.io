@@ -8,15 +8,26 @@
     <link rel="preload" as="image" href="img/pulse.webp">
     <link rel="stylesheet" href="/nav.css">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="description" content="Heart rate, breathing rate, and HRV estimated from a webcam in the browser, with the pulse painted back onto the face.">
+    <link rel="canonical" href="https://sean-reid.github.io/blog/pulse.html">
+    <link rel="alternate" type="application/atom+xml" title="Sean Reid" href="/feed.xml">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Sean Reid">
+    <meta property="og:title" content="Pulse">
+    <meta property="og:description" content="Heart rate, breathing rate, and HRV estimated from a webcam in the browser, with the pulse painted back onto the face.">
+    <meta property="og:url" content="https://sean-reid.github.io/blog/pulse.html">
+    <meta property="og:image" content="https://sean-reid.github.io/blog/img/pulse.webp">
+    <meta property="article:published_time" content="2026-05-09">
+    <meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
 <nav class="site-nav">
   <div class="site-nav-inner">
     <a href="/" class="site-nav-name">Sean Reid</a>
     <div class="site-nav-controls">
-      <div class="site-nav-search-wrap"><input type="text" class="site-nav-search" placeholder="Search..." autocomplete="off"><span class="site-nav-search-hint">/</span></div>
-      <a class="site-nav-random">&rarr; Random</a>
-      <div class="search-dropdown"></div>
+      <div class="site-nav-search-wrap"><input type="search" class="site-nav-search" placeholder="Search..." aria-label="Search projects" autocomplete="off"><span class="site-nav-search-hint" aria-hidden="true">/</span></div>
+      <button type="button" class="site-nav-random">Random</button>
+      <div class="search-dropdown" role="listbox" aria-label="Search results"></div>
     </div>
   </div>
 </nav>
@@ -24,7 +35,7 @@
     <div class="container">
         <header>
             <h1>Pulse</h1>
-            <p class="meta">Remote photoplethysmography via POS spectral analysis, Kalman-filtered multi-source sensor fusion, and WebGL2 temporal motion amplification</p>
+            <p class="meta">Heart rate, breathing rate, and HRV estimated from a webcam in the browser, with the pulse painted back onto the face.</p>
             <p class="links-row">
                 <a href="https://sean-reid.github.io/pulse/">Live Demo</a>
                 <a href="https://github.com/sean-reid/pulse">Source</a>
@@ -33,263 +44,76 @@
 
         <article>
             <figure>
-                <img decoding="async" fetchpriority="high" src="img/pulse.webp" alt="Screenshot of Pulse showing a webcam feed with real-time heart rate, breathing rate, and HRV metrics overlaid">
-                <figcaption>Real-time vitals extracted from a standard webcam. The face is detected via MediaPipe landmarks, skin-region color fluctuations are processed into a heart rate estimate, and the video feed is motion-amplified to make the pulse flush visible to the naked eye.</figcaption>
+                <img decoding="async" fetchpriority="high" src="img/pulse.webp" alt="Screenshot of Pulse showing a webcam feed with real-time heart rate, breathing rate, and HRV metrics overlaid" width="2560" height="1600">
+                <figcaption>The webcam feed with heart rate, breathing rate, and HRV readouts. The cheeks flush in time with the estimated pulse.</figcaption>
             </figure>
 
-            <p>Your webcam can see your heartbeat. Each cardiac cycle pushes blood through the capillaries in your face, causing sub-pixel color fluctuations as oxygenated hemoglobin absorbs green light. These fluctuations are invisible to the naked eye but measurable in the raw pixel stream. <a href="https://en.wikipedia.org/wiki/Remote_photoplethysmography">Remote photoplethysmography</a> (rPPG) extracts a pulse signal from these color changes, and from that signal you can derive heart rate, heart rate variability, and even breathing rate. This project does all of that in real time, entirely in the browser, with nothing but a webcam.</p>
+            <p>Each heartbeat pushes blood into the capillaries of the face and shifts the skin color by a fraction of a pixel value. A webcam records that shift even though nobody can see it. <a href="https://en.wikipedia.org/wiki/Remote_photoplethysmography">Remote photoplethysmography</a> (rPPG) is the name for pulling a pulse waveform back out of it. This one runs entirely in the browser from a laptop camera. It estimates heart rate, breathing rate, and two HRV numbers, then paints the estimated pulse back onto the cheeks so there's something to look at.</p>
 
             <figure class="small">
                 <img decoding="async" src="img/cc/ppg-signal.svg" alt="Photoplethysmogram signal showing AC and DC components" loading="lazy">
-                <figcaption>Components of a photoplethysmogram signal. The AC component, modulated by cardiac pulsation, rides on top of a slowly varying DC baseline from tissue and venous blood. Remote PPG recovers the AC component from reflected light captured by a camera. <a href="https://commons.wikimedia.org/wiki/File:Photoplethysmogram_signal_components.svg">Wikimedia Commons</a></figcaption>
+                <figcaption>What a PPG waveform looks like. The small pulsatile part rides on a large slow baseline, and the camera version of it is far noisier than this. <a href="https://commons.wikimedia.org/wiki/File:Photoplethysmogram_signal_components.svg">Wikimedia Commons</a></figcaption>
             </figure>
 
-            <h2>Face detection and ROI placement</h2>
+            <p>I've never compared the output against a pulse oximeter or any public rPPG dataset, so I have no error figure, and like every rPPG method it falls apart under motion and changing light.</p>
 
-            <p>The signal pipeline begins with <a href="https://developers.google.com/mediapipe/solutions/vision/face_landmarker">MediaPipe FaceLandmarker</a>, which provides 478 facial landmarks per frame using a float16 model running on the GPU. Three regions of interest are constructed from landmark subsets: a <strong>forehead</strong> ROI (landmarks 10, 67, 69, 104, 108, 151, 284, 298, 299, 337), a <strong>left cheek</strong> ROI (123, 147, 187, 205, 206, 216), and a <strong>right cheek</strong> ROI (352, 376, 411, 425, 426, 436). Each ROI is the axis-aligned bounding box of its landmarks, padded by 4 pixels.</p>
+            <h2>Finding skin</h2>
 
-            <p>Face detection runs every 3 frames to limit computational cost. Each ROI is downsampled to \(32 \times 32\) pixels, and a weighted mean of R, G, B values is computed across all pixels that pass a skin-tone classifier, with per-pixel weights provided by the <a href="#spatial-beamforming">spatial beamformer</a> described below. The classifier operates in normalized chrominance space:</p>
+            <p>I use <a href="https://developers.google.com/mediapipe/solutions/vision/face_landmarker">MediaPipe FaceLandmarker</a> for the 478 landmarks, running every third frame because it's the most expensive thing in the loop. From the landmarks I take three boxes: the forehead and both cheeks, each the bounding box of a handful of landmarks padded by 4 pixels. Each box gets downsampled to 32 by 32 and I average R, G, and B over the pixels that pass a skin test. The test is in normalized chrominance, \(r_n = R/(R+G+B)\) and \(g_n = G/(R+G+B)\), and a pixel counts as skin when \(R+G+B > 60\), \(r_n \in (0.35, 0.6)\), and \(g_n \in (0.25, 0.4)\). It throws out background, specular highlights, and shadow. The bounds are hard-coded and untested across skin tones.</p>
 
-            \[r_n = \frac{R}{R + G + B}, \qquad g_n = \frac{G}{R + G + B}\]
+            <p>The averaging isn't uniform once a heart rate estimate exists. A per-pixel weighting stage keeps 64 frames of green-channel history for the 1,024 forehead pixels. After 30 frames it correlates each pixel's history against a single sine at the current bpm and maps the correlation to a weight \(w_p = 0.1 + 0.9 \max(0, \rho_p)\). Pixels that pulse in time with the estimate count more. The floor of 0.1 keeps any pixel from being silenced completely, so a wrong estimate can still be corrected by the pixels that disagree with it. The reference is a sine only, with no cosine term, so a pixel that pulses a quarter cycle out of phase with the reference scores near zero even though it carries the signal.</p>
 
-            <p>A pixel is classified as skin if the sum \(R + G + B > 60\) and the normalized coordinates fall within \(r_n \in (0.35, 0.6)\), \(g_n \in (0.25, 0.4)\). This rejects background pixels, specular highlights, and shadowed regions before they corrupt the mean color signal.</p>
+            <h2>POS</h2>
 
-            <h2>The POS algorithm</h2>
+            <p>The pulse extraction is the <a href="https://doi.org/10.1109/TBME.2016.2609282">Plane Orthogonal to Skin</a> algorithm from Wang et al. (2017). POS works on sliding windows of 48 samples, which is 1.6 seconds at 30 fps. In each window it divides each channel by its window mean to remove the DC level, then projects onto two axes orthogonal to \([1,1,1]\):</p>
 
-            <p>The core pulse extraction uses the <a href="https://doi.org/10.1109/TBME.2016.2609282">Plane Orthogonal to Skin</a> (POS) algorithm (Wang et al., 2017), which projects temporal color variations onto a plane in normalized RGB space that is orthogonal to the skin-tone direction. This projection suppresses specular reflections and motion artifacts while preserving the blood volume pulse.</p>
+            \[S_1 = \tilde{G} - \tilde{B}, \qquad S_2 = \tilde{G} + \tilde{B} - 2\tilde{R}\]
 
-            <p>Given time series of spatially averaged color channels \(R(t)\), \(G(t)\), \(B(t)\) from the three face ROIs, the algorithm processes overlapping windows of length \(L = 48\) samples (1.6 seconds at 30 fps). Within each window starting at frame \(t_0\):</p>
+            <p>Green carries most of the pulse. Hemoglobin's strongest absorption peak is actually in the violet, near 415 nm, but that light barely penetrates skin and camera sensors are most sensitive in green, so green wins in practice. Wang et al. then combine the two projections as \(H = S_1 + \alpha S_2\) with \(\alpha = \sigma(S_1)/\sigma(S_2)\). Their argument is that the specular component survives the projection in both signals, and scaling by the ratio of standard deviations makes those leftovers equal in size so they cancel when added. Each window's \(H\) is standardized by \(\sigma(S_1)\) and overlap-added into a 256-sample ring buffer with a \(1/48\) weight. The buffer covers about 8.5 seconds, which turns out to matter later.</p>
 
-            <p><strong>1. Temporal normalization.</strong> Each channel is divided by its window mean to remove the DC component and reduce sensitivity to skin tone and illumination:</p>
+            <h2>Two estimators and a vote</h2>
 
-            \[\tilde{C}(t) = \frac{C(t)}{\bar{C}}, \qquad \bar{C} = \frac{1}{L}\sum_{j=0}^{L-1} C(t_0 + j), \qquad C \in \{R, G, B\}\]
+            <p>The pulse buffer goes through a 60-sample moving-average detrend and a frequency-domain bandpass to 40 to 200 bpm (zero-pad to a power of two, FFT, zero the out-of-band bins, inverse FFT). Then two estimators run on the same filtered signal. One applies a Hamming window, takes a radix-2 FFT, finds the largest bin in the band, requires it to exceed twice the median in-band magnitude, and refines the position with parabolic interpolation. Its confidence is peak power over total in-band power. The other computes normalized autocorrelation over lags from 0.3 to 1.5 seconds, takes the highest positive lag with the same parabolic refinement, and uses the correlation value itself as confidence.</p>
 
-            <p><strong>2. POS projection.</strong> Two signals are constructed that lie in the plane orthogonal to the skin-tone vector \([1, 1, 1]^\top\) in normalized color space:</p>
+            <p>If the two estimates are within 10% of each other I average them and take the higher confidence. If they disagree the more confident one wins. Anything below 0.08 confidence is dropped. The FFT resolves frequency better on a long record and the autocorrelation is harder to fool with a harmonic, and in practice the disagreement case fires mostly during motion, when neither is right.</p>
 
-            \[S_1(t) = \tilde{G}(t) - \tilde{B}(t)\]
-            \[S_2(t) = \tilde{G}(t) + \tilde{B}(t) - 2\tilde{R}(t)\]
+            <h2>Breathing</h2>
 
-            <p>The first projection \(S_1\) captures the difference between green and blue channels, which is sensitive to blood volume changes (hemoglobin absorbs green light more than blue). The second projection \(S_2\) adds a correction term involving the red channel. Together, these two signals span the plane orthogonal to uniform illumination changes.</p>
+            <p>One breathing source is chest motion. A box below the face, 1.6 face-heights wide and 1.2 tall, is downsampled to 32 by 32 and I take the mean signed green difference between consecutive frames. Signed, because squaring it would double the frequency. This goes through the same detrend, bandpass to 0.1 to 0.6 Hz, and two-estimator vote as the heart rate, with a 900-sample buffer, a 240-sample minimum, and a 0.12 confidence floor.</p>
 
-            <p><strong>3. Adaptive combination.</strong> The two projections are combined with a data-driven weight that minimizes the contribution of non-pulse components:</p>
+            <p>Another is landmark motion. The mean y-coordinate of the nose tip, nose bridge, and chin oscillates slightly with each breath. I smooth it with a one-pole low-pass at \(\alpha = 0.5\) and buffer it at the 10 Hz detection rate, then run the same estimator pair with a 50-sample detrend and an 80-sample minimum. It tracks head motion at least as much as breathing.</p>
 
-            \[\alpha = \frac{\sigma(S_1)}{\sigma(S_2)}\]
+            <p>The last is <a href="https://en.wikipedia.org/wiki/Respiratory_sinus_arrhythmia">respiratory sinus arrhythmia</a>. Heart rate speeds up on the inhale and slows on the exhale, so the breathing frequency is hiding in the beat-to-beat intervals. I find peaks in the filtered pulse, keep intervals between 0.3 and 1.5 seconds, resample them to a uniform 4 Hz tachogram, and take an FFT of that. The confidence is discounted by 0.8 because it's indirect. It needs 15 peaks, and the pulse buffer is 256 samples, so at 30 fps you need 15 beats in 8.5 seconds, about 98 bpm, and at a resting heart rate the RSA path never fires. When it does fire, the 8.5-second record gives a frequency resolution of roughly 0.12 Hz, about four bins across the whole breathing band, and the 4 Hz resampling doesn't help with that.</p>
 
-            \[H(t) = S_1(t) + \alpha \cdot S_2(t)\]
+            <h2>One Kalman filter per rate</h2>
 
-            <p>The ratio of standard deviations adapts the combination to the current signal characteristics. When motion artifacts dominate \(S_2\), its standard deviation inflates and \(\alpha\) shrinks, automatically down-weighting the corrupted projection.</p>
+            <p>Heart rate and breathing rate each have a two-state <a href="https://en.wikipedia.org/wiki/Kalman_filter">Kalman filter</a> tracking the rate and its derivative under a constant-velocity model. Process noise is 0.25 for heart rate and 0.06 for breathing, because breathing rate should wander more slowly. Every measurement arrives with a variance \(R = R_0 / \max(c, 0.05)\), where \(c\) is the estimator's confidence and \(R_0\) is a hand-picked base variance per source: 4 for the spectral heart rate, 4 for landmark breathing, 20 for chest motion, 12 for RSA. So a confident heart rate reading enters with \(R = 8\) and one at the confidence floor enters with \(R = 80\). An innovation gate drops any measurement more than three sigma from the prediction. The confidence the UI shows is \(1/(1 + P_{00})\), the filter's own state variance, so it only says how steady the estimate is.</p>
 
-            <p><strong>4. Overlap-add.</strong> The windowed pulse signal is standardized and accumulated into the output buffer with overlap averaging:</p>
+            <p>When at least 8 valid intervals exist I also compute SDNN and RMSSD with \(n-1\) in the denominator, in milliseconds to one decimal. Both come from camera-detected peaks in a noisy signal, and HRV is very sensitive to peak timing error.</p>
 
-            \[p(t) \mathrel{+}= \frac{H(t) - \bar{S}_1}{\max\bigl(\sigma(S_1),\, 10^{-10}\bigr)} \cdot \frac{1}{L}\]
+            <h2>Painting the pulse back on</h2>
 
-            <p>The overlap-add with \(1/L\) normalization smooths discontinuities at window boundaries and produces a continuous pulse waveform stored in a 256-sample ring buffer.</p>
+            <p>The display is a single WebGL2 fragment shader with six render targets and ping-pong framebuffers. The visible effect is synthetic, driven by the estimated rate, and no real per-pixel motion gets amplified the way Eulerian video magnification does. Two per-pixel IIR bandpass pairs do run on the GPU for the pulse and breathing bands and their state is kept current, but nothing on screen comes from them. A phase accumulator advances by \(2\pi \cdot \text{bpm} \cdot \Delta t / 60\) each frame using the measured frame interval, so it stays locked to the estimate no matter how the frame rate jitters, and \(\sin\varphi\) drives a flush painted onto two cheek ellipses from an 80 by 60 mask. The flush multiplies the pixel by \((1 + 0.40f, 1 - 0.12f, 1 - 0.14f)\), red up and green and blue down, which is roughly what perfusion looks like. A blend factor ramps toward \(\min(1, 1.5c)\) with a 3-second time constant and decays to zero over a second if the estimate is lost.</p>
 
-            <h2 id="spatial-beamforming">Spatial beamforming</h2>
+            <p>Breathing does the same thing with geometry instead of color. A second oscillator at the breathing rate drives a body mask, a trapezoid from the neck to the bottom of the frame, through a vertical smoothstep envelope that anchors the lower edge. The shader lifts the texture coordinate by \(0.05 b\) and narrows the horizontal coordinate about the tracked body center by a factor of \(1 + 0.10 b\). Because the drive is a signed sine, the shoulders rise on the inhale and settle below neutral on the exhale.</p>
 
-            <p>Not all skin pixels carry the pulse signal equally. Specular highlights, shadow boundaries, and occluded regions add noise that dilutes the blood volume pulse in the spatial average. Once a heart rate estimate is available, a spatial beamformer refines the averaging by upweighting pixels whose green-channel time series correlates with the cardiac frequency.</p>
+            <h2>Timing and housekeeping</h2>
 
-            <p>The beamformer records the green channel of each pixel in the forehead ROI (\(32 \times 32 = 1024\) pixels) into a ring buffer of 64 frames. After a minimum of 30 frames have accumulated, it correlates each pixel's time series with a sinusoidal reference at the detected heart rate:</p>
-
-            \[r(t) = \sin\!\left(\frac{2\pi \cdot \text{bpm}}{60 \cdot f_s} \cdot t\right)\]
-
-            <p>For each pixel \(p\), the Pearson correlation with the reference is computed from the mean-subtracted green-channel history \(\tilde{g}_p(t) = g_p(t) - \bar{g}_p\):</p>
-
-            \[\rho_p = \frac{\sum_t \tilde{g}_p(t)\, r(t)}{\sqrt{\sum_t \tilde{g}_p(t)^2 \;\cdot\; \sum_t r(t)^2}}\]
-
-            <p>Pixels whose green channel oscillates in phase with the heartbeat produce \(\rho_p \approx 1\); pixels dominated by noise or motion artifacts produce \(\rho_p \approx 0\). The correlation is clamped to non-negative values and mapped to a weight with a floor of 0.1:</p>
-
-            \[w_p = 0.1 + 0.9 \cdot \max(0,\, \rho_p)\]
-
-            <p>The floor ensures that no pixel is fully silenced, preserving the ability to detect rate changes even when the beamformer's reference is slightly off. The weighted spatial mean replaces the uniform mean in the POS input:</p>
-
-            \[\bar{C} = \frac{\sum_p w_p \cdot C_p}{\sum_p w_p}, \qquad C \in \{R, G, B\}\]
-
-            <p>This creates a feedback loop: the POS algorithm produces a BPM estimate, which feeds the beamformer, which produces better pixel weights, which yield a cleaner POS signal. Before the first BPM estimate is available, all weights default to 1 (uniform averaging).</p>
-
-            <h2>Peak detection</h2>
-
-            <p>The raw POS signal contains the pulse but also noise, baseline drift, and harmonics. The dominant heart rate frequency is extracted through detrending, bandpass filtering, and a dual-estimator fusion that runs both FFT spectral analysis and time-domain autocorrelation in parallel.</p>
-
-            <p><strong>Detrending.</strong> A moving-average filter with window size 60 is subtracted from the signal to remove slow baseline drift:</p>
-
-            \[x_\text{detrended}(t) = x(t) - \frac{1}{|W(t)|}\sum_{j \in W(t)} x(j)\]
-
-            <p>where \(W(t)\) is the set of indices within 30 samples of \(t\), clamped to the signal boundaries.</p>
-
-            <p><strong>Bandpass filtering.</strong> The signal is filtered to the heart rate frequency range \([f_\text{min}, f_\text{max}] = [0.667, 3.333]\) Hz (corresponding to 40-200 bpm). The filter is implemented in the frequency domain: the signal is zero-padded to the next power of two, transformed via FFT, all bins outside the passband are zeroed, and the inverse FFT recovers the filtered signal.</p>
-
-            <p><strong>FFT estimator.</strong> A <a href="https://en.wikipedia.org/wiki/Window_function#Hann_and_Hamming_windows">Hamming window</a> is applied to the filtered signal:</p>
-
-            \[w(n) = 0.54 - 0.46 \cos\!\left(\frac{2\pi n}{N - 1}\right)\]
-
-            <p>The windowed signal is zero-padded to the next power of two and transformed using a <a href="https://en.wikipedia.org/wiki/Cooley%E2%80%93Tukey_FFT_algorithm">Cooley-Tukey</a> radix-2 FFT with bit-reversal permutation. The magnitude spectrum is computed over the first half of the output:</p>
-
-            \[|X(k)| = \sqrt{\operatorname{Re}(X_k)^2 + \operatorname{Im}(X_k)^2}, \qquad k = 0, \ldots, N/2 - 1\]
-
-            <p>The dominant peak is found by scanning the bins corresponding to the passband \([f_\text{min}, f_\text{max}]\). A noise floor rejection test requires the peak magnitude to exceed twice the median magnitude within the passband. If it passes, <a href="https://ccrma.stanford.edu/~jos/sasp/Quadratic_Interpolation_Spectral_Peaks.html">parabolic interpolation</a> refines the peak location to sub-bin precision:</p>
-
-            \[\hat{k} = k_\text{peak} + \frac{1}{2} \cdot \frac{\alpha - \gamma}{\alpha - 2\beta + \gamma}\]
-
-            <p>where \(\alpha = |X(k_\text{peak} - 1)|\), \(\beta = |X(k_\text{peak})|\), \(\gamma = |X(k_\text{peak} + 1)|\). The refined frequency is \(\hat{f} = \hat{k} \cdot f_s / N\), and the spectral confidence is the ratio of peak power to total passband power: \(c_\text{FFT} = |X(k_\text{peak})|^2 / \sum_{k \in \text{band}} |X(k)|^2\).</p>
-
-            <p><strong>Autocorrelation estimator.</strong> The same bandpass-filtered signal (without windowing) is analyzed by computing the normalized <a href="https://en.wikipedia.org/wiki/Autocorrelation">autocorrelation</a> at each lag \(\tau\) in the range \([f_s / f_\text{max},\; f_s / f_\text{min}]\):</p>
-
-            \[R(\tau) = \frac{\sum_{t} x(t)\, x(t + \tau)}{\sum_{t} x(t)^2}\]
-
-            <p>The lag with the highest positive autocorrelation is refined via parabolic interpolation, and the frequency is \(\hat{f} = f_s / \hat{\tau}\). The autocorrelation value itself serves as the confidence \(c_\text{AC}\).</p>
-
-            <p><strong>Fusion.</strong> Both estimators run on the same filtered signal and are fused by agreement. If both produce estimates that are within 10% of each other (relative to the larger), the estimates are averaged and the higher confidence is taken. If they disagree, the estimate with the higher confidence wins. This dual-estimator approach is more robust than either method alone: FFT has better frequency resolution for long signals, while autocorrelation is less sensitive to spectral leakage and harmonic confusion. Estimates with fused confidence below 0.08 are discarded.</p>
-
-            <h2>Breathing rate estimation</h2>
-
-            <p>Breathing rate is estimated from three independent sources, each capturing a different physical manifestation of respiration.</p>
-
-            <p><strong>Chest motion.</strong> A chest ROI is placed below the face, anchored to the nose tip (landmark 1) and chin (landmark 152). Its vertical position starts 0.3 face-heights below the chin, with width 1.6 and height 1.2 times the face height. The ROI is downsampled to \(32 \times 32\) pixels, and the mean signed green-channel difference between consecutive frames is computed:</p>
-
-            \[E(t) = \frac{1}{N_\text{px}}\sum_{i=1}^{N_\text{px}} \bigl(G_i(t) - G_i(t-1)\bigr)\]
-
-            <p>The signed mean (rather than RMS) preserves the polarity of the brightness change, avoiding frequency doubling that would occur if the signal were squared. The green channel is used because it has the highest signal-to-noise ratio for physiological signals. The motion signal oscillates at the breathing frequency as the chest rises and falls. It is processed through the same dual-estimator pipeline used for heart rate: detrend (window size 150) \(\to\) bandpass \([0.1, 0.6]\) Hz (6-36 breaths/min) \(\to\) parallel FFT (Hamming window, 4\(\times\) zero-padded) and autocorrelation \(\to\) fusion by agreement. When the two estimators agree within 10%, their frequency estimates are averaged; otherwise the higher-confidence estimate is selected. Estimates with fused confidence below 0.12 are discarded. The buffer holds 900 samples (30 seconds at 30 fps), and a minimum of 240 samples (8 seconds) is required.</p>
-
-            <p><strong>Facial landmark displacement.</strong> Breathing causes subtle vertical oscillation of the face. The average \(y\)-coordinate of three MediaPipe landmarks (4: nose tip, 6: nose bridge, 152: chin) is tracked at every face detection step. The raw landmark position is smoothed with a single-pole low-pass filter (\(\alpha = 0.5\)) before buffering to reduce detection jitter, producing a time series sampled at \(30/3 = 10\) Hz. This signal undergoes the same dual-estimator pipeline (detrend, bandpass, FFT + autocorrelation fusion) with a detrend window of 50 and a minimum of 80 samples. Because the sample rate differs from the camera frame rate, the lag range and FFT frequency bins are scaled accordingly.</p>
-
-            <p><strong>Respiratory sinus arrhythmia.</strong> Heart rate is not constant within a breath cycle. It accelerates during inhalation and decelerates during exhalation, a phenomenon called <a href="https://en.wikipedia.org/wiki/Respiratory_sinus_arrhythmia">respiratory sinus arrhythmia</a> (RSA). This modulation encodes the breathing frequency within the heart rate signal itself. To extract it, beat-to-beat RR intervals are computed from the peaks detected in the filtered rPPG signal (with a minimum peak distance of \(\lfloor f_s \cdot 60 / \text{BPM}_\text{max}\rfloor\) samples). Only intervals between \(60/\text{BPM}_\text{max} = 0.3\) s and \(60/\text{BPM}_\text{min} = 1.5\) s are retained. When at least 15 beats are available, the irregular RR interval series is resampled to a uniform 4 Hz tachogram via linear interpolation, then processed through an FFT-based spectral pipeline: detrend, bandpass \([0.1, 0.6]\) Hz, Hamming window, 4\(\times\) zero-padded FFT, and peak detection. (RSA uses FFT alone rather than the dual-estimator fusion, since the uniform 4 Hz resampling produces a clean, well-conditioned spectrum with sufficient frequency resolution.) The resulting confidence is discounted by a factor of 0.8 to reflect the indirect nature of RSA-derived breathing estimates.</p>
-
-            <h2>Sensor fusion</h2>
-
-            <p>Each measurement source produces a rate estimate with an associated confidence. Rather than averaging or taking the best, all sources are fused through a shared <a href="https://en.wikipedia.org/wiki/Kalman_filter">Kalman filter</a> that naturally weights high-confidence measurements more heavily and provides temporal smoothing.</p>
-
-            <p>The state vector is \(\mathbf{x} = [x_0,\, x_1]^\top\), where \(x_0\) is the current rate (bpm or breaths/min) and \(x_1\) is its time derivative (rate of change). A constant-velocity process model predicts the state forward:</p>
-
-            \[\mathbf{x}^- = \mathbf{F}\mathbf{x}, \qquad \mathbf{F} = \begin{bmatrix} 1 & \Delta t \\ 0 & 1 \end{bmatrix}\]
-
-            <p>The predicted covariance incorporates process noise proportional to \(\Delta t\):</p>
-
-            \[\mathbf{P}^- = \mathbf{F}\mathbf{P}\mathbf{F}^\top + q \begin{bmatrix} \Delta t^3/3 & \Delta t^2/2 \\ \Delta t^2/2 & \Delta t \end{bmatrix}\]
-
-            <p>where \(q\) is the process noise intensity: 0.25 for heart rate, 0.06 for breathing rate. A higher \(q\) allows the filter to track faster changes in heart rate; a lower \(q\) reflects the expectation that breathing rate varies more slowly.</p>
-
-            <figure class="small">
-                <img decoding="async" src="img/cc/kalman-filter.svg" alt="Kalman filter predict-update cycle block diagram" loading="lazy">
-                <figcaption>The Kalman filter alternates between a prediction step (propagating the state forward under the process model) and an update step (correcting the prediction using a new measurement). Each measurement source provides its own variance, so the filter automatically trusts precise sources more than noisy ones. <a href="https://commons.wikimedia.org/wiki/File:Kalman-filter_en.svg">Wikimedia Commons, CC BY-SA 4.0, MartinThoma</a></figcaption>
-            </figure>
-
-            <p>Each measurement \(z\) enters through the observation model \(\mathbf{H} = [1,\, 0]\) with measurement variance \(R\). The innovation (prediction error) and its variance are:</p>
-
-            \[y = z - x_0^-, \qquad S = P_{00}^- + R\]
-
-            <p>An innovation gate rejects outliers: if \(y^2 / S > 9\) (exceeding 3\(\sigma\)), the measurement is discarded. Otherwise, the Kalman gain is computed and the state is corrected:</p>
-
-            \[\mathbf{K} = \frac{1}{S}\begin{bmatrix} P_{00}^- \\ P_{10}^- \end{bmatrix}, \qquad \mathbf{x}^+ = \mathbf{x}^- + \mathbf{K}y, \qquad \mathbf{P}^+ = (\mathbf{I} - \mathbf{K}\mathbf{H})\mathbf{P}^-\]
-
-            <p>The measurement variance \(R\) encodes both the intrinsic noise of each source and the confidence of the current estimate:</p>
-
-            \[R = \frac{R_0}{\max(c,\, 0.05)}\]
-
-            <p>where \(R_0\) is the base variance and \(c\) is the spectral confidence. At high confidence (\(c = 0.5\)), a heart rate measurement enters with \(R = 4/0.5 = 8\). At the confidence floor (\(c = 0.05\)), the same source enters with \(R = 80\), contributing 10\(\times\) less to the state update. The base variances by source are:</p>
-
-            <table style="margin: 1rem auto; text-align: left; border-collapse: collapse;">
-                <tr><td style="padding: 0.25rem 1rem;"><strong>Source</strong></td><td style="padding: 0.25rem 1rem;">\(R_0\)</td><td style="padding: 0.25rem 1rem;"><strong>Interpretation</strong></td></tr>
-                <tr><td style="padding: 0.25rem 1rem;">Heart rate (POS spectral)</td><td style="padding: 0.25rem 1rem;">4</td><td style="padding: 0.25rem 1rem;">\(\pm 2\) bpm at peak confidence</td></tr>
-                <tr><td style="padding: 0.25rem 1rem;">Breathing (landmark)</td><td style="padding: 0.25rem 1rem;">4</td><td style="padding: 0.25rem 1rem;">\(\pm 2\) br/min</td></tr>
-                <tr><td style="padding: 0.25rem 1rem;">Breathing (chest motion)</td><td style="padding: 0.25rem 1rem;">20</td><td style="padding: 0.25rem 1rem;">\(\pm 4.5\) br/min</td></tr>
-                <tr><td style="padding: 0.25rem 1rem;">Breathing (RSA)</td><td style="padding: 0.25rem 1rem;">12</td><td style="padding: 0.25rem 1rem;">\(\pm 3.5\) br/min</td></tr>
-            </table>
-
-            <p>Heart rate has a single measurement source (POS spectral peak) feeding its own Kalman filter. Breathing rate has three sources (landmark, chest motion, RSA) all feeding a shared Kalman filter, with each update weighted by the source's variance. The final output confidence is \(1 / (1 + P_{00})\), where \(P_{00}\) is the current state variance.</p>
-
-            <h2>Motion amplification</h2>
-
-            <p>The vital signs extracted above are invisible in the raw video feed. Motion amplification makes them visible by applying physiologically-motivated visual effects synchronized to the detected signals: a multiplicative skin flush for the cardiac cycle and geometric coordinate warping for respiration. Rather than amplifying raw per-pixel temporal variation (as in <a href="https://en.wikipedia.org/wiki/Eulerian_video_magnification">Eulerian Video Magnification</a>), this approach drives the visualization directly from the estimated vital signals, producing cleaner output without spatial filtering.</p>
-
-            <p>The rendering pipeline runs in a single WebGL2 fragment shader with <a href="https://registry.khronos.org/webgl/specs/latest/2.0/#3.7.11">multiple render targets</a> (MRT), writing six textures per frame. Double-buffered ping-pong framebuffers prevent read-write hazards. Two pairs of first-order IIR low-pass filters run per-pixel on the GPU, maintaining temporal state for the pulse band \([0.667, 3.333]\) Hz and the breathing band \([0.1, 0.6]\) Hz:</p>
-
-            \[L_\text{new}(x, y) = L(x, y) + \alpha \bigl(I(x, y, t) - L(x, y)\bigr), \qquad \alpha = 1 - e^{-2\pi f_c / f_s}\]
-
-            <p>A smaller \(\alpha\) produces a slower-moving average (lower cutoff); a larger \(\alpha\) tracks the input more closely (higher cutoff). Two such filters with cutoffs \(f_\text{low}\) and \(f_\text{high}\) produce a temporal bandpass. These filter states are updated each frame to preserve continuity, but the amplified display is driven by the cardiac and breathing phase oscillators described below.</p>
-
-            <h3>Dual-channel mask</h3>
-
-            <p>A low-resolution \(80 \times 60\) mask encodes two spatial regions in separate color channels. The <strong>red channel</strong> contains two cheek ellipses, positioned relative to the nose tip at a vertical offset of \(0.15 h_f\) below the nose and a lateral offset of \(\pm 0.45 h_f\), with semi-axes \(r_x = 0.25 h_f\) and \(r_y = 0.2 h_f\) (where \(h_f\) is the distance from nose tip to chin). The <strong>green channel</strong> contains a body trapezoid anchored below the face oval: the neck (\(0.6 \times\) face width) tapers outward to the shoulders (\(2.2 \times\) face width), extending to the bottom of the frame. On the GPU, the body mask is composited to exclude the face region:</p>
-
-            \[\text{faceMask} = M_R, \qquad \text{bodyMask} = M_G \cdot (1 - M_R)\]
-
-            <h3>Cardiac flush</h3>
-
-            <p>Once the Kalman filter has converged on a heart rate estimate, a global cardiac oscillator tracks the phase of the heartbeat:</p>
-
-            \[\varphi(t) = \varphi(t-1) + \frac{2\pi \cdot \text{bpm} \cdot \Delta t}{60}\]
-
-            <p>The phase increment is proportional to the actual frame interval \(\Delta t\) rather than a fixed frame rate, so the oscillator stays locked to the cardiac frequency regardless of rendering jitter. Its output is gated by a blend factor that ramps smoothly as the BPM estimate stabilizes, driven by the Kalman filter's confidence \(c\):</p>
-
-            \[\beta_\text{target} = \min(1,\; 1.5c), \qquad \beta(t) = \beta(t-1) + (\beta_\text{target} - \beta(t-1)) \cdot \min\!\left(1,\; \frac{\Delta t}{3}\right)\]
-
-            <p>If the BPM estimate is lost, \(\beta\) decays linearly to zero over 1 second: \(\beta(t) = \max(0,\, \beta(t-1) - \Delta t)\). The combined pulse signal \(s_p = \sin(\varphi) \cdot \beta\) is a scalar that oscillates at the cardiac frequency with amplitude proportional to detection confidence. On the GPU, this scalar is multiplied by the cheek mask to produce a per-pixel flush intensity, which drives a multiplicative color shift that mimics the spectral signature of hemoglobin perfusion:</p>
-
-            \[\text{flush} = s_p \cdot \text{faceMask}\]
-
-            \[\mathbf{p}_\text{out} = \mathbf{p}_\text{in} \odot \begin{bmatrix} 1 + 0.40 \cdot \text{flush} \\ 1 - 0.12 \cdot \text{flush} \\ 1 - 0.14 \cdot \text{flush} \end{bmatrix}\]
-
-            <p>The asymmetric coefficients (+40% red, -12% green, -14% blue) approximate the spectral effect of oxygenated hemoglobin: red reflectance increases during systole as blood volume peaks in the capillary bed, while green and blue reflectance decreases due to hemoglobin absorption in those bands. The multiplicative formulation preserves the underlying skin texture and shading, unlike additive approaches that wash out detail.</p>
-
-            <h3>Respiratory displacement</h3>
-
-            <p>The breathing visualization uses geometric coordinate warping rather than color manipulation, matching the physical nature of respiration: the upper torso expands and lifts, producing spatial displacement rather than color change. Like the cardiac flush, the effect is synthesized from a phase oscillator at the detected rate rather than driven directly from raw measurements. An earlier version warped the frame using facial-landmark vertical displacement, but that signal tracked head motion as much as breathing: jittery, one-sided, and independent of the estimated rate. Driving the display from a clean sinusoid at the fused breathing rate decouples the visual effect from frame-to-frame landmark noise.</p>
-
-            <p>A breathing oscillator accumulates phase at the detected rate, with the increment proportional to the actual frame interval:</p>
-
-            \[\varphi_b(t) = \varphi_b(t-1) + \frac{2\pi \cdot \text{rate} \cdot \Delta t}{60} \pmod{2\pi}\]
-
-            <p>As with the cardiac drive, the oscillator is gated by a confidence-ramped blend factor. The target follows the breathing estimate's fused confidence \(c_b\), and the blend eases toward it over a 3-second time constant:</p>
-
-            \[\beta_\text{target} = \min(1,\; 1.5\,c_b), \qquad \beta(t) = \beta(t-1) + \bigl(\beta_\text{target} - \beta(t-1)\bigr) \cdot \min\!\left(1,\; \frac{\Delta t}{3}\right)\]
-
-            <p>If the breathing estimate is lost, \(\beta\) decays linearly to zero over 1 second. The displayed breathing signal is the signed product \(s_b = \sin(\varphi_b) \cdot \beta\), which swings symmetrically through inhalation and exhalation rather than the previous one-sided bulge.</p>
-
-            <p>On the GPU, the signal drives a combined vertical lift and horizontal widen, enveloped so the motion concentrates on the upper torso while the bottom of the frame stays anchored. The envelope multiplies the body mask by a vertical <a href="https://registry.khronos.org/OpenGL-Refpages/gl4/html/smoothstep.xhtml">smoothstep</a> that falls off toward the lower edge of the frame:</p>
-
-            \[\text{env} = \text{bodyMask} \cdot \text{smoothstep}(1.0,\; 0.55,\; v), \qquad b = s_b \cdot \text{env}\]
-
-            <p>The vertical lift dominates, since the shoulders rise on inhalation, and the horizontal expansion is a subtler secondary cue:</p>
-
-            \[\text{lift} = 0.022\,b, \qquad \text{expand} = 0.05\,b\]
-
-            \[(u', v') = \left(u_\text{center} + \frac{u - u_\text{center}}{1 + \text{expand}},\;\; v + \text{lift}\right)\]
-
-            <p>where \((u, v)\) are texture coordinates and \(u_\text{center}\) is the tracked body center (midpoint of the chest ROI, normalized to \([0,1]\)). Because \(s_b\) is signed, inhalation lifts and widens the shoulders while exhalation settles them back below the neutral line, producing a continuous breathing motion locked to the detected rate. The final pixel color is clamped to \([0, 1]\) after both effects are applied.</p>
-
-            <h2>Heart rate variability</h2>
-
-            <p>When at least 8 consecutive RR intervals are available, two time-domain <a href="https://en.wikipedia.org/wiki/Heart_rate_variability">HRV</a> metrics are computed:</p>
-
-            <p><strong>SDNN</strong> (standard deviation of NN intervals) measures overall variability:</p>
-
-            \[\text{SDNN} = \sqrt{\frac{1}{n-1}\sum_{i=1}^{n}\bigl(\text{RR}_i - \overline{\text{RR}}\bigr)^2} \times 1000 \;\text{ms}\]
-
-            <p><strong>RMSSD</strong> (root mean square of successive differences) captures short-term, beat-to-beat variability and is a marker of parasympathetic (vagal) tone:</p>
-
-            \[\text{RMSSD} = \sqrt{\frac{1}{n-1}\sum_{i=2}^{n}\bigl(\text{RR}_i - \text{RR}_{i-1}\bigr)^2} \times 1000 \;\text{ms}\]
-
-            <p>Both metrics are converted from seconds to milliseconds and rounded to one decimal place. SDNN reflects the total power of all cyclic components acting on heart rate. RMSSD, by filtering out slow trends and retaining only successive differences, isolates the high-frequency component that is predominantly vagally mediated. A higher RMSSD generally indicates greater parasympathetic activity and cardiovascular fitness.</p>
-
-            <h2>Implementation</h2>
-
-            <p>The application is built with <a href="https://svelte.dev/">Svelte 5</a> and <a href="https://vite.dev/">Vite</a>, deployed to <a href="https://pages.github.com/">GitHub Pages</a>. The camera captures at 640\(\times\)480 targeting 30 fps; the actual frame interval is measured from <code>video.currentTime</code> deltas and smoothed via an exponentially weighted moving average (\(\alpha = 0.05\)) of \(\Delta t\), then inverted to obtain the effective frame rate. Smoothing the interval rather than the reciprocal avoids the bias from <a href="https://en.wikipedia.org/wiki/Jensen%27s_inequality">Jensen's inequality</a> (\(E[1/X] \neq 1/E[X]\)). This measured rate is used as the sample rate for all spectral analysis, and all animation timing (cardiac and breathing oscillators, blend ramps) uses per-frame \(\Delta t\) directly, so the pipeline adapts to devices that cannot sustain a constant frame rate. The main frame loop runs via <code>requestAnimationFrame</code>, with face detection every 3 frames and vitals computation every 60 frames. A 150-frame calibration period stabilizes the IIR filter states and allows the spatial beamformer to accumulate its initial correlation history before measurements begin. Face tracking has a 500 ms grace period before clearing ROIs on momentary detection drops. If the face is lost for more than 10 seconds, all signal buffers, filter states, beamformer weights, and the cardiac phase oscillator are reset and calibration restarts. A camera shake detector tracks the forehead ROI centroid between detection steps: the frame-to-frame displacement (in normalized coordinates) is smoothed with \(\alpha = 0.15\), and if the smoothed jitter exceeds 1.2% of the frame dimension, vital sign readouts are hidden until the camera stabilizes.</p>
-
-            <p>The WebGL2 renderer uses <code>RGBA8</code> textures with <code>LINEAR</code> filtering and <code>CLAMP_TO_EDGE</code> wrapping. The video frame is uploaded to a texture each frame via <code>texImage2D</code>. All signal processing (POS, FFT, autocorrelation, peak detection, Kalman filter, spatial beamforming) runs on the main thread in pure TypeScript with <code>Float64Array</code> arithmetic. The FFT uses in-place Cooley-Tukey with bit-reversal permutation, and the bandpass filter operates in the frequency domain (forward FFT, zero out-of-band bins, inverse FFT). Both heart rate and breathing rate use a dual-estimator approach, running FFT spectral analysis and time-domain autocorrelation in parallel and fusing the results by agreement. No external signal processing libraries are used.</p>
+            <p>Every bit of signal processing is my own TypeScript on Float64Arrays with no DSP library. The camera runs at 640 by 480 asking for 30 fps, but I never assume 30. I measure the frame interval from <code>video.currentTime</code>, smooth the interval with an EWMA at \(\alpha = 0.05\), and invert it. Smoothing the interval and not the rate avoids the bias from <a href="https://en.wikipedia.org/wiki/Jensen%27s_inequality">Jensen's inequality</a>. Vitals recompute every 60 frames. There's a 150-frame calibration period before any readout, a 500 ms grace period on a lost face, and a full reset of every buffer and filter if the face is gone for 10 seconds. A shake detector smooths the forehead centroid's frame-to-frame displacement and hides the readouts when it passes 1.2% of the frame.</p>
         </article>
 
     </div>
 </main>
 <footer class="site-footer">
-  <div class="site-footer-links">
-    <a href="https://github.com/sean-reid">GitHub</a>
-    <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
-    <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
-    <a href="https://socrates-of-athens.github.io">Poetry</a>
-    <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
-  </div>
-</footer>
+      <div class="site-footer-links">
+        <a href="https://github.com/sean-reid">GitHub</a>
+        <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
+        <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
+        <a href="https://socrates-of-athens.github.io">Poetry</a>
+        <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
+        <a href="/feed.xml">Feed</a>
+      </div>
+    </footer>
 <script src="/nav.js"></script>
 </body>
 </html>

@@ -8,15 +8,26 @@
     <link rel="preload" as="image" href="img/perfect-hindsight.webp">
     <link rel="stylesheet" href="/nav.css">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="description" content="What a dollar becomes if you hold the best S&amp;P 500 stock every single trading day.">
+    <link rel="canonical" href="https://sean-reid.github.io/blog/perfect-hindsight.html">
+    <link rel="alternate" type="application/atom+xml" title="Sean Reid" href="/feed.xml">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Sean Reid">
+    <meta property="og:title" content="Perfect Hindsight">
+    <meta property="og:description" content="What a dollar becomes if you hold the best S&amp;P 500 stock every single trading day.">
+    <meta property="og:url" content="https://sean-reid.github.io/blog/perfect-hindsight.html">
+    <meta property="og:image" content="https://sean-reid.github.io/blog/img/perfect-hindsight.webp">
+    <meta property="article:published_time" content="2026-03-29">
+    <meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
 <nav class="site-nav">
   <div class="site-nav-inner">
     <a href="/" class="site-nav-name">Sean Reid</a>
     <div class="site-nav-controls">
-      <div class="site-nav-search-wrap"><input type="text" class="site-nav-search" placeholder="Search..." autocomplete="off"><span class="site-nav-search-hint">/</span></div>
-      <a class="site-nav-random">&rarr; Random</a>
-      <div class="search-dropdown"></div>
+      <div class="site-nav-search-wrap"><input type="search" class="site-nav-search" placeholder="Search..." aria-label="Search projects" autocomplete="off"><span class="site-nav-search-hint" aria-hidden="true">/</span></div>
+      <button type="button" class="site-nav-random">Random</button>
+      <div class="search-dropdown" role="listbox" aria-label="Search results"></div>
     </div>
   </div>
 </nav>
@@ -24,7 +35,7 @@
     <div class="container">
         <header>
             <h1>Perfect Hindsight</h1>
-            <p class="meta">What's the maximum possible return from the S&amp;P 500 if you could pick the best stock every single day?</p>
+            <p class="meta">What a dollar becomes if you hold the best S&amp;P 500 stock every single trading day.</p>
             <p class="links-row">
                 <a href="https://sean-reid.github.io/perfect-hindsight/">Live Demo</a>
                 <a href="https://github.com/sean-reid/perfect-hindsight">Source</a>
@@ -33,74 +44,47 @@
 
         <article>
             <figure>
-                <img decoding="async" fetchpriority="high" src="img/perfect-hindsight.webp" alt="Screenshot of Perfect Hindsight">
-                <figcaption>Perfect Hindsight S&amp;P 500 visualization.</figcaption>
+                <img decoding="async" fetchpriority="high" src="img/perfect-hindsight.webp" alt="Screenshot of Perfect Hindsight" width="2560" height="1600">
+                <figcaption>Portfolio value on a log scale for one horizon, with the summary table of all 50 horizons below.</figcaption>
             </figure>
 
-            <p>Everyone knows the stock market goes up over time. Buy an index fund, hold it for 30 years, retire comfortably. But that raises an obvious hypothetical: what if you had perfect information? Not just "buy and hold the index" but "buy exactly the single best-performing stock every trading day." No shorting, no options, no leverage. Just one stock per day, always the right one. How much money could you make?</p>
+            <p>Buy an index fund, hold it for 30 years, retire. Fine. I wanted the other end of the scale. What if you knew, every morning, which S&amp;P 500 stock would go up the most that day, and put everything in it? One stock per day, long only, no margin. How much money is that?</p>
 
-            <figure>
-                <img decoding="async" src="img/cc/sp500-chart.webp" alt="S&amp;P 500 historical chart from 1950 to 2016" loading="lazy">
-                <figcaption>S&amp;P 500 historical performance, 1950-2016. Perfect Hindsight calculates the theoretical maximum by picking the best stock each day. <a href="https://commons.wikimedia.org/wiki/File:S_and_P_500_chart_1950_to_2016_with_averages.png">Wikimedia Commons</a></figcaption>
-            </figure>
+            <p>Over 50 years, starting February 13, 1976, a dollar becomes about \(10^{1078}\) dollars. Over one year it's about \(10^{11}\). There are about \(10^{80}\) atoms in the observable universe, so the 50-year number stopped meaning anything around the 8 percent mark. The number is a ceiling, and no long-only daily strategy on this universe can beat it.</p>
 
-            <p>The answer is absurd. Over long horizons, the numbers leave the realm of meaningful currency and enter scientific notation. A dollar invested with perfect daily foresight over a few decades becomes trillions, then numbers that exceed the GDP of Earth, then numbers that are just amusing to look at. The point isn't that this is achievable. The point is that it puts a hard upper bound on what any trading strategy could possibly return, and it shows how much of the market's potential is locked behind information you can't have.</p>
+            <h2>The arithmetic</h2>
 
-            <h2>How it works</h2>
-
-            <p>The calculation is simple in principle. For each trading day, look at every stock in the <a href="https://en.wikipedia.org/wiki/S%26P_500">S&amp;P 500</a>, find the one with the highest daily return, and assume you held it. Multiply all those daily returns together across the chosen time horizon and you get the cumulative return. The constraint is long-only: no shorting, so on days when every stock drops, you still pick the least-bad one.</p>
-
-            <p>Let \( S_t \) be the set of stocks in the index on day \( t \), and let \( r_{i,t} \) be the daily return of stock \( i \) on that day. The oracle strategy picks the best performer each day, so the cumulative portfolio value after \( T \) trading days starting from an initial investment \( V_0 \) is:</p>
+            <p>Let \( S_t \) be the stocks in the index on day \( t \) and \( r_{i,t} \) the daily return of stock \( i \). Holding the best one each day gives</p>
 
             \[ V_T \;=\; V_0 \prod_{t=1}^{T} \bigl(1 + \max_{i \in S_t}\, r_{i,t}\bigr) \]
 
-            <p>The overall return multiple is then \( V_T / V_0 \), and the annualized return solves \( V_T = V_0\,(1+r_a)^{T/252} \), giving:</p>
+            <p>and the annualized rate solves \( V_T = V_0\,(1+r_a)^{T/252} \), so \( r_a = (V_T/V_0)^{252/T} - 1 \). With no transaction cost every day is independent, so the greedy choice is the optimum and there's nothing cleverer to do. I did think about adding a switching cost, which would turn it into a real dynamic program over what you held yesterday, but I haven't built it.</p>
 
-            \[ r_a \;=\; \left(\frac{V_T}{V_0}\right)^{252/T} - 1 \]
+            <p>The rule I actually computed is: all in on the top stock, or cash if every stock fell that day. Cash never happened. With at least 91 stocks in the universe there was always something up, so all 12,605 trading days are a buy, a hold, or a switch, and 12,122 of them are switches. Because the numbers span a thousand orders of magnitude I store and sum \( \log_{10}(1 + r) \) per day rather than multiplying, which is also why the chart is on a log scale. A straight line on it is a constant compounding rate.</p>
 
-            <p>where 252 is the conventional number of trading days per year.</p>
+            <h2>What the data actually is</h2>
 
-            <h2>As a dynamic program</h2>
+            <p>The numbers were computed offline and the page loads a 1.7 MB precomputed JSON. I haven't published the generator, so take everything below as a description of that file rather than something you can rerun.</p>
 
-            <p>The zero-cost version is trivially greedy: each day is independent, so picking the daily maximum is already globally optimal. Things get more interesting when you introduce a transaction cost \( c \) for switching stocks. Now the decision on day \( t \) depends on what you held on day \( t-1 \), and the problem becomes a genuine <a href="https://en.wikipedia.org/wiki/Dynamic_programming">dynamic program</a>.</p>
+            <p>Index membership comes from 389 constituent changes scraped from Wikipedia, the earliest dated July 1976, giving 843 tickers over the period, 661 of which had price data. In 1976 the universe has 91 stocks against a 500-stock index. It reaches 182 in 1980, 308 on average over the full run, and only crosses 500 in 2025. The stocks missing from the early years are mostly ones that were delisted or acquired before whichever data vendor started covering them, which is survivorship bias by another route.</p>
 
-            <p>Define \( \text{dp}[t][i] \) as the maximum portfolio value at the end of day \( t \) if you hold stock \( i \). The recurrence is:</p>
+            <p>There's at least one bad print. The largest single-day return in the file is TIE (Titanium Metals) on April 3, 2012, at 7,213 times, or +721,300 percent. That's a data error, and on its own it contributes 3.9 of the 1,078 orders of magnitude.</p>
 
-            \[ \text{dp}[t][i] \;=\; (1 + r_{i,t}) \;\max\!\Bigl(\;\text{dp}[t\!-\!1][i],\;\;\max_{j \neq i}\;\text{dp}[t\!-\!1][j]\,(1-c)\Bigr) \]
-
-            <p>The first branch inside the max is "hold" (keep stock \( i \), pay no cost), and the second is "switch" (sell stock \( j \), pay cost \( c \), buy stock \( i \)). The final answer is \( \max_i \text{dp}[T][i] \). When \( c = 0 \), the switch branch always dominates or ties and the recurrence collapses back to the greedy product above.</p>
-
-            <p>This has a structural resemblance to the <a href="https://en.wikipedia.org/wiki/Maximum_subarray_problem">maximum subarray problem</a>. In Kadane's algorithm you decide each step whether to extend the current run or start fresh; here you decide each day whether to extend your current holding or switch to a different stock. The transaction cost plays the role of the "reset penalty" that makes contiguous runs valuable. Without it, every day is a fresh start and no memory is needed.</p>
-
-            <p>The interactive tool lets you adjust the time horizon and starting investment. A slider controls how many years of data to include, and a currency input sets the initial amount. The main display shows the final portfolio value, the overall return multiple, the annualized return percentage, and the total number of trades. These update in real time as you move the slider.</p>
-
-            <figure class="small">
-                <img decoding="async" src="img/cc/nyse-floor.webp" alt="New York Stock Exchange trading floor" loading="lazy">
-                <figcaption>The New York Stock Exchange trading floor. <a href="https://commons.wikimedia.org/wiki/File:NYSE_Advanced_Trading_Floor.jpg">Wikimedia Commons</a></figcaption>
-            </figure>
-
-            <h2>The visualization</h2>
-
-            <p>A line chart plots the cumulative portfolio value on a log scale over time. Log scale is necessary because the numbers span so many orders of magnitude that a linear chart would be a flat line at zero for most of the plot and then a vertical spike at the end. It is also the natural scale for multiplicative processes: taking the log of the cumulative product turns it into a cumulative sum of log-returns, \( \ln V_T = \ln V_0 + \sum_{t=1}^{T} \ln\!\bigl(1 + \max_i r_{i,t}\bigr) \), so constant visual slope corresponds to a constant rate of compounding. Hovering over the chart shows the specific trade for that day: the date, the dollar amount, which stock was selected, and its daily return.</p>
-
-            <p>Below the chart, a summary table shows every available time horizon with its total return, annualized return, final value, and trade count. Clicking a row in the table updates the chart to show that specific period. A horizontal bar chart breaks down which stocks were held most frequently and how much they contributed to the total return. Some names show up more than you'd expect. Volatile stocks dominate because a stock that regularly swings 10% in a day will be the best performer on a lot of those up days.</p>
-
-            <h2>Survivorship bias</h2>
-
-            <p>One subtlety worth mentioning: the S&amp;P 500's composition changes over time. Companies get added and removed. A naive approach would use today's index members and look up their historical prices, but that introduces <a href="https://en.wikipedia.org/wiki/Survivorship_bias">survivorship bias</a> because it excludes companies that were in the index historically but later got removed (often because they performed poorly). The tool notes in its footer whether survivorship bias has been accounted for, along with the reference dates and stock counts used in the calculation.</p>
+            <p>The most-held names are not the ones I expected. Cooper Industries (CBE) and Nabors Industries (NBR) each won about 430 days over 50 years, then El Paso (EP), Rockwell Collins (COL), Western Digital (WDC), Goodrich (GR), Micron (MU), and AMD. Volatile stocks dominate because a stock that swings 10 percent in a day is the best performer on a lot of its up days, and the winner-take-all rule never cares about the down days.</p>
         </article>
 
     </div>
 </main>
 <footer class="site-footer">
-  <div class="site-footer-links">
-    <a href="https://github.com/sean-reid">GitHub</a>
-    <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
-    <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
-    <a href="https://socrates-of-athens.github.io">Poetry</a>
-    <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
-  </div>
-</footer>
+      <div class="site-footer-links">
+        <a href="https://github.com/sean-reid">GitHub</a>
+        <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
+        <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
+        <a href="https://socrates-of-athens.github.io">Poetry</a>
+        <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
+        <a href="/feed.xml">Feed</a>
+      </div>
+    </footer>
     <script src="/nav.js"></script>
 </body>
 </html>

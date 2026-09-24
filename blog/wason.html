@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+    <title>Wason - Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/wason.webp">
+    <link rel="stylesheet" href="/nav.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="description" content="A daily puzzle built on Wason's selection task, generated in the browser from the date alone">
+    <link rel="canonical" href="https://sean-reid.github.io/blog/wason.html">
+    <link rel="alternate" type="application/atom+xml" title="Sean Reid" href="/feed.xml">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Sean Reid">
+    <meta property="og:title" content="Wason">
+    <meta property="og:description" content="A daily puzzle built on Wason's selection task, generated in the browser from the date alone">
+    <meta property="og:url" content="https://sean-reid.github.io/blog/wason.html">
+    <meta property="og:image" content="https://sean-reid.github.io/blog/img/wason.webp">
+    <meta property="article:published_time" content="2026-09-23">
+    <meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="/" class="site-nav-name">Sean Reid</a>
+    <div class="site-nav-controls">
+      <div class="site-nav-search-wrap"><input type="search" class="site-nav-search" placeholder="Search..." aria-label="Search projects" autocomplete="off"><span class="site-nav-search-hint" aria-hidden="true">/</span></div>
+      <button type="button" class="site-nav-random">Random</button>
+      <div class="search-dropdown" role="listbox" aria-label="Search results"></div>
+    </div>
+  </div>
+</nav>
+<main class="site-content">
+    <div class="container">
+        <header>
+            <h1>Wason</h1>
+            <p class="meta">A daily puzzle built on Wason's selection task, generated in the browser from the date alone</p>
+            <p class="links-row">
+                <a href="https://sean-reid.github.io/wason/">Live Demo</a>
+                <a href="https://github.com/sean-reid/wason">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <figure>
+                <img decoding="async" fetchpriority="high" src="img/wason.webp" alt="Wason puzzle #24 showing three numbered candidate rules about rooms, five cards reading K, 8, 1, 7 and I, with the 1 and 7 cards selected" width="2560" height="1600">
+                <figcaption>Puzzle #24, a rule identification day. Three candidate rules, five cards, and the two I've picked are the ones the solver says settle which rule is in force.</figcaption>
+            </figure>
+
+            <p>In 1966 Peter Wason put four cards on a table, E, K, 4 and 7, said each had a letter on one side and a number on the other, gave the rule "if a card has a vowel on one side, then it has an even number on the other side", and asked which cards had to be turned over to check it. The answer is E and 7. Fewer than one in ten people got it, and the most common wrong answer was E and 4. The <a href="https://en.wikipedia.org/wiki/Wason_selection_task">selection task</a> has been a fixture of the reasoning literature since his 1968 paper. This game deals a fresh version of it every day.</p>
+
+            <p>The seed is an FNV-1a hash of the date string fed to mulberry32, and the puzzle is generated in the browser when the page loads. Day one was 31 August 2026. The vocabulary is the letters A E I U B K R T, the numbers 1 to 8, four colors, and seven predicates over them (vowel, consonant, even, odd, prime, red, blue). Rule forms grow with the weekday. Monday is plain if-then over four cards. By Sunday it's if-and-only-if, if-not-then and unless over six.</p>
+
+            <h2>What a date has to prove</h2>
+
+            <p>A random rule over random cards is usually a bad puzzle, so a date becomes a puzzle only after the solver has checked it. For each card the solver enumerates every completion of the hidden face, eight letters or eight numbers or four colors, and evaluates the rule on each. If the rule is true in every completion the card is inert. If it's false in every completion the rule is already broken on the table. Otherwise the card is contingent, and the solver finds the minimal sets of hidden attributes that determine the rule's truth value, by grouping completions by what a reveal would show and checking that each group agrees. The puzzle has a unique answer only when every contingent card has exactly one minimal reveal set.</p>
+
+            <p>Beyond uniqueness, a standard day needs at least two required cards and never all of them, except for a biconditional, where flipping everything is the correct answer and I keep it. For implications and disjunctions the required cards must span both attributes, and at least one card must be inert, a tempting card that tells you nothing. No two visible faces may match. It tries up to 2,000 candidates from the day's stream before throwing.</p>
+
+            <h2>Days where the right move is nothing</h2>
+
+            <p>Roughly one non-Monday in eight is a trap, decided by a second hash of the date. Half the traps are vacuous days: the rule names live categories, but no visible face could be hiding a counterexample, and the exact answer is to flip nothing. The other half are broken days: exactly one visible face already violates the rule, and the answer is to say so rather than flip anything. Vacuous boards are rare at six cards, so if 5,000 attempts at the weekday's size fail the generator drops to five. Over the first year of dates I count 19 vacuous days and 18 broken ones.</p>
+
+            <p>The rest of the week has its own mechanics. Saturdays are multi-attribute days, where cards carry all three attributes and hide two, so a pick is a card plus a side, and picking an uninformative side is a new way to be wrong. Sundays are two-rule audits, where one flip can test both rules. Fridays are relational: the rule constrains neighbors ("every room with a vowel is immediately followed by one with an even number"), so no card can be judged alone and the solver works over every combination of hidden faces at once, checking that a set of flips settles the rule in every class of worlds that agree on what those flips show. Wednesdays are identification days, which is what the screenshot shows.</p>
+
+            <figure>
+                <img decoding="async" src="img/wason-2.webp" alt="The same puzzle after submitting: the backs of the cards are revealed, the verdict reads Exact, and each card is marked required or safe with a one-line reason" loading="lazy" width="2560" height="1600">
+                <figcaption>The verdict for the same puzzle. The backs are revealed and each card gets the solver's reason for being required or safe.</figcaption>
+            </figure>
+
+            <p>Puzzle #24 offered three rules and promised exactly one held. Testing rule 3 by itself would need K, 1 and 7. Telling the three rules apart needs only 1 and 7, and that's what the solver certifies: the smallest set of flips after which the faces pin down which rule survives, no matter what the flips show. Missing a required card gets the verdict "Not proven", adding one that couldn't matter gets "Proven, but wasteful", and only the exact set extends the streak.</p>
+
+            <h2>Reading the English</h2>
+
+            <p>Two of the rule forms needed a decision. "Every room has a vowel on its nameplate unless it has an even room number" is read as a disjunction, vowel or even, and "a room has a vowel only if it has an even number" is read as vowel implies even. Those are the textbook material readings. In speech, "unless" often carries the sense that a vowel room can't also be even, and "only if" gets heard as "if and only if". I went with the textbook because the solver needs one truth table per sentence, and I expect this is where most of the wrong answers on those days come from.</p>
+        </article>
+
+    </div>
+</main>
+<footer class="site-footer">
+      <div class="site-footer-links">
+        <a href="https://github.com/sean-reid">GitHub</a>
+        <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
+        <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
+        <a href="https://socrates-of-athens.github.io">Poetry</a>
+        <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
+        <a href="/feed.xml">Feed</a>
+      </div>
+    </footer>
+<script src="/nav.js"></script>
+</body>
+</html>

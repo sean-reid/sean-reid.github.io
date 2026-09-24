@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+    <title>Rhythm - Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/rhythm.webp">
+    <link rel="stylesheet" href="/nav.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="description" content="Drum patterns from Markov chains stacked on Markov chains, with the whole piece carried in its URL">
+    <link rel="canonical" href="https://sean-reid.github.io/blog/rhythm.html">
+    <link rel="alternate" type="application/atom+xml" title="Sean Reid" href="/feed.xml">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Sean Reid">
+    <meta property="og:title" content="Rhythm">
+    <meta property="og:description" content="Drum patterns from Markov chains stacked on Markov chains, with the whole piece carried in its URL">
+    <meta property="og:url" content="https://sean-reid.github.io/blog/rhythm.html">
+    <meta property="og:image" content="https://sean-reid.github.io/blog/img/rhythm.webp">
+    <meta property="article:published_time" content="2026-09-23">
+    <meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="/" class="site-nav-name">Sean Reid</a>
+    <div class="site-nav-controls">
+      <div class="site-nav-search-wrap"><input type="search" class="site-nav-search" placeholder="Search..." aria-label="Search projects" autocomplete="off"><span class="site-nav-search-hint" aria-hidden="true">/</span></div>
+      <button type="button" class="site-nav-random">Random</button>
+      <div class="search-dropdown" role="listbox" aria-label="Search results"></div>
+    </div>
+  </div>
+</nav>
+<main class="site-content">
+    <div class="container">
+        <header>
+            <h1>Rhythm</h1>
+            <p class="meta">Drum patterns from Markov chains stacked on Markov chains, with the whole piece carried in its URL</p>
+            <p class="links-row">
+                <a href="https://rhythm.dwainosaur.com">Live Demo</a>
+                <a href="https://github.com/sean-reid/rhythm">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <figure>
+                <img decoding="async" fetchpriority="high" src="img/rhythm.webp" alt="Rhythm playing a piece at 115 bpm: four voice lanes of hit squares at the bottom, a row of atom numbers above them, and a wider lane showing which matrix is being walked" width="2560" height="1600">
+                <figcaption>A fresh piece playing at 115 bpm. The four bottom lanes are kick, snare, hat and perc, the small numbers are which atom is playing, and the L1 lane above shows which matrix is choosing the atoms.</figcaption>
+            </figure>
+
+            <p>Rhythm plays drum patterns that come out of a stack of Markov chains. The bottom of the stack is a pool of short patterns I call atoms. An atom is one to four beats long, split into 2, 3, 4 or 6 steps per beat, and holds one 4x4 transition matrix per voice over four hit strengths: rest, ghost, normal, accent. Above the atoms sits a level of matrices that pick which atom plays next. Above that, a root matrix picks which of those matrices is being walked. Adding a level turns the root into one of four nodes in a new top level, with a new root over them, up to four levels deep.</p>
+
+            <p>Stacking gives a piece structure at more than one time scale. The atom chains decide whether the snare ghosts into the backbeat. The level above decides that the next bar sounds like the last one about 30 percent of the time, since a freshly generated atom matrix has 0.3 on its diagonal and squared noise elsewhere, so one or two other atoms dominate each row. The root, with 0.5 on its diagonal and a dwell of four steps, holds a mood for a few bars and then drifts. Each voice starts from a template. Kicks rest 60 to 82 percent of the time depending on what came before, hats rest about one step in six, and every template cell gets 35 percent multiplicative jitter so two pieces with the same voices don't share a feel. Swing delays the odd steps by up to a third of a step, on even subdivisions only, so at full swing straight eighths land as triplets.</p>
+
+            <h2>Draws indexed by time</h2>
+
+            <p>The walk has no random stream. Every draw is a hash of (seed, t, level), where t is the index of the atom in the sequence and level 0 is the atom draw itself. So the walk state at time t is a pure function of the piece and t, and there's no generator state to keep in sync between the player, the timeline and the WAV export. The player commits whole atoms to the audio clock once they fall inside a 150 ms lookahead, checked every 25 ms, and everything past that head is recomputed from the head's state whenever the piece changes.</p>
+
+            <p>Bump one cell of a matrix while it plays and the rest of its row rescales around it, the committed atoms stay where they are, and the future re-derives from the same draws. Any step that never consults the edited row lands exactly where it would have. Adding a second level draws from (seed, t, 2) for the new level and leaves the draws below untouched, and since the old root becomes node 0 of the new level, the piece keeps playing what it was playing until the new root moves it. With a stream PRNG the same edit would reshuffle everything downstream of it.</p>
+
+            <p>Atoms render differently. An atom has its own 32-bit seed, and its hits come from an sfc32 stream seeded by that and the voice index, one draw per step, so an atom is a fixed motif until its seed or matrices change. Reroll reseeds all six atoms and keeps every matrix.</p>
+
+            <h2>Rows that sum to 255</h2>
+
+            <p>The whole piece lives in the URL fragment: a version byte, the seed, bpm, swing, kit, the voice list, then each atom's seed and shape and 16 bytes per voice for its chain, then each level's dwell and matrices, then the root. Every matrix row is quantized to bytes, deflated, and base64url-encoded. A default piece is 591 bytes before compression and 795 characters after. Three levels deep it's 942 characters.</p>
+
+            <p>Rounding each cell of a probability row to a byte on its own gives rows that sum to 254 or 256, and a row that dequantizes to something over 254 and requantizes can drift a cell on every save. I scale the row to 255, floor every cell, and hand the leftover units to the cells with the largest fractional parts. Every row then sums to exactly 255, and dequantize then quantize is a fixed point. A row like [0.001, 0, 0] comes out as [255, 0, 0], so a live row can't quantize to all zeros.</p>
+
+            <p>The fixed point only holds after the first quantization. The piece you hear first was generated in floats and plays on float matrices, while the URL carries 8-bit rows. Someone opening the link gets rows that differ from yours by up to 1/255 per cell, and a draw that lands inside that sliver picks a different atom, so their piece can diverge from yours from that step on. Share links store the same payload in KV under a six-character slug.</p>
+        </article>
+
+    </div>
+</main>
+<footer class="site-footer">
+      <div class="site-footer-links">
+        <a href="https://github.com/sean-reid">GitHub</a>
+        <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
+        <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
+        <a href="https://socrates-of-athens.github.io">Poetry</a>
+        <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
+        <a href="/feed.xml">Feed</a>
+      </div>
+    </footer>
+<script src="/nav.js"></script>
+</body>
+</html>
