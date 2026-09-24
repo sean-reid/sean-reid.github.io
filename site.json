@@ -1,7 +1,7 @@
 {
   "name": "Sean Reid",
   "url": "https://sean-reid.github.io",
-  "description": "Projects by Sean Reid: games, simulations, generative music, and a few theorems doing real work in a browser.",
+  "description": "Side projects by Sean Reid: games, simulations, generative music, and some mathematics, most of it running in the browser.",
   "bio": [
     "I'm a software engineer with a math background. This site is where my side projects live.",
     "Most of them run in the browser. Every entry has a live demo and source, and a writeup on how it works and what went wrong."
