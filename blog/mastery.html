@@ -45,26 +45,26 @@
         <article>
             <figure>
                 <img decoding="async" fetchpriority="high" src="img/mastery.webp" alt="Screenshot of Mastery showing the ranking page with category filters and a skill card for Coracle Building" width="2560" height="1600">
-                <figcaption>The ranking page. 100 skills sorted by composite score, filterable by category, each card showing the description and score.</figcaption>
+                <figcaption>The ranking page, with the 100 skills sorted by composite score.</figcaption>
             </figure>
 
-            <p>The "10,000 hours" line treats every skill as the same shape. Chess and cardiac surgery might both take a decade, but they differ on failure cost, physical demand, and how fast the field moves under you. So I scored 100 skills on 19 axes, each from 0 to 10 with a cited source, and ranked them. The ranking is the least interesting output. The shape of each profile is the point, and two skills with the same composite can have completely different shapes.</p>
+            <p>The "10,000 hours" line treats every skill as the same shape. Chess and cardiac surgery might both take a decade, but they differ on failure cost, physical demand, and how fast the field moves under you. So I scored 100 skills on 19 axes, each from 0 to 10 with a cited source, and ranked them. Two skills with the same composite score can have completely different profiles.</p>
 
             <h2>The axes</h2>
 
-            <p>The 19 are time to basic competence, time to expert performance, feedback delay, failure cost, cognitive demand, physical demand, prerequisite knowledge, measurability of progress, perishability, precision required, ambiguity of correctness, instruction dependency, environmental variability, concurrent sub-skill load, plateau density, domain evolution rate, observability of expertise, luck-to-variance ratio, and social coordination load. The composite is a weighted average. Time to expert carries 0.08 and cognitive demand 0.07, domain evolution rate and social coordination load carry 0.03 each, and the rest sit between 0.04 and 0.06. I set the weights by hand and they're the weakest part of the model.</p>
+            <p>The axes include time to expert performance, feedback delay, failure cost, cognitive demand, and perishability. The composite is a weighted average with time to expert weighted heaviest at 0.08, and I set the weights by hand.</p>
 
-            <p>Every score also has a confidence from 0 to 1. Chess time-to-expert gets 0.95, because Elo and the median grandmaster age at title are hard numbers. The hydraulophone's plateau density gets 0.35, because there are maybe a dozen serious players in the world and nobody has studied how they improve. The median confidence across all 1,900 scores is 0.75. Each skill's methodology panel shows the confidences next to the citations. The skill files are JSON, validated at build time against a Zod schema through Astro's content collections, so a missing axis or a confidence of 1.3 fails the build.</p>
+            <p>Every score also has a confidence from 0 to 1. Chess time-to-expert gets 0.95, because Elo and the median grandmaster age at title are hard numbers. The hydraulophone's plateau density gets 0.35, because there are maybe a dozen serious players in the world and nobody has studied how they improve. The median confidence across all 1,900 scores is 0.75. Each skill's methodology panel shows the confidences next to the citations.</p>
 
             <h2>The skills</h2>
 
-            <p>The 100 skills fall into 10 categories: games, languages, instruments, sports, trades, academic, physical feats, performance, survival and fieldwork, and technology. Trades and academic have 12 each, technology and survival 8. Chess, piano, and gymnastics are in there as calibration points, next to Carolinian wayfinding, mokume-gane (Japanese layered metalwork), vinkensport (Belgian competitive finch singing), and ferrofluid sculpting. The familiar ones tell you whether the scale makes sense. The obscure ones are where the scoring gets tested, and where I'm least sure of the numbers.</p>
+            <p>The 100 skills fall into 10 categories: games, languages, instruments, sports, trades, academic, physical feats, performance, survival and fieldwork, and technology. Trades and academic have 12 each, technology and survival 8. Chess, piano, and gymnastics are in there as calibration points, next to Carolinian wayfinding, mokume-gane (Japanese layered metalwork), vinkensport (Belgian competitive finch singing), and ferrofluid sculpting. The familiar ones calibrate the scale, and I'm least sure of the numbers for the obscure ones.</p>
 
-            <h2>Twelve challenges</h2>
+            <h2>The challenges</h2>
 
             <p>Twelve skills have a playable challenge that tests a fragment of the real thing, all on the Web Audio API and Canvas. Pitch Matcher plays a reference tone and you match it with a slider. The score is in cents, and under 5 counts as a match. Pattern Memory recreates de Groot's 1946 chess experiment: a position for five seconds, then pick it out of four boards. Polyrhythm Tapper has you hold 2:3, 3:4, and 4:5 on the keyboard. Beat Detector plays two slightly detuned tones and asks you to tune out the wavering, which is how organ tuners work. Star Navigation has you pick guide stars for the legs of a Pacific voyage. Number Flash is flash anzan, with the note that competitors sum 15 numbers in 1.5 seconds. The others cover stone balancing, zellige tilework, foley, mokume-gane layering, the click consonants of Taa using recordings from Wikimedia Commons, and static apnea.</p>
 
-            <p>They map back to the axes. Pitch Matcher is precision and feedback delay, Pattern Memory is cognitive demand, Polyrhythm Tapper is concurrent sub-skill load. None of them is an assessment. They exist so that a 9 on an axis feels like something rather than reads like one.</p>
+            <p>They map back to the axes. Pitch Matcher is precision and feedback delay, and Pattern Memory is cognitive demand.</p>
         </article>
 
     </div>
