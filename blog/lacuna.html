@@ -48,35 +48,33 @@
                 <figcaption>The lobby. One player creates a game and sends the link.</figcaption>
             </figure>
 
-            <p>Lacuna starts as an empty circle with 12 anchor points around the rim. Two players take turns drawing strands inside it, and the strands become the board. When a region ends up bounded entirely by one player's strands, it seals, becomes a Lacuna, and scores for that player. Strands can't cross, so the space fills up and the late game is threading a needle.</p>
+            <p>Lacuna starts as an empty circle with 12 anchor points around the rim. Two players take turns drawing strands inside it, and the strands become the board. When a region ends up bounded entirely by one player's strands, it seals, becomes a Lacuna, and scores for that player. Strands can't cross, so the space fills up and late moves have to fit between what's already drawn.</p>
 
-            <p>I designed the game and its rules from scratch. You could play it with two pens and a printed circle, and the rulebook is written so that you can, but tracking which regions have closed and who owns their boundaries is tedious by hand. The web version does that part.</p>
+            <p>I designed the game and its rules from scratch. You could play it with two pens and a printed circle, and the <a href="https://github.com/sean-reid/lacuna/blob/main/lacuna-rulebook.pdf">rulebook</a> is written so that you can, but tracking which regions have closed and who owns their boundaries is tedious by hand, and the web version does that for you.</p>
 
             <h2>A turn</h2>
 
-            <p>Every anchor starts with two free sockets. On your turn you draw two tokens from a bag holding nine each of 1, 2, and 3, keep one as your tension value \(t\), and put the other back. You then pick \(k\) between 1 and \(t\), place a new node inside one open region, and draw \(k\) strands from it to \(k\) distinct vertices on that region's boundary that still have a free socket. Each of those vertices loses a socket and the new node gets \(k - 1\). Every move spends exactly one socket net, and there are 24 to begin with, so a game is at most 24 moves. It ends when the player to move has no legal single-strand move. The second player can swap colours after the first move, the usual pie rule.</p>
+            <p>Every anchor starts with two free sockets. On your turn you draw two tokens from a bag holding nine each of 1, 2, and 3, keep one as your tension value \(t\), and put the other back. You then pick \(k\) between 1 and \(t\), place a new node inside one open region, and draw \(k\) strands from it to \(k\) distinct vertices on that region's boundary that still have a free socket. Each of those vertices loses a socket and the new node gets \(k - 1\). Every move spends exactly one socket net, and there are 24 to begin with, so a game is at most 24 moves. It ends when the player to move has no legal single-strand move. The second player can swap colors after the first move, the usual pie rule.</p>
 
-            <p>A region seals when no part of its boundary is an arc of the outer circle and every strand on it is one colour. Touching the rim at an anchor is fine. A rim arc of any length disqualifies it. Your score is the total boundary length of your Lacunae, counted in strand occurrences. A strand that borders the same region on both sides counts twice.</p>
+            <p>A region seals when no part of its boundary is an arc of the outer circle and every strand on it is one color. Touching the rim at an anchor is fine. A rim arc of any length disqualifies it. Your score is the total boundary length of your Lacunae, counted in strand occurrences. A strand that borders the same region on both sides counts twice.</p>
 
             <h2>Finding the faces</h2>
 
-            <p>After each move I need every face of the planar graph formed by the 12 rim arcs and the strands, and for each face whether it touches the rim and what colours are on it. I do this with a half-edge traversal. Each arc and each strand becomes two directed half-edges. At every vertex I sort the outgoing half-edges by departure angle, clockwise. To walk a face from the half-edge \(u \to v\), I find the twin \(v \to u\) in \(v\)'s sorted list and take the next entry. Following that rule from every unvisited half-edge until it comes back to itself traces each face exactly once.</p>
+            <p>After each move I need every face of the planar graph formed by the 12 rim arcs and the strands, and for each face whether it touches the rim and what colors are on it. I do this with a half-edge traversal. Each arc and each strand becomes two directed half-edges. At every vertex I sort the outgoing half-edges by departure angle, clockwise. To walk a face from the half-edge \(u \to v\), I find the twin \(v \to u\) in \(v\)'s sorted list and take the next entry. Following that rule from every unvisited half-edge until it comes back to itself traces each face exactly once.</p>
 
             <p>Strands curve through waypoints, so the direction a strand leaves a vertex is not the direction of the chord to its other end. Sorting by the chord gives the wrong rotation system when two curved strands leave the same node, and the traversal then merges two faces or invents one. So I take the angle to the first waypoint, which matches what is on screen.</p>
 
-            <p>Finding the twin is a linear scan of the vertex's neighbour list, so the whole thing is \(O(E \cdot \Delta)\) rather than \(O(E)\), where \(\Delta\) is the largest degree. With at most 24 moves and no vertex of degree more than five, it does not matter.</p>
+            <p>Finding the twin is a linear scan of the vertex's neighbor list, so the whole thing is \(O(E \cdot \Delta)\) rather than \(O(E)\), where \(\Delta\) is the largest degree. With at most 24 moves and no vertex of degree more than five, it doesn't matter.</p>
 
             <p>One face is the outside of the circle, and it has to be excluded. I build a polygon for each face out of the rim arcs and the strands' smoothed waypoints and test whether the point just above the top of the circle falls inside. If that finds nothing, I fall back to the face with the most rim arcs.</p>
 
-            <p>A face is a Lacuna if it has no arc half-edges, is not the exterior, has all its strand half-edges in one colour, and has at least three of them. That last condition is in the code and not in the rulebook. I have not checked whether a two-strand face can arise under the placement rules.</p>
+            <p>A face is a Lacuna if it has no arc half-edges, is not the exterior, has all its strand half-edges in one color, and has at least three of them.</p>
 
             <h2>Drawing</h2>
 
             <p>The board is SVG. Each strand is a DOM element, so hover, selection, and figuring out which region was clicked come from the browser. The strands are drawn through their waypoints with two rounds of <a href="https://en.wikipedia.org/wiki/Chaikin%27s_algorithm">Chaikin corner cutting</a>, which replaces each corner with points at 25% and 75% along the adjacent segments. Two rounds is enough to look like thread pulled between pins and still stay close to where the player drew. The face polygons for the exterior test use the same smoothed points, so hit-testing agrees with what's rendered.</p>
 
-            <p>Games are two-player over <a href="https://firebase.google.com/docs/database">Firebase Realtime Database</a> with anonymous auth. One player creates a game and shares a link. The whole game is one document, and each move is one update that both clients see. There's a spectator mode for anyone else with the link. Since only one player can act at a time, I never had to think about conflicting writes.</p>
-
-            <p>The <a href="https://github.com/sean-reid/lacuna/blob/main/lacuna-rulebook.pdf">rulebook</a> is 1,133 lines of LaTeX. Writing rules a person can adjudicate without a computer is a different job from writing the code, and the two still disagree in the one place I noted above. The repo is four commits and has no tests. The finished boards look like stained glass or river deltas, and every game's is different.</p>
+            <p>Games are two-player over <a href="https://firebase.google.com/docs/database">Firebase Realtime Database</a> with anonymous auth. One player creates a game and shares a link. The whole game is one document, and each move is one update that both clients see. There's a spectator mode for anyone else with the link. Only one player can act at a time, so writes never conflict.</p>
         </article>
 
     </div>
