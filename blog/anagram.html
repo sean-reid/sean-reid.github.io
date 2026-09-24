@@ -45,28 +45,22 @@
         <article>
             <figure>
                 <img decoding="async" fetchpriority="high" src="img/anagram.webp" alt="Screenshot of Anagram Solver" width="2560" height="1600">
-                <figcaption>The Anagram Solver.</figcaption>
+                <figcaption>The solver before anything has been typed, a phrase box and a Solve button.</figcaption>
             </figure>
 
-            <p>Most anagram sites return one result, maybe two. I wanted all of them for a phrase, with the good ones at the top, and that's a different problem from finding one. The solver takes a phrase, reduces it to a letter count, rebuilds every combination of dictionary words that uses those letters exactly, and ranks them.</p>
+            <p>Most anagram sites return one result, maybe two. I wanted all of them for a phrase, with the good ones at the top, and that's a different problem from finding one.</p>
 
-            <h2>Letter counts</h2>
-
-            <p>Every word is a 26-byte array, one count per letter. The 20,000-word dictionary is embedded in the WebAssembly binary with <code>include_str!</code> and converted at startup, and the input phrase gets the same treatment. Checking whether a word fits the remaining letters is 26 comparisons and taking it out is 26 subtractions, which is what keeps the inner loop cheap when the search gets deep. Before searching I filter the dictionary to words that fit inside the phrase at all and sort them longest first, so the branches with long words get explored first.</p>
+            <p>Every word is a 26-byte array, one count per letter. The 20,000-word dictionary is embedded in the WebAssembly binary with <code>include_str!</code> and parsed into that form on every call, and the input phrase gets the same treatment. Checking whether a word fits the remaining letters is 26 comparisons and taking it out is 26 subtractions, which is what keeps the inner loop cheap when the search gets deep. Before searching I filter the dictionary to words that fit inside the phrase at all and sort them longest first, so the branches with long words get explored first.</p>
 
             <h2>The search</h2>
 
             <p>It's a depth-first search. At each level I walk the candidate list from a start index, take any word that fits, subtract its letters, and recurse with the start index set to that word's position, so the same set of words can't come out in two orders. Without that, "star wars" and "wars star" would both appear.</p>
 
-            <p>On top of that there's a signature check I'm less happy with. Each finished result records the sorted set of its words of four or more letters, and any branch that would reproduce a set already seen is pruned. It kills the flood of results that differ only in how the leftover short words are arranged, which is what I wanted, but it also drops legitimate anagrams that happen to share their long words with an earlier one. The search also stops at 50,000 raw results, and once it has 5,000 it stops descending into words shorter than a depth-dependent minimum unless five or fewer letters remain. Those cutoffs are why "William Shakespeare" comes back at all.</p>
+            <p>On top of that there's a signature check I'm less happy with. Any branch whose words of four or more letters match a result already found is pruned, which kills the flood of rearranged short words but also drops real anagrams that share their long words with an earlier one. The search also stops at 50,000 raw results, and once it has 5,000 it stops descending into words shorter than a depth-dependent minimum unless five or fewer letters remain. Those cutoffs are why "William Shakespeare" comes back at all. The search runs on the main thread, so a long phrase freezes the page until it finishes.</p>
 
             <h2>Ranking</h2>
 
-            <p>A phrase that long produces thousands of results and most are garbage, strings of two-letter words that use the right letters and interest no one. The score is 100 points per letter of average word length, minus 1,000 per word, minus 5 per unit of total deviation from the average length. A two-word anagram with balanced lengths lands far above a seven-word one made of "is" and "at" and "me". Results come back sorted by that score, deduplicated, and capped at 10,000.</p>
-
-            <h2>In the browser</h2>
-
-            <p>It's 337 lines of Rust compiled with <a href="https://github.com/rustwasm/wasm-pack">wasm-pack</a>, with no server involved. The whole search runs on the main thread behind a spinner, so a long phrase freezes the page while it thinks. A worker would fix that and I haven't bothered. The dictionary is also re-parsed from the embedded text on every call, which is wasted work. There are no tests.</p>
+            <p>A phrase that long produces thousands of results and most of them are strings of two-letter words. The score is 100 points per letter of average word length, minus 1,000 per word, minus 5 per unit of total deviation from the average length. A two-word anagram with balanced lengths lands far above a seven-word one made of "is" and "at" and "me". Results come back sorted by that score, deduplicated, and capped at 10,000.</p>
         </article>
 
     </div>
