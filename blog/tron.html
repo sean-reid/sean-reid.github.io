@@ -48,11 +48,11 @@
                 <figcaption>The player's cyan cycle and several bots mid-game, with the walls they've left behind.</figcaption>
             </figure>
 
-            <p>Lightcycles race across a grid and each leaves a wall behind it. Hit any wall and you die. The game is from the 1982 <a href="https://en.wikipedia.org/wiki/Tron">Tron</a> film and has been remade countless times. I wanted one with a speed mechanic that rewards risky riding and bots that pick a direction for a reason. You play against a pack of them, one per 700 cells of arena up to 25, so a phone gets a couple and a big monitor gets a crowd.</p>
+            <p>Lightcycles race across a grid and each leaves a wall behind it. Hit any wall and you die. The game is from the 1982 <a href="https://en.wikipedia.org/wiki/Tron">Tron</a> film. Mine has a speed mechanic that rewards risky riding and bots that pick a direction for a reason. You play against a pack of them, one per 700 cells of arena up to 25. Controls are WASD or arrows on desktop and swipe on a phone.</p>
 
             <h2>Wall riding</h2>
 
-            <p>The speed boost is the design idea. Whenever any wall or another cycle's trail is within 3 cells of you in any of the four cardinal directions, your cycle accelerates toward 1.7 times base speed, ramping over about six ticks so the change doesn't jolt. Base speed is one cell every 80 ms. Your own trail doesn't count, because the cell directly behind you is always your own fresh wall and you'd be boosting permanently. So open space is slow and safe, and threading along existing walls is fast and one mistake from death. The cycle pulses at 6 Hz while boosted so you can feel it without reading a number. The bots use the same rule, which means they can outrun you in a corridor.</p>
+            <p>The speed boost is the design idea. Whenever any wall or another cycle's trail is within 3 cells of you in any of the four cardinal directions, your cycle accelerates toward 1.7 times base speed, ramping over about six ticks so the change doesn't jolt. Base speed is one cell every 80 ms. Your own trail doesn't count, because the cell directly behind you is always your own fresh wall and you'd be boosting permanently. So threading along existing walls is fast and one mistake from death. The cycle pulses at 6 Hz while boosted. The bots use the same rule, which means they can outrun you in a corridor.</p>
 
             <h2>Picking a direction</h2>
 
@@ -61,17 +61,13 @@
                 <figcaption>A Voronoi diagram in the plane. The bots compute the grid version of this, with path length through open cells in place of straight-line distance. <a href="https://commons.wikimedia.org/wiki/File:Euclidean_Voronoi_diagram.svg">Wikimedia Commons</a></figcaption>
             </figure>
 
-            <p>The bots use the standard Voronoi heuristic for this game. For each direction that doesn't kill it immediately, the bot asks how many cells it could reach before anyone else if everyone raced outward from where they are. It answers with a multi-source breadth-first search: the bot's candidate next cell and every other living cycle's current cell go into one queue at the same time, the search expands one ring per step, and each open cell is marked for whoever gets there first. The score for that direction is the count of cells the bot claimed. It picks the highest, prefers to keep going straight on a tie, and then commits to that direction for 3 ticks so it doesn't dither. The fill visits every cell at most once, so it's linear in the arena size, and the claimed buffer and queue are preallocated typed arrays that get reused.</p>
+            <p>The bots use the standard Voronoi heuristic for this game. For each direction that doesn't kill it immediately, the bot asks how many cells it could reach before anyone else if everyone raced outward from where they are. It answers with a multi-source breadth-first search: the bot's candidate next cell and every other living cycle's current cell go into one queue at the same time, the search expands one ring per step, and each open cell is marked for whoever gets there first. The score for that direction is the count of cells the bot claimed. It picks the highest, prefers to keep going straight on a tie, and then commits to that direction for 3 ticks so it doesn't dither. The fill visits every cell at most once, so it's linear in the arena size, and the claimed buffer and queue are preallocated typed arrays that get reused. The bot is seeded at the cell it's about to move into while the opponents are seeded where they stand, so its territory estimate runs a cell optimistic.</p>
 
-            <p>There's an asymmetry in the seeding. The bot is seeded at the cell it's about to move into, while the opponents are seeded where they currently stand, so the bot gets a one-cell head start in the race and its territory estimate is slightly optimistic.</p>
-
-            <p>That's the whole brain. One ply, no lookahead. It rarely traps itself and it will cut you off when it has the space advantage, but it has no idea that a corridor it's entering will close behind it three moves from now. A player who plans can wall it in.</p>
+            <p>It looks one ply ahead. It rarely traps itself and will cut you off when it has the space advantage, but it has no idea that a corridor it's entering will close behind it three moves from now.</p>
 
             <h2>Death and debris</h2>
 
             <p>When a bot dies its trail stays on the board as an obstacle for two seconds, then vanishes the instant the bot respawns somewhere else. While you survive, the arena keeps filling with other people's walls. Your score is the number of seconds you survived, added up across games, with your longest run tracked separately.</p>
-
-            <p>It's about 2,300 lines of TypeScript on Canvas 2D with Web Audio for the sound, built with Vite. There are 51 Vitest tests in six files and they run in the deploy workflow, but the test for the Voronoi choice accepts three of the four directions as correct, so it can't really fail. Controls are WASD or arrows on desktop and swipe on a phone.</p>
         </article>
 
     </div>
