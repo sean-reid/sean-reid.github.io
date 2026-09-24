@@ -50,11 +50,11 @@
 
             <p>A project declares 100 dependencies and needs a handful. The rest are left over from deleted features or already pulled in by something else. The only test available is whether the build passes with a given subset, and each test takes time. I wanted to see how the two obvious strategies compare, so I made a page that runs both side by side on the same grid of squares.</p>
 
-            <p>The setup is \(M\) declared dependencies of which \(N\) are required, and a build oracle that passes exactly when every required one is in the set. That makes the oracle monotone: if a set builds, so does any superset. Version constraints don't exist here. Real resolvers spend their effort on those, and this page has nothing to say about them.</p>
+            <p>I model \(M\) declared dependencies of which \(N\) are required, and a build oracle that passes exactly when every required one is in the set. That makes the oracle monotone: if a set builds, so does any superset. Version constraints don't exist here.</p>
 
             <h2>Greedy elimination</h2>
 
-            <p>Start with everything included. Remove one dependency and test. If the build passes, leave it out for good. If it fails, put it back. Move to the next. This takes exactly \(M\) tests no matter what \(N\) is. You know how long it'll take before it starts, which is its one virtue.</p>
+            <p>Start with everything included. Remove one dependency and test. If the build passes, leave it out for good. If it fails, put it back. Move to the next. This takes exactly \(M\) tests no matter what \(N\) is. You know how long it'll take before it starts.</p>
 
             <h2>Binary search</h2>
 
@@ -62,13 +62,11 @@
 
             <p>Each round is a binary search over at most \(M\) positions, so about \(\log_2 M\) tests, and there are \(N\) rounds. Roughly \(N \log_2 M\) tests in total. The information-theoretic floor is \(\log_2 \binom{M}{N}\), which is \(\Theta(N \log(M/N))\), so this is close to the best possible when \(N\) is small. At the default settings, 32 dependencies with 4 required, greedy takes 32 tests and binary search about 20. At 256 with 4 required, greedy takes 256 and binary search about 32.</p>
 
-            <p>When \(N\) approaches \(M\) it goes the other way. Every round still pays a logarithmic search to find the next required dependency, even though nearly all of them are, so the total climbs past \(M\) and greedy wins. Set \(N = M\) on the sliders and watch binary search lose.</p>
+            <p>When \(N\) approaches \(M\) it goes the other way. Every round still pays a logarithmic search to find the next required dependency, even though nearly all of them are, so the total climbs past \(M\) and greedy wins. With \(N = M\) on the sliders, binary search loses.</p>
 
             <h2>Watching it</h2>
 
-            <p>Both grids show the same layout. The squares being tested glow, the ones found to be required turn red, the ones eliminated turn grey. A counter under each grid shows tests so far and required dependencies found. The speed slider goes from 50 to 500 ms per test. At the slow end you can follow each decision. At the fast end you can run a dozen configurations in a minute and get a feel for where the crossover is. When both finish, the one with fewer tests is highlighted.</p>
-
-            <p>The whole thing is one HTML file with no dependencies, which felt appropriate.</p>
+            <p>Both grids show the same layout. Squares being tested glow, required ones turn red, and eliminated ones turn gray. A counter under each grid shows tests so far and required dependencies found. The speed slider goes from 50 to 500 ms per test, slow enough to follow each decision or fast enough to run a dozen configurations in a minute and get a feel for where the crossover is. When both finish, I highlight the one with fewer tests.</p>
         </article>
 
     </div>
