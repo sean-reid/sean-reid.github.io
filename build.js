@@ -149,7 +149,7 @@ function renderPost(post, html) {
 function card(post, info) {
   return `                <a href="/blog/${post.slug}.html" class="project-link"><div class="project">
                     <div class="project-name">${esc(post.name)}</div>
-                    <p class="project-desc">${esc(info.meta)}</p>
+                    <p class="project-desc">${esc(info.meta.replace(/\.$/, ''))}</p>
                 </div></a>`;
 }
 

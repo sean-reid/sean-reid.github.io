@@ -5,7 +5,7 @@
   { "slug": "deconflict", "name": "deconflict", "desc": "WiFi channel planning by graph coloring", "group": "tools", "date": "2026-04-10" },
   { "slug": "miditool", "name": "miditool", "desc": "realtime MIDI transforms between keyboard and DAW", "group": "music", "date": "2026-07-11" },
   { "slug": "unquote", "name": "unquote", "desc": "film dialogue search by quote, half-memory, or scene", "group": "tools", "date": "2026-07-11" },
-  { "slug": "randomify", "name": "randomify", "desc": "a shuffle button over everything ever recorded", "group": "tools", "date": "2026-07-11" },
+  { "slug": "randomify", "name": "randomify", "desc": "a random song from MusicBrainz, linked on eight streaming services", "group": "tools", "date": "2026-07-11" },
   { "slug": "how-will-i-die", "name": "how will i die", "desc": "eventual causes of death by country, age, sex", "group": "math", "date": "2026-07-11" },
   { "slug": "kakeya", "name": "kakeya", "desc": "the Kakeya needle problem, animated from computed sets", "group": "math", "date": "2026-09-23" },
   { "slug": "oeis-pi-search", "name": "oeis pi search", "desc": "where OEIS sequences first appear in pi", "group": "math", "date": "2026-09-23" },
