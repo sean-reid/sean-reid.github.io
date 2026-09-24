@@ -50,13 +50,9 @@
 
             <p>There's an icebreaker where someone picks a number in a range, say 1 to 100, everyone guesses, and the closest wins. Alone it's <a href="https://en.wikipedia.org/wiki/Binary_search">binary search</a>. With other people guessing too, the midpoint of the whole range stops being the right move. You want the midpoint of the largest stretch nobody has claimed yet, because that's where you have the best chance of being closest.</p>
 
-            <p>I built this for a recurring office game where the prize was picking the lunch restaurant. I kept losing because I was guessing "intuitively" and competing with everyone else's intuition for the same part of the number line. Most people guess round numbers. They cluster around multiples of 10 and especially around 50, and it's common to see three people guess in the 40 to 60 range while the ends of the range sit empty. After switching to this I won noticeably more often.</p>
+            <p>I built this for a recurring office game where the prize was picking the lunch restaurant. I kept losing because I was guessing "intuitively" and competing with everyone else's intuition for the same part of the number line. Most people guess round numbers. They cluster around multiples of 10 and especially around 50, and it's common to see three people guess in the 40 to 60 range while the ends of the range sit empty. After switching to this I started winning more.</p>
 
-            <h2>What it does</h2>
-
-            <p>You enter the minimum, the maximum, and each guess as it's made. It sorts the bounds and the guesses, finds the widest gap between neighbours, and tells you the midpoint of that gap. If the number is uniform on the range, the chance it falls in a gap is proportional to the gap's width, so the widest gap is the best bet and bisecting it is the greedy move. With the range 1 to 100 and a guess of 30, the gaps are 1 to 30 and 30 to 100, so it says 65. If someone then guesses 80, the widest gap is 30 to 80 and it says 55.</p>
-
-            <p>The whole thing is one HTML page with about 20 lines of JavaScript and no dependencies. It assumes the number is uniform, which the person picking it usually isn't, and it doesn't try to model that.</p>
+            <p>You enter the minimum, the maximum, and each guess as it's made. It sorts the bounds and the guesses, finds the widest gap between neighbors, and tells you the midpoint of that gap. If the number is uniform on the range, and I treat it as if it is, the chance it falls in a gap is proportional to the gap's width, so the widest gap is the best bet and bisecting it is the greedy move. With the range 1 to 100 and a guess of 30, the gaps are 1 to 30 and 30 to 100, so it says 65. If someone then guesses 80, the widest gap is 30 to 80 and it says 55.</p>
         </article>
 
     </div>
