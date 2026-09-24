@@ -48,7 +48,7 @@
                 <figcaption>The title screen. Solo against an AI, or create a game and share the four-letter code.</figcaption>
             </figure>
 
-            <p>Take a positive integer. If it's even, halve it. If it's odd, triple it and add 1. The <a href="https://en.wikipedia.org/wiki/Collatz_conjecture">Collatz conjecture</a> says you always reach 1, and nobody has proved it. What I like about the sequences is how uneven they are. 7 takes 16 steps and climbs to 52 on the way. 6 takes 8. The two paths merge at 10 and share everything after. I wanted a game where those numbers are the clock and the terrain at once.</p>
+            <p>Take a positive integer. If it's even, halve it. If it's odd, triple it and add 1. The <a href="https://en.wikipedia.org/wiki/Collatz_conjecture">Collatz conjecture</a> says you always reach 1, and nobody has proved it. What I like about the sequences is how uneven they are. 7 takes 16 steps and climbs to 52 on the way. 6 takes 8. The two paths merge at 10 and share everything after.</p>
 
             <figure class="small">
                 <img decoding="async" src="img/cc/collatz-graph.svg" alt="Collatz conjecture graph showing paths from multiple starting values converging to 1" loading="lazy">
@@ -57,7 +57,7 @@
 
             <h2>Vines</h2>
 
-            <p>The board is five vines, each labelled with a number from 3 to 25. Every 2.5 seconds every vine takes one Collatz step. A vine at 7 becomes 22, then 11, then 34. When a vine hits 1 it withers and a fresh one sprouts with a new number not already on the board. I skip powers of two when drawing new numbers (the check is <code>n &amp; (n - 1) === 0</code>), because 16 would wither in four ticks and never be worth harvesting. That leaves 20 possible starting values.</p>
+            <p>The board is five vines, each labeled with a number from 3 to 25. Every 2.5 seconds every vine takes one Collatz step. A vine at 7 becomes 22, then 11, then 34. When a vine hits 1 it withers and a fresh one sprouts with a new number not already on the board. I skip powers of two when drawing new numbers (the check is <code>n &amp; (n - 1) === 0</code>), because 16 would wither in four ticks and never be worth harvesting. That leaves 20 possible starting values.</p>
 
             <p>Harvesting a vine scores its current value. If that value appears within the next 25 Collatz steps of the last value you harvested, the harvest is chained. The multiplier is \(1 + 0.5\ell\) where \(\ell\) counts chained harvests so far, so the second link in a chain scores 1.5 times its value, the third 2 times, and so on, rounded to whole points. A harvest that doesn't chain scores face value and resets the chain. First to 500 points wins, or the higher score after 90 seconds. There's a 3 second cooldown after each harvest.</p>
 
@@ -68,17 +68,17 @@
                 <figcaption>Solo mode against the Botanist. The vine at 76 halves to 38 on the next tick.</figcaption>
             </figure>
 
-            <h2>Three opponents</h2>
+            <h2>Solo opponents</h2>
 
-            <p>Solo mode has three AI tiers, and they differ mostly in how often they act and whether they know chains exist. The Seedling acts every 1.5 to 3 seconds, does nothing 30% of the time, and otherwise harvests a random vine. The Gardener acts every 0.8 to 2 seconds and skips 15% of turns. When a vine that would chain is on the board it takes the highest one 60% of the time, and otherwise takes the highest raw value. The Botanist acts every 0.3 to 1 second and skips 5%. It compares the best chaining vine's value times the multiplier it would earn against the best raw vine, and takes the chain when that comes out higher. When it doesn't, it still takes the chain 30% of the time, which is the only thing in the game that looks like planning ahead.</p>
+            <p>Solo mode has three AI tiers, and they differ mostly in how often they act and whether they know chains exist. The Seedling harvests a random vine every couple of seconds and sometimes does nothing. The Gardener usually takes a chaining vine when one is on the board and the highest raw value otherwise. The Botanist acts every 0.3 to 1 second, compares the best chaining vine's value times the multiplier it would earn against the best raw vine, and takes the chain when that comes out higher. When it doesn't, it still takes the chain 30% of the time.</p>
 
             <p>The Botanist's edge is mostly reaction time. Without the cooldown it would take every vine the moment it sprouted.</p>
 
-            <h2>Two players</h2>
+            <h2>Online play</h2>
 
             <p>Online games run through <a href="https://www.partykit.io/">PartyKit</a>. The server owns the vines, both scores, both chains, and the clock. It ticks the vines itself every 2.5 seconds and counts down the 90 seconds itself, so the two clients never disagree about time. A harvest request is checked against the vine still being alive and the player's cooldown, stored as a timestamp per player slot that moves forward 3,000 ms on each accepted harvest.</p>
 
-            <p>The Collatz step, the chain lookup, the multiplier, and the vine generator live in one small package that the web client, the solo AI, and the PartyKit server all import. It's the only part of the repo with unit tests, about 250 lines of them, and CI runs them before the Cloudflare Pages deploy. There's an e2e directory too. It's empty.</p>
+            <p>The Collatz step, the chain lookup, the multiplier, and the vine generator live in one small package that the web client, the solo AI, and the PartyKit server all import.</p>
         </article>
 
     </div>
