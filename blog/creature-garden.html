@@ -48,29 +48,27 @@
                 <figcaption>Creature Garden mid-run, with the stats bar at the top.</figcaption>
             </figure>
 
-            <p>I wanted to build a petri dish you could watch. Drop some creatures into a space with limited food and see what happens. They eat, they grow, they reproduce, they die. The population booms, overshoots, crashes, and recovers, in the way populations do when they share a resource that comes back at a fixed rate. You can intervene by dropping food wherever you click, or you can leave it alone and watch.</p>
+            <p>I wanted to build a petri dish you could watch. Drop some creatures into a space with limited food and see what happens. They eat, grow, reproduce, and die, and the population booms, crashes, and recovers the way populations do when they share a resource that comes back at a fixed rate. You can intervene by dropping food wherever you click, or you can leave it alone and watch.</p>
 
-            <p>None of that is modelled. There are no equations for population in the code, no Lotka-Volterra, no logistic curve. The oscillation comes out of a handful of per-creature rules and a constant food spawn rate, and it has the same shape those models describe, which is the fun of it.</p>
+            <p>None of that is modeled. There's no population equation in the code. The oscillation comes out of a handful of per-creature rules and a constant food spawn rate, and it has the same shape a logistic curve or Lotka-Volterra would give.</p>
 
             <h2>The creatures</h2>
 
-            <p>Each creature gets random traits: a body colour from anywhere on the hue wheel, a diameter between 6 and 25 pixels, and six to nine tentacles. The tentacles animate with a sine undulation, so each creature has its own swimming motion. Two white eyes with black pupils sit on the body. They land somewhere between a cartoon octopus and something from a plankton net.</p>
+            <p>Each creature gets random traits: a body color from anywhere on the hue wheel, a diameter between 6 and 25 pixels, and six to nine tentacles. The tentacles animate with a sine undulation, so each creature has its own swimming motion. Two white eyes with black pupils sit on the body. They land somewhere between a cartoon octopus and something from a plankton net.</p>
 
-            <p>Eating makes a creature grow, and the per-frame energy cost grows with the square of the radius, so a creature twice as wide burns four times as fast. Past some size, intake can't keep up and it starves. I didn't program a size cap. The square law is the cap.</p>
+            <p>Eating makes a creature grow, and the per-frame energy cost grows with the square of the radius, so a creature twice as wide burns four times as fast. Past some size, intake can't keep up and it starves, so I never needed a size cap.</p>
 
             <h2>What they do</h2>
 
-            <p>Creatures have three drives. They steer toward nearby food. They push away from each other at close range. They flee the cursor inside a 100-pixel radius. Each frame the drives sum into an acceleration, and velocity carries over with a drag factor below 1 so nothing teleports. They drift, turn, speed up toward food, and scatter when the cursor gets close.</p>
+            <p>Creatures steer toward nearby food, push away from each other at close range, and flee the cursor inside a 100-pixel radius. Each frame the pulls sum into an acceleration, and velocity carries over with a drag factor below 1 so nothing teleports. They drift, turn, speed up toward food, and scatter when the cursor gets close. The cursor drags a faint blue glow so you can tell where the thing they're fleeing from is.</p>
 
-            <p>Food spawns at random positions at a constant rate and disappears after 300 frames if nobody reaches it. That constant rate is the whole carrying capacity. Too many creatures and they compete for what's there. Too few and food sits uneaten until it vanishes. Clicking adds food at the cursor, which raises the ceiling for as long as you keep clicking.</p>
+            <p>Food spawns at random positions at a constant rate and disappears after 300 frames if nobody reaches it. That constant rate sets the carrying capacity. With too many creatures they compete for what's there, and with too few the food sits uneaten until it vanishes. Clicking adds food at the cursor, which raises the ceiling for as long as you keep clicking.</p>
 
             <h2>Birth and death</h2>
 
-            <p>Every frame, every living creature has a 1 percent chance of spawning a new one nearby. Offspring get fresh random traits rather than a copy of the parent, so the garden stays visually varied. With that rate, a creature that lives 200 frames has an 87 percent chance of reproducing at least once, and one that dies at 50 frames has 39 percent. Nothing selects on traits. Creatures that happen to be near food live longer and get more rolls of the dice, which is as close to natural selection as this gets.</p>
+            <p>Every frame, every living creature has a 1 percent chance of spawning a new one nearby. Offspring get fresh random traits rather than a copy of the parent, so the garden stays visually varied. With that rate, a creature that lives 200 frames has an 87 percent chance of reproducing at least once. Nothing selects on traits, but creatures that happen to be near food live longer and get more rolls of the dice.</p>
 
-            <p>Death has two clocks. A hunger counter climbs every frame and resets on eating, and when it crosses a threshold the creature dies. A lifespan counter runs alongside it, and a well-fed creature still dies when that runs out. Either one ends it. The stats bar shows the current living count, the food count, and a score.</p>
-
-            <p>The whole thing is one HTML file with a Canvas 2D render loop. The background is a dark blue-green gradient, the creatures are bright, and the cursor drags a faint blue glow so you can tell where the thing they're fleeing from is.</p>
+            <p>A hunger counter climbs every frame and resets on eating, and when it crosses a threshold the creature dies. A lifespan counter runs alongside it, so a well-fed creature still dies when that runs out. The stats bar shows the current living count, the food count, and a score.</p>
         </article>
 
     </div>
