@@ -56,33 +56,33 @@
 
             \[\mathbf{a} = -\sum_j \frac{G M_j\,(\mathbf{x} - \mathbf{p}_j)}{\left(|\mathbf{x} - \mathbf{p}_j|^2 + \epsilon^2\right)^{3/2}}, \qquad \epsilon = 0.1,\]
 
-            <p>integrated with <a href="https://en.wikipedia.org/wiki/Verlet_integration#Velocity_Verlet">velocity Verlet</a> at a fixed step. The softening stops anything blowing up near the centre. One of the 151 tests runs a circular orbit for 10,000 steps and checks it stays on its circle.</p>
+            <p>integrated with <a href="https://en.wikipedia.org/wiki/Verlet_integration#Velocity_Verlet">velocity Verlet</a> at a fixed step. The softening stops anything blowing up near the center. A circular orbit run for 10,000 steps stays on its circle.</p>
 
             <p>The relativity is a single borrowed formula. At the player's position I compute</p>
 
             \[\tau = \sqrt{1 - \sum_j \frac{r_{s,j}}{d_j}},\]
 
-            <p>clamped to \([0.01, 1]\), where \(r_{s,j}\) is each hole's <a href="https://en.wikipedia.org/wiki/Schwarzschild_radius">Schwarzschild radius</a> and \(d_j\) is the distance to it. With one hole that is the <a href="https://en.wikipedia.org/wiki/Gravitational_time_dilation">Schwarzschild time dilation</a> factor. With two, the sum has no metric behind it and just plays well. Every bot and projectile then advances by \(\Delta t \cdot \tau_{\text{entity}} / \tau_{\text{player}}\), capped at 5, so when you're deep the rest of the arena runs up to five times faster than you do. Your own proper time runs at \(\tau_{\text{player}}\) times wall time, and so do your orbit-anchor and tidal-flare cooldowns, so diving speeds up everyone else and slows your own abilities down at the same time. Deciding when that trade is worth taking is the game.</p>
+            <p>clamped to \([0.01, 1]\), where \(r_{s,j}\) is each hole's <a href="https://en.wikipedia.org/wiki/Schwarzschild_radius">Schwarzschild radius</a> and \(d_j\) is the distance to it. With one hole that is the <a href="https://en.wikipedia.org/wiki/Gravitational_time_dilation">Schwarzschild time dilation</a> factor. With two, the sum has no metric behind it and just plays well. Every bot and projectile then advances by \(\Delta t \cdot \tau_{\text{entity}} / \tau_{\text{player}}\), capped at 5, so when you're deep the rest of the arena runs up to five times faster than you do. Your own proper time runs at \(\tau_{\text{player}}\) times wall time, and so do your orbit-anchor and tidal-flare cooldowns, so diving speeds up everyone else and slows your own abilities down at the same time.</p>
 
             <p>Two-hole levels are a restricted three-body problem: the holes follow fixed paths and the ship moves in their combined field. You can slingshot between them, but with the two clocks overlapping the trajectories get hard to predict.</p>
 
             <h2>Weapons</h2>
 
-            <p>There are six. The railgun is a fast kinetic round that curves in the field like everything else. The mass driver is slower and heavier. The photon lance is a 40-step ray march that bends toward each mass by acceleration times step length over \(c^2\), with \(c^2\) set to 0.667 in game units because the physically honest value produced no visible bend. You can shoot it around a hole and hit something on the far side. The gravity bomb drops a temporary point mass into the field. The impulse rocket kicks whatever it hits deeper into the well. The tidal mine sits in orbit and detonates when something passes at a different altitude, with damage linear in the altitude gap up to a cap.</p>
+            <p>The railgun is a fast kinetic round that curves in the field like everything else. The mass driver is slower and heavier. The photon lance is a 40-step ray march that bends toward each mass by acceleration times step length over \(c^2\), with \(c^2\) set to 0.667 in game units because the physically honest value produced no visible bend. You can shoot it around a hole and hit something on the far side. The gravity bomb drops a temporary point mass into the field. The impulse rocket kicks whatever it hits deeper into the well. The tidal mine sits in orbit and detonates when something passes at a different altitude, with damage linear in the altitude gap up to a cap.</p>
 
-            <p>The balance ended up shaped by the clock mechanic in ways I didn't plan. Anything slow in flat space becomes threatening near a hole because the target's clock is running slow. So the "weak" weapons, the mines and the bombs, turned out to be the most dangerous ones in the deep zones.</p>
+            <p>The clock mechanic ended up shaping the balance. Anything slow in flat space becomes threatening near a hole because the target's clock is running slow. So the "weak" weapons, the mines and the bombs, turned out to be the most dangerous ones in the deep zones.</p>
 
             <h2>Bots</h2>
 
-            <p>Six archetypes, each trying to exploit depth from a different angle: Skirmisher, Diver, Vulture, Anchor, Swarm, and Commander, which climbs when you dive and dives when you climb. The Diver was the hardest to tune. Its whole strategy is going deep, which means everything outside is fast. Set its aggression too high and it suicides into the Abyss without reacting to incoming fire. Too low and it never commits and plays like a worse Skirmisher. Getting it right took many rounds of adjusting how it weighs the risk of its current depth against the damage it could do there.</p>
+            <p>Six archetypes, each trying to exploit depth from a different angle: Skirmisher, Diver, Vulture, Anchor, Swarm, and Commander, which climbs when you dive and dives when you climb. The Diver was the hardest to tune. Its whole strategy is going deep, which means everything outside is fast. Set its aggression too high and it suicides into the Abyss without reacting to incoming fire. Too low and it never commits and plays like a worse Skirmisher.</p>
 
             <h2>Audio</h2>
 
-            <p>There are no audio files in the repository, only fonts. Every sound, engine hum, weapon discharge, explosion, ambient tone, is synthesised at runtime. I meant to add recorded samples later and used synthesis as a placeholder, but the synthesised sounds came out better than anything I found in free asset libraries. The engine hum pitch-shifts with \(\tau\), which tells you how deep you are without looking at the HUD. That was an accident and it works.</p>
+            <p>There are no audio files in the repository, only fonts. Every sound, engine hum, weapon discharge, explosion, ambient tone, is synthesized at runtime. I meant to add recorded samples later and used synthesis as a placeholder, but the synthesized sounds came out better than anything I found in free asset libraries. The engine hum pitch-shifts with \(\tau\).</p>
 
-            <h2>Everything else</h2>
+            <h2>Rendering and story</h2>
 
-            <p>Rendering is <a href="https://wgpu.rs/">wgpu</a> with <a href="https://www.w3.org/TR/WGSL/">WGSL</a> shaders for the accretion disk, a lensing pass that distorts the starfield near each hole, and bloom. Levels are generated from the level number and a seed. There is a four-act story delivered through mission briefings and radio chatter, which was an odd thing to write against procedural levels. Leaderboards run on a <a href="https://workers.cloudflare.com/">Cloudflare Worker</a> with <a href="https://developers.cloudflare.com/d1/">D1</a>; the server only range-checks a submission (score under ten million, coordinate time at least proper time, deepest altitude above the horizon, hits no more than shots), so a determined cheater gets through. Scores save locally and sync when there's a connection, and identity is a UUID with no login. The game builds natively for Windows, macOS, and Linux and to <a href="https://webassembly.org/">WebAssembly</a> for the browser.</p>
+            <p>Rendering is <a href="https://wgpu.rs/">wgpu</a> with <a href="https://www.w3.org/TR/WGSL/">WGSL</a> shaders for the accretion disk, a lensing pass that distorts the starfield near each hole, and bloom. Levels are generated from the level number and a seed. There's a four-act story delivered through mission briefings and radio chatter, which was an odd thing to write against procedural levels.</p>
         </article>
 
     </div>
