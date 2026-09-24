@@ -48,25 +48,23 @@
                 <figcaption>The title screen. The blank is a dropdown of categories.</figcaption>
             </figure>
 
-            <p>Those "What kind of X are you?" quizzes are everywhere. What sandwich are you. What 90s sitcom character are you. They all have the same shape: a fixed set of multiple-choice questions, a mapping from answers to results, and a reveal. The questions are generic personality questions that could map to anything. The category doesn't matter.</p>
+            <p>Those "What kind of X are you?" quizzes are everywhere. What sandwich are you. What 90s sitcom character are you. They all have the same shape, a fixed set of multiple-choice questions and a mapping from answers to results. The questions are generic personality questions that could map to anything.</p>
 
             <p>So I built one where the category is a parameter. You pick a topic from a dropdown, the title fills in ("Countries" becomes "What Country Are You?"), and the result is pulled live from <a href="https://en.wikipedia.org/wiki/Wikipedia:About">Wikipedia</a>.</p>
 
             <h2>Where the categories come from</h2>
 
-            <p>The dropdown itself comes from Wikipedia. On each load I pick 5 of 15 broad root categories (Nature, Science, Food and drink, Organisms, Sports, and so on), fetch their subcategories through the <a href="https://www.mediawiki.org/wiki/API:Categorymembers">MediaWiki API</a>, keep the single-word names between 4 and 14 characters, shuffle, and show 25. If that turns up fewer than 10, a fixed list of 25 fills in instead. So the dropdown is different every time you load the page.</p>
+            <p>The dropdown itself comes from Wikipedia. On each load I pick 5 of 15 broad root categories (Nature, Science, Food and drink, Organisms, Sports, and so on), fetch their subcategories through the <a href="https://www.mediawiki.org/wiki/API:Categorymembers">MediaWiki API</a>, keep the short single-word names, shuffle, and show 25. If that turns up too few, a fixed list fills in instead. So the dropdown is different every time you load the page.</p>
 
             <h2>The questions and the hash</h2>
 
-            <p>You get 10 questions drawn from a pool of 500, each with four answers. "What is your relationship with your phone at 2% battery?" is one of them, and "My phone is always at 2 percent. We live here now." is one of its answers. When you finish, I take the index of each answer, multiply it by the question's position from 1 to 10, sum the products, and take the total modulo the number of eligible articles in the category. Same answers, same article.</p>
+            <p>You get 10 questions drawn from a pool of 500, each with four answers. "What is your relationship with your phone at 2% battery?" is one of them, and "My phone is always at 2 percent. We live here now." is one of its answers. When you finish, I take the index of each answer, multiply it by the question's position from 1 to 10, sum the products, and take the total modulo the number of eligible articles in the category, so the same answers give the same article.</p>
 
             <p>The eligible articles are the first 100 pages in the category by sort key, minus anything with "disambiguation", "list of", "index of", "outline of", or "glossary of" in the title, and anything with a slash or a colon. If the category query fails I fall back to a plain search for the category name. A second call fetches the winning article's intro text and a 500 px thumbnail for the reveal. Because the pool is whatever Wikipedia holds today, the result you got last month can be a different article now.</p>
 
             <h2>The Jeopardy theme</h2>
 
-            <p>There's an mp3 in the repo: the <a href="https://en.wikipedia.org/wiki/Jeopardy!">Jeopardy!</a> think music. It starts on your first tap, since browsers won't autoplay audio before a gesture, and its playback rate ramps from 1x at the first question to 3x at the last, in 0.3 second glides so it never jumps. By question 8 it's noticeably frantic. It's the thing people mention when they send the link to someone.</p>
-
-            <p>The whole app is one 1,391-line HTML file plus the mp3, six commits, and the only thing it talks to is Wikipedia.</p>
+            <p>There's an mp3 in the repo: the <a href="https://en.wikipedia.org/wiki/Jeopardy!">Jeopardy!</a> think music. It starts on your first tap, since browsers won't autoplay audio before a gesture, and its playback rate ramps from 1x at the first question to 3x at the last, in 0.3 second glides so it never jumps. By question 8 it's noticeably frantic.</p>
         </article>
 
     </div>
