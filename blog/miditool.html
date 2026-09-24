@@ -45,12 +45,12 @@
         <article>
             <figure>
                 <img decoding="async" fetchpriority="high" src="img/miditool.webp" alt="The miditool documentation site landing page, with the tagline and feature cards" width="2560" height="1600">
-                <figcaption>The documentation site at the live demo link, built with <a href="https://starlight.astro.build/">Starlight</a>. The tool itself is a native Rust binary.</figcaption>
+                <figcaption>The landing page of the documentation site, built with <a href="https://starlight.astro.build/">Starlight</a>. The tool itself runs in a terminal.</figcaption>
             </figure>
 
-            <p>miditool is a <a href="https://www.rust-lang.org/">Rust</a> command-line program that sits between a <a href="https://en.wikipedia.org/wiki/MIDI">MIDI</a> keyboard and a <a href="https://en.wikipedia.org/wiki/Digital_audio_workstation">DAW</a>. It opens the keyboard's input port, runs every event through an effect graph described in a small <a href="https://kdl.dev/">KDL</a> file, and republishes the result on a virtual output port that the DAW sees as just another MIDI device. A minimal config is four lines: an <code>input</code> substring matching the keyboard, an <code>output virtual="miditool Out"</code>, and a couple of effects like <code>shuffle-lock seed=42</code> and <code>velocity-curve gamma=0.8</code>.</p>
+            <p>miditool is a <a href="https://www.rust-lang.org/">Rust</a> command-line program that sits between a <a href="https://en.wikipedia.org/wiki/MIDI">MIDI</a> keyboard and a <a href="https://en.wikipedia.org/wiki/Digital_audio_workstation">DAW</a>. It opens the keyboard's input port, runs every event through an effect graph described in a small <a href="https://kdl.dev/">KDL</a> file, and republishes the result on a virtual output port that the DAW sees as just another MIDI device.</p>
 
-            <p>I built it to play live on an 88-key piano, and that fixed the constraints before I wrote any effects. The processing path never allocates. Every random effect is seeded. And a note that goes on has to come off, even if the mapping changed while I was holding the key. The third one is the one I was afraid of. A stuck note at a gig is a sustained tone that nothing on the keyboard can stop, and the effects that make this tool worth having (remapping keys, re-drawing notes at random, swapping graphs mid-phrase) are exactly the ones that lose track of which note-off belongs to which note-on.</p>
+            <p>I built it to play live on an 88-key piano, and that fixed the constraints before I wrote any effects. The processing path never allocates, every random effect is seeded, and a note that goes on has to come off even if the mapping changed while I was holding the key. A stuck note at a gig is a sustained tone that nothing on the keyboard can stop, and the effects that make this tool worth having (remapping keys, re-drawing notes at random, swapping graphs mid-phrase) are exactly the ones that lose track of which note-off belongs to which note-on.</p>
 
             <h2>The signal path</h2>
 
@@ -66,7 +66,7 @@
 
             <h2>Seeded randomness</h2>
 
-            <p>Each stochastic effect owns a <a href="https://www.pcg-random.org/">PCG</a> generator seeded from its config, with independent streams derived through <a href="https://prng.di.unimi.it/splitmix64.c">SplitMix64</a>. The two effects the project started with show why. <code>shuffle-lock</code> draws one seeded <a href="https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle">Fisher-Yates</a> permutation of the keys at construction, so the keyboard is scrambled but stable enough to practice on, and <code>loose-keys</code> re-draws every note-on's key so the same key twice gives two different notes.</p>
+            <p>Each stochastic effect owns a <a href="https://www.pcg-random.org/">PCG</a> generator seeded from its config, with independent streams derived through <a href="https://prng.di.unimi.it/splitmix64.c">SplitMix64</a>. <code>shuffle-lock</code> draws one seeded <a href="https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle">Fisher-Yates</a> permutation of the keys at construction, so the keyboard is scrambled but stable enough to practice on, and <code>loose-keys</code> re-draws every note-on's key so the same key twice gives two different notes.</p>
 
             <h2>Fifty-two effects, mostly from the twentieth century</h2>
 
@@ -74,15 +74,15 @@
 
             <h2>Note-off correctness</h2>
 
-            <p>Pitch-remapping effects share a router that records, per channel and key, which output key each note-on produced, in a fixed 16 by 128 grid with no heap behind it. The matching note-off goes to the note that is sounding. A hot reload keeps the swapped-out graph draining until every note and pedal it opened has closed, so a note held through the swap gets its note-off through the mapping that started it, and up to three old generations drain at once. At the boundary the scheduler watches everything it sends through a note tracker, so shutdown, panic, or a killed scene emits exactly the note-offs and pedal releases needed to silence the DAW and nothing else.</p>
+            <p>Pitch-remapping effects share a router that records, per channel and key, which output key each note-on produced, in a fixed 16 by 128 grid with no heap behind it. The matching note-off goes to the note that is sounding. A hot reload keeps the swapped-out graph draining until every note and pedal it opened has closed, so a note held through the swap gets its note-off through the mapping that started it, and up to three old generations drain at once. At the boundary the scheduler watches everything it sends through a note tracker, so shutdown, panic, or a killed scene emits exactly the note-offs and pedal releases needed to silence the DAW.</p>
 
-            <p>None of that would have convinced me on its own, so the invariant is property-tested. The harness generates random sequences of up to 32 note-ons and note-offs across two channels and all 128 keys, runs them through an effect and then a flush, and feeds the output into a <code>NoteTracker</code> oracle that has to come out empty. Every effect in the crate goes through it, 62 property tests in all, and CI runs them on every push.</p>
+            <p>I property-test that invariant. The harness generates random sequences of up to 32 note-ons and note-offs across two channels and all 128 keys, runs them through an effect and then a flush, and feeds the output into a <code>NoteTracker</code> oracle that has to come out empty. Every effect in the crate goes through it.</p>
 
             <h2>Scenes, hot reload, scripts</h2>
 
             <p>A config can group effects into named <code>scene</code> blocks and switch between them mid-performance. <code>miditool run</code> watches the config through <a href="https://crates.io/crates/notify">notify</a> with a 300 ms debounce, re-parses on change, and swaps the active scene's graph off the hot path. A broken edit is reported and leaves the running graph alone. A <code>control</code> block reserves keys as gestures for scene changes and panic, consumed before the graph sees them.</p>
 
-            <p>A chain can also hold a <code>script</code> node that runs a <a href="https://luau.org/">Luau</a> file through <a href="https://crates.io/crates/mlua">mlua</a> as an ordinary effect, synchronously on the realtime path. The sandbox makes that tolerable: no <code>io</code>, no <code>require</code>, a 16 MB heap, and a 5 ms per-call budget enforced through the Luau interrupt callback. The first time a handler errors or blows its budget, the node logs one line and becomes a passthrough, because a broken script must not silence the keyboard mid-performance.</p>
+            <p>A chain can also hold a <code>script</code> node that runs a <a href="https://luau.org/">Luau</a> file through <a href="https://crates.io/crates/mlua">mlua</a> as an ordinary effect, synchronously on the realtime path. The sandbox has no <code>io</code> or <code>require</code>, a 16 MB heap, and a 5 ms per-call budget enforced through the Luau interrupt callback. The first time a handler errors or blows its budget, the node logs one line and becomes a passthrough.</p>
 
             <h2>The remote and the GarageBand problem</h2>
 
