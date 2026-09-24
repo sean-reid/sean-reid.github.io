@@ -48,21 +48,21 @@
                 <figcaption>Daily puzzle 192, a hard one, on its second attempt. The first guess locked two cards green and revealed the rounded target.</figcaption>
             </figure>
 
-            <p>Each Rebase puzzle deals four digit strings and four number bases. You assign one base to each string, every base used once, and the four values have to add up to a target. You get three attempts with <a href="https://www.nytimes.com/games/wordle/index.html">Wordle</a>-style feedback after each. The catch is the base pool. Alongside 2, 3, 5, and 10 it contains \(\varphi\), \(\sqrt{2}\), \(e\), and \(\pi\), so the same digits mean wildly different things depending on where you drop them. The string 1110 is worth 1110 in base 10, 39 in base 3, 14 in base 2, and about 8.472 in base \(\varphi\).</p>
+            <p>Each Rebase puzzle deals four digit strings and four number bases. You assign one base to each string, every base used once, and the four values have to add up to a target. You get three attempts with <a href="https://www.nytimes.com/games/wordle/index.html">Wordle</a>-style feedback after each. The base pool has \(\varphi\), \(\sqrt{2}\), \(e\), and \(\pi\) alongside 2, 3, 5, and 10, so the same digits mean different things depending on where you drop them. The string 1110 is worth 1110 in base 10, 39 in base 3, 14 in base 2, and about 8.472 in base \(\varphi\).</p>
 
             <h2>Digits in base &pi;</h2>
 
             <p>A digit string evaluates to \(\sum_i d_i\,\beta^i\), and nothing in that requires \(\beta\) to be an integer. <a href="https://en.wikipedia.org/wiki/Non-integer_base_of_numeration">Non-integer bases</a> go back to R&eacute;nyi's 1957 paper on beta-expansions. My evaluation function is the same loop whether the base is 10 or \(\pi\).</p>
 
-            <p>What changes is the digit alphabet. Each digit must be smaller than the base, so base \(\varphi \approx 1.618\) and base \(\sqrt{2} \approx 1.414\) admit only 0 and 1, base \(e\) admits digits up to 2, and base \(\pi\) up to 3. That's the first foothold when solving. A card containing a 3 can only take base 5, 10, or \(\pi\). Magnitude is the second. Powers of \(\sqrt{2}\) grow slowly, so a long string in a small base stays small, and a large target forces the big bases onto the long strings.</p>
+            <p>What changes is the digit alphabet. Each digit must be smaller than the base, so base \(\varphi \approx 1.618\) and base \(\sqrt{2} \approx 1.414\) admit only 0 and 1, base \(e\) admits digits up to 2, and base \(\pi\) up to 3. A card containing a 3 can only take base 5, 10, or \(\pi\). Powers of \(\sqrt{2}\) grow slowly, so a long string in a small base stays small, and a large target forces the big bases onto the long strings.</p>
 
-            <p>Irrational bases have stranger properties that the game gets to ignore. Since \(\varphi^2 = \varphi + 1\), the strings 100 and 011 denote the same number in <a href="https://en.wikipedia.org/wiki/Golden_ratio_base">base \(\varphi\)</a>, so representations aren't unique. Rebase only ever evaluates a string to a value and never writes a value back out as digits, so the question never comes up.</p>
+            <p>Irrational bases have stranger properties that the game gets to ignore. Since \(\varphi^2 = \varphi + 1\), the strings 100 and 011 denote the same number in <a href="https://en.wikipedia.org/wiki/Golden_ratio_base">base \(\varphi\)</a>, so representations aren't unique. Rebase only ever evaluates a string to a value and never writes a value back out as digits.</p>
 
-            <h2>Three guesses, two colours</h2>
+            <h2>Three guesses, two colors</h2>
 
             <p>You assign a base by dragging its chip onto a card, or tapping to pick up and place. Each card's value and the running sum update live, but the target is hidden on the first attempt, so the opening guess works from digit constraints and visible magnitudes alone. After the first guess the target appears rounded to the nearest integer, and the exact value to three decimals arrives on the final attempt.</p>
 
-            <p>Feedback is per card. Green means the correct base is on this card and it locks for the rest of the game. Yellow means the base is wrong here, and since every base is used once, wrong here means it belongs on another card. There's no gray. Solving on the first, second, or third attempt earns three, two, or one star, and the result exports as the usual grid of coloured squares.</p>
+            <p>Feedback is per card. Green means the correct base is on this card and it locks for the rest of the game. Yellow means the base is wrong here, and since every base is used once, wrong here means it belongs on another card. Solving on the first, second, or third attempt earns three, two, or one star, and the result exports as the usual grid of colored squares.</p>
 
             <h2>Generation by rejection</h2>
 
@@ -70,7 +70,7 @@
 
             <p>A candidate starts with four bases from the difficulty's pool, then four digit strings. Two or three of the cards use only digits valid in every selected base, and the rest may include digits that at least two of the bases can accept. Leading digits are never zero and duplicate strings restart the attempt. Then I enumerate every assignment of bases to cards that's digit-legal and require at least four of them. With fewer, the digit constraints alone would give the puzzle away.</p>
 
-            <p>The target comes from the sums of those legal assignments, each rounded to three decimals. I walk them in shuffled order and pick one whose rounded sum no other legal assignment shares, so the target is unique at the precision the player sees. I also reject any solution where two card values land within 0.05 of each other, so no two cards carry near-identical numbers. After 300 failed attempts the generator falls back to a direct construction with no uniqueness check, so "exactly one answer" is really "almost always exactly one answer". I haven't measured how often the fallback fires.</p>
+            <p>The target comes from the sums of those legal assignments, each rounded to three decimals. I walk them in shuffled order and pick one whose rounded sum no other legal assignment shares, so the target is unique at the precision the player sees. I also reject any solution where two card values land within 0.05 of each other, so no two cards carry near-identical numbers. After 300 failed attempts the generator falls back to a direct construction with no uniqueness check.</p>
 
             <p>Puzzle 192, the one in the screenshot, dealt the cards 1110, 1010, 111, and 10 against the bases 10, \(\varphi\), 3, and \(e\). The solution is \(1110_{10} + 1010_3 + 111_e + 10_\varphi = 1110 + 30 + 11.107 + 1.618 = 1152.725\).</p>
 
@@ -79,8 +79,6 @@
             <p>The daily seed is the date packed as YYYYMMDD, so everyone playing on the same date gets the same board, rolling over at local midnight. The puzzle number counts days from January 1, 2026. Difficulty follows the day of the week. Monday and Tuesday are easy with integer bases only. Wednesday and Thursday bring in one irrational base. Friday and Saturday have two of each. Sunday is expert, all four bases irrational and digit strings stretched to three and four digits.</p>
 
             <p>Practice mode seeds a fresh puzzle from the current timestamp at whichever difficulty you pick. Challenge mode packs a seed and a difficulty index into the single number \(4s + d\), rendered in base 36 as a six-character code you can send to a friend.</p>
-
-            <p>The whole game is one <code>index.html</code>, about 2,500 lines with inline CSS and JavaScript, on GitHub Pages. Drag and drop is hand-rolled on raw mouse and touch events with a ghost element following the pointer, so one code path covers desktop and phones. The in-progress daily board saves to localStorage under a per-date key so a reload mid-game restores your attempts, and play counts, streaks, and the star distribution accumulate separately. A timer runs from your first interaction to your last guess and rides along in the share text.</p>
         </article>
 
     </div>
