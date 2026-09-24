@@ -45,7 +45,7 @@
         <article>
             <figure>
                 <img decoding="async" fetchpriority="high" src="img/frankenpeanuts.webp" alt="Screenshot of FrankenPeanuts" width="2560" height="1600">
-                <figcaption>A FrankenPeanuts strip.</figcaption>
+                <figcaption>Four panels from four different dates laid out as one strip. The last panel still has its original 8-24 date mark.</figcaption>
             </figure>
 
             <p><a href="https://en.wikipedia.org/wiki/Peanuts">Peanuts</a> ran from October 2, 1950 to February 13, 2000, every strip drawn by <a href="https://en.wikipedia.org/wiki/Charles_M._Schulz">Charles Schulz</a> alone. FrankenPeanuts picks four panels at random from the weekday strips and lays them out as a new four-panel comic. Most of them are incoherent. Some of them are accidentally better than they have any right to be. Hovering a panel shows its original date, and the strip is encoded in the URL hash, so a good one can be copied and sent to someone.</p>
@@ -54,15 +54,15 @@
 
             <p>My first version fetched whole strips from <a href="https://peanuts-search.com">peanuts-search.com</a> at page load and split them in the browser with Canvas pixel reads. It needed a CORS proxy, panels took seconds to appear, and some strips never loaded at all. So I moved the cutting to a one-off batch job and committed the results.</p>
 
-            <p>A <a href="https://github.com/sean-reid/frankenpeanuts/blob/main/scripts/build_manifest.py">238-line Python script</a> walks every non-Sunday date in the run (the Sunday strips have a different layout) and fetches the strip image. To find the gutters it takes the middle 80 percent of the image height, every second row, and counts how many pixels in each column have a summed RGB under 180. A column where more than 70 percent of sampled pixels are that dark is a gutter line. Runs of gutter columns collapse to their midpoint, anything within 3 percent of the left or right edge is ignored, and the midpoints become the cut positions. A slice narrower than 5 percent of the strip width is dropped, and so is any panel whose width-to-height ratio is outside 0.55 to 1.45, because a very wide or very narrow panel looks wrong in a square grid.</p>
+            <p>A <a href="https://github.com/sean-reid/frankenpeanuts/blob/main/scripts/build_manifest.py">Python script</a> walks every non-Sunday date in the run (the Sunday strips have a different layout) and fetches the strip image. To find the gutters it samples rows from the middle of the image and counts the dark pixels in each column. A column where more than 70 percent of sampled pixels are dark is a gutter line. Runs of gutter columns collapse to their midpoint, and the midpoints become the cut positions. Slivers are dropped, and so is any panel whose width-to-height ratio is outside 0.55 to 1.45, because a very wide or very narrow panel looks wrong in a square grid.</p>
 
-            <p>The last run covered 15,456 dates. 14,724 of them produced at least one usable panel, 11,963 produced exactly four, and 732 produced none, usually because the scan of a faded or crooked strip found no clean gutter. That's 55,357 JPEGs, about 1.1 GB, committed straight into the repo alongside a manifest.json that maps each date to its panel files. GitHub hasn't complained yet.</p>
+            <p>The last run covered 15,456 dates, and 732 of them produced no usable panel, usually because the scan of a faded or crooked strip found no clean gutter. That's 55,357 JPEGs, about 1.1 GB, committed straight into the repo alongside a manifest.json that maps each date to its panel files. GitHub hasn't complained yet.</p>
 
             <h2>Running it on Actions</h2>
 
-            <p>Fifty years of strips through one runner would take too long, so the <a href="https://github.com/sean-reid/frankenpeanuts/blob/main/.github/workflows/build-manifest.yml">workflow</a> is a 10-job matrix, each job taking a 5-year slice of the archive with 16 fetch threads and a 50 ms pause per request. Each job uploads its partial manifest and its panels as artifacts. A merge job downloads all of them, combines the manifests with a 42-line script, and commits the manifest and images back to the repo. The whole archive takes a few minutes. The script also skips any date already present in its output manifest, so an interrupted local run can be picked up, though on Actions every job starts from nothing.</p>
+            <p>Fifty years of strips through one runner would take too long, so the <a href="https://github.com/sean-reid/frankenpeanuts/blob/main/.github/workflows/build-manifest.yml">workflow</a> is a 10-job matrix, each job taking a 5-year slice of the archive with 16 fetch threads and a 50 ms pause per request. Each job uploads its partial manifest and its panels as artifacts. A merge job downloads all of them, combines the manifests, and commits the manifest and images back to the repo. The whole archive takes a few minutes. The script also skips any date already present in its output manifest, so an interrupted local run can be picked up.</p>
 
-            <p>The page itself is one HTML file. It loads the manifest, flattens it into a pool of 55,357 panels, picks four, and shows them in a grid, four across on desktop and two across under 600 px. There is no proxy and nothing to wait for.</p>
+            <p>The page loads the manifest, flattens it into a pool of 55,357 panels, picks four, and shows them in a grid, four across on desktop and two across under 600 px.</p>
         </article>
 
     </div>
