@@ -48,7 +48,7 @@
                 <figcaption>A run in progress. The bar at the top is the entropy score for the last four seconds of typing.</figcaption>
             </figure>
 
-            <p>The bus accelerates on the <a href="https://en.wikipedia.org/wiki/Entropy_(information_theory)">Shannon entropy</a> of whatever you type. Hold one key and it crawls. Alternate two keys and it crawls a little faster. Use everything on the keyboard, letters, digits, punctuation, shifted symbols, with no rhythm to it, and it moves.</p>
+            <p>The bus accelerates on the <a href="https://en.wikipedia.org/wiki/Entropy_(information_theory)">Shannon entropy</a> of whatever you type. Hold one key and it crawls. Use everything on the keyboard, letters, digits, punctuation, shifted symbols, with no rhythm to it, and it moves.</p>
 
             <h2>Scoring a keypress</h2>
 
@@ -58,15 +58,15 @@
 
             <p>and divide by \(\log_2 n\) for the \(n\) distinct keys seen, which puts it between 0 and 1.</p>
 
-            <p>That number on its own was too easy to max out. Five keys pressed in equal proportion score a perfect 1, and five keys is not much randomness. So I multiply by a diversity term, \((n/50)^{2.5}\), which is why the unique-key counter in the corner runs to 50. Then three pattern checks over the last 15 presses each knock the score down. More than two adjacent-character steps like "asdf" halves it. More than three ABAB alternations multiplies it by 0.6. Any two-key sequence repeated more than twice multiplies it by 0.7. A final factor rewards typing quickly, up to about 10 presses a second. I don't look at rhythm on desktop at all, only on mobile.</p>
+            <p>That number on its own was too easy to max out. Five keys pressed in equal proportion score a perfect 1, and five keys isn't much randomness. So I multiply by a diversity term, \((n/50)^{2.5}\), which is why the unique-key counter in the corner runs to 50. Then pattern checks over the last 15 presses knock the score down. More than two adjacent-character steps like "asdf" halves it. More than three ABAB alternations multiplies it by 0.6. Any two-key sequence repeated more than twice multiplies it by 0.7. A final factor rewards typing quickly, up to about 10 presses a second. I don't look at rhythm on desktop at all, only on mobile.</p>
 
-            <p>Each keypress adds 0.8 times that score to the bus's velocity, capped at 15, and velocity loses 4 percent every frame. Stop typing and the bus coasts to a stop within a second or two. The race is 1000 metres.</p>
+            <p>Each keypress adds 0.8 times that score to the bus's velocity, capped at 15, and velocity loses 4 percent every frame. Stop typing and the bus coasts to a stop within a second or two. The race is 1000 meters.</p>
 
             <h2>Playing it</h2>
 
-            <p>Fingers get tired, but what actually slows the bus is that my brain wants to settle into a sequence and repeat it, and the score drops the moment it does. I found myself doing strange things while playing. Closing my eyes and letting my fingers wander. Using my palms. Typing nonsense words to reach keys I wouldn't normally think of. Humans are bad at <a href="https://en.wikipedia.org/wiki/Random_number_generation#Human_generation">generating random sequences</a> on demand. We avoid repeating a key and overuse alternation, which is exactly what the ABAB check catches.</p>
+            <p>Fingers get tired, but what actually slows the bus is that my brain wants to settle into a sequence and repeat it, and the score drops the moment it does. I found myself doing strange things while playing, like closing my eyes and typing with my palms. Humans are bad at <a href="https://en.wikipedia.org/wiki/Random_number_generation#Human_generation">generating random sequences</a> on demand. We avoid repeating a key and overuse alternation.</p>
 
-            <p>On a phone there is one big button instead, so key variety is gone. There I score the standard deviation of the intervals between taps, divided by 200 ms and capped at 1, times a rate factor. Tapping at irregular intervals beats tapping to a beat.</p>
+            <p>On a phone there's one big button instead, so key variety is gone. There I score the standard deviation of the intervals between taps, divided by 200 ms and capped at 1, times a rate factor. Tapping at irregular intervals beats tapping to a beat.</p>
 
             <p>My best runs come in around 80 seconds. Getting under 70 means keeping the bar green the whole way.</p>
         </article>
