@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+    <title>Lipreadle - Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/lipreadle.webp">
+    <link rel="stylesheet" href="/nav.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="description" content="A daily lipreading puzzle. A muted clip of a mouth saying a five-letter word, and you guess it.">
+    <link rel="canonical" href="https://sean-reid.github.io/blog/lipreadle.html">
+    <link rel="alternate" type="application/atom+xml" title="Sean Reid" href="/feed.xml">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Sean Reid">
+    <meta property="og:title" content="Lipreadle">
+    <meta property="og:description" content="A daily lipreading puzzle. A muted clip of a mouth saying a five-letter word, and you guess it.">
+    <meta property="og:url" content="https://sean-reid.github.io/blog/lipreadle.html">
+    <meta property="og:image" content="https://sean-reid.github.io/blog/img/lipreadle.webp">
+    <meta property="article:published_time" content="2026-09-28">
+    <meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="/" class="site-nav-name">Sean Reid</a>
+    <div class="site-nav-controls">
+      <div class="site-nav-search-wrap"><input type="search" class="site-nav-search" placeholder="Search..." aria-label="Search projects" autocomplete="off"><span class="site-nav-search-hint" aria-hidden="true">/</span></div>
+      <button type="button" class="site-nav-random">Random</button>
+      <div class="search-dropdown" role="listbox" aria-label="Search results"></div>
+    </div>
+  </div>
+</nav>
+<main class="site-content">
+    <div class="container">
+        <header>
+            <h1>Lipreadle</h1>
+            <p class="meta">A daily lipreading puzzle. A muted clip of a mouth saying a five-letter word, and you guess it.</p>
+            <p class="links-row">
+                <a href="https://lipreadle.dwainosaur.com">Live Demo</a>
+                <a href="https://github.com/sean-reid/lipreadle">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <figure>
+                <img decoding="async" fetchpriority="high" src="img/lipreadle.webp" alt="Lipreadle puzzle No. 1: a cropped clip of a mouth above five letter slots, with three guesses listed and a verdict beside each" width="2560" height="1600">
+                <figcaption>Puzzle No. 1 with a couple of guesses in. Each miss says how alike it looks on the lips, and crane is close.</figcaption>
+            </figure>
+
+            <p>Wordle tells you about letters. Lipreadle shows you a mouth. A short muted clip plays someone saying a five-letter word, and you guess until you get it. There's no cap on guesses, fewer is a better score, and a wrong guess never says anything about spelling. It says how alike the two words look on the lips, from "nothing like it" to "looks the same on the lips". Everyone gets the same word, and it changes at midnight, your midnight.</p>
+
+            <h2>Visemes</h2>
+
+            <p>Lipreading is hard because many sounds share a mouth shape. P, B, and M all close the lips. F and V both put the lower lip on the teeth. K, G, and H hardly show at all. A mouth shape is called a viseme, and I collapse the phonemes of the CMU pronouncing dictionary onto 14 of them, one letter each, so a word becomes a short string. Brave is <code>mref</code>, crane is <code>kred</code>, and a run of the same shape collapses to one letter, since a lipreader can't count repeats. Words the dictionary doesn't know fall back to a rough map from spelling.</p>
+
+            <p>The verdict on a guess is an edit distance between its viseme string and the answer's. Substituting shapes that are easy to confuse, d for l, s for the pushed-forward c, k for the open a, o for the rounded w, costs half. Similarity is one minus the distance over the longer string. Above 0.6 the guess is "close", above 0.3 "a few shapes match", and identical strings get "looks the same on the lips", which is the game admitting that two words can't be told apart this way. Guesses sort closest first, so the list is a map of where you've been rather than a log.</p>
+
+            <h2>Where the clips come from</h2>
+
+            <p>Pronunciation channels on YouTube publish clip after clip titled "How to pronounce X in American English", which is a labeled dataset if you squint. A Python pipeline lists every video on a channel, keeps the ones whose word is five letters, in the guess list, and common enough by word frequency, and downloads them at 720p slowly, with sleeps between requests, a bandwidth cap, and a cooldown that doubles each time a download hits a 429 or a bot check.</p>
+
+            <p>Each video has a few takes of the word, and the cut step finds them by audio energy, anything within 30 dB of the peak. Face landmarks then judge each take. Head yaw and pitch have to stay within 14 degrees, the mouth has to open by a minimum range so there's something to read, the mouth region has to be sharp, and the crop can't reach the channel's caption banner. The best take by those measures is cropped from nose to chin, scaled to 480 by 360, and held still for a moment at each end. I approve or reject the results in a browser page, and the publish step uploads the approved clips to R2 and schedules them, shuffled with a fixed seed so the order isn't guessable from the alphabet.</p>
+
+            <h2>Serving it</h2>
+
+            <p>One Cloudflare Worker serves the page and three endpoints: today's puzzle number and clip, a guess check, and the day's guess histogram. The answer never reaches the browser. The client sends its local date, the Worker accepts anything within a day of UTC and maps it to a puzzle number from a fixed epoch, and when the scheduled clips run out the schedule repeats from the start. After a solve the clip plays with sound, the day's histogram appears with your bar marked, and the share text is just the puzzle number and your guess count.</p>
+
+            <p>Most of the launch-day fixes were Safari. iOS ignored the muted attribute and wouldn't load the clip until play was requested, so the page sets muted from script, calls load explicitly, and shows a "tap to play" label if nothing is moving a second and a half after the source is set. The first puzzle was September 28, 2026.</p>
+        </article>
+
+    </div>
+</main>
+<footer class="site-footer">
+      <div class="site-footer-links">
+        <a href="https://github.com/sean-reid">GitHub</a>
+        <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
+        <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
+        <a href="https://socrates-of-athens.github.io">Poetry</a>
+        <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
+      </div>
+    </footer>
+<script src="/nav.js"></script>
+</body>
+</html>

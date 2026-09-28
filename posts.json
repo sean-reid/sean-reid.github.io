@@ -19,6 +19,7 @@
   { "slug": "discern", "name": "discern", "desc": "Elo-rated real-vs-generated photo game", "group": "games", "date": "2026-04-07" },
   { "slug": "rebase", "name": "rebase", "desc": "daily puzzles in irrational number bases", "group": "math", "date": "2026-07-11" },
   { "slug": "polish-notation", "name": "polish notation", "desc": "convert logic to and from Polish notation", "group": "math", "date": "2026-09-23" },
+  { "slug": "lipreadle", "name": "lipreadle", "desc": "a daily lipreading puzzle", "group": "games", "date": "2026-09-28" },
   { "slug": "wason", "name": "wason", "desc": "a daily Wason selection task", "group": "games", "date": "2026-09-23" },
   { "slug": "gravity", "name": "gravity", "desc": "space shooter in Schwarzschild-shaped time", "group": "games", "date": "2026-03-29" },
   { "slug": "severed", "name": "severed", "desc": "submarine cable cut simulation", "group": "tools", "date": "2026-04-05" },

@@ -667,6 +667,16 @@ const interactions = {
     if (toggle) await toggle.click();
     await new Promise(r => setTimeout(r, 7000));
   },
+  'lipreadle': async (page) => {
+    await page.waitForSelector('#issue');
+    await new Promise(r => setTimeout(r, 2500));
+    for (const w of ['brave', 'crane', 'mouth']) {
+      await page.click('#guess-input');
+      await page.keyboard.type(w);
+      await page.keyboard.press('Enter');
+      await new Promise(r => setTimeout(r, 1200));
+    }
+  },
   'severed': async (page) => {
     // Wait for globe and data to load, then click a scenario
     await new Promise(r => setTimeout(r, 6000));
@@ -744,6 +754,7 @@ const sites = [
   { name: 'cyclical', url: 'https://sean-reid.github.io/cyclical/' },
   { name: 'wason', url: 'https://sean-reid.github.io/wason/' },
   { name: 'keynote', url: 'https://keynote.dwainosaur.com', autoplay: true, wait: 'domcontentloaded' },
+  { name: 'lipreadle', url: 'https://lipreadle.dwainosaur.com/', autoplay: true },
 ];
 
 // Sgr A* at twice the prograde ISCO for spin 0.9, matching blog/time.html
