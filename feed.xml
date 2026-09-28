@@ -98,6 +98,13 @@
     <summary>A desktop app for playing music together over the internet, on a server that rents itself for the evening and then deletes itself.</summary>
   </entry>
   <entry>
+    <title>Randomify</title>
+    <link href="https://sean-reid.github.io/blog/randomify.html"/>
+    <id>https://sean-reid.github.io/blog/randomify.html</id>
+    <updated>2026-07-11T00:00:00Z</updated>
+    <summary>Draws one random song from a corpus built out of MusicBrainz and links it on eight streaming services</summary>
+  </entry>
+  <entry>
     <title>miditool</title>
     <link href="https://sean-reid.github.io/blog/miditool.html"/>
     <id>https://sean-reid.github.io/blog/miditool.html</id>
@@ -110,13 +117,6 @@
     <id>https://sean-reid.github.io/blog/unquote.html</id>
     <updated>2026-07-11T00:00:00Z</updated>
     <summary>Exact, keyword, and semantic search over 3.7 million lines of film dialogue, all stored in one ClickHouse server.</summary>
-  </entry>
-  <entry>
-    <title>Randomify</title>
-    <link href="https://sean-reid.github.io/blog/randomify.html"/>
-    <id>https://sean-reid.github.io/blog/randomify.html</id>
-    <updated>2026-07-11T00:00:00Z</updated>
-    <summary>Draws one random song from a corpus built out of MusicBrainz and links it on eight streaming services</summary>
   </entry>
   <entry>
     <title>How Will I Die</title>
