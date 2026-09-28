@@ -58,10 +58,6 @@
 
             <p>The float null vector becomes integers through <a href="https://en.wikipedia.org/wiki/Continued_fraction">continued fractions</a>. Each entry gets a rational approximation \(p_j / q_j\) with \(q_j \le 10{,}000\). I multiply through by the lcm of the denominators, divide by the gcd of the results, and reject the candidate if the lcm passes 100,000 or any coefficient does. Then the curve is checked against every point in <code>i128</code> arithmetic, with no floats. If rounding produced a spurious null vector, the exact check catches it and the search moves to the next subset.</p>
 
-            <h2>Where it goes wrong</h2>
-
-            <p>The points \((0,1), (0,-1), (-1,0), (2,3), (2,-3)\) all sit on \(y^2 = x^3 + 1\), and the solver returns \(y^2 = x^2 + 2x + 1\) instead, which is the pair of lines \(y = \pm(x + 1)\). Degree is the outer loop and sparsity the inner one, and nothing checks irreducibility, so it finds that four-term conic and never looks at cubics. Both lines do pass through all five points. Four points at \((\pm 4, 0)\) and \((0, \pm 2)\) return <code>x * y = 0</code> for the same reason. What the program finds is the sparsest exact curve within a degree, and a product of two lines is a very sparse conic.</p>
-
             <h2>In the browser</h2>
 
             <p>The solver is Rust compiled to WebAssembly and runs in a Web Worker, so the page doesn't stall while it searches. Clicked points snap to integers, though the solver scales half- and quarter-grid inputs up to integers if it gets them. The curve is drawn as the zero contour of the implicit function over an 800 by 800 grid of cells, checking each cell's corners for a sign change and interpolating the crossing along the edges. A native build solves the examples above in under a millisecond on my laptop.</p>
