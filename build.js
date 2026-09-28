@@ -201,7 +201,6 @@ ${nav}
 ${bio}
             <p class="intro-links">
                 ${links}
-                <a href="/feed.xml">Feed</a>
             </p>
         </header>
 
