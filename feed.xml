@@ -4,8 +4,15 @@
   <link href="https://sean-reid.github.io/"/>
   <link href="https://sean-reid.github.io/feed.xml" rel="self"/>
   <id>https://sean-reid.github.io/</id>
-  <updated>2026-09-23T00:00:00Z</updated>
+  <updated>2026-09-28T00:00:00Z</updated>
   <author><name>Sean Reid</name></author>
+  <entry>
+    <title>Lipreadle</title>
+    <link href="https://sean-reid.github.io/blog/lipreadle.html"/>
+    <id>https://sean-reid.github.io/blog/lipreadle.html</id>
+    <updated>2026-09-28T00:00:00Z</updated>
+    <summary>A daily lipreading puzzle. A muted clip of a mouth saying a five-letter word, and you guess it.</summary>
+  </entry>
   <entry>
     <title>Time</title>
     <link href="https://sean-reid.github.io/blog/time.html"/>
