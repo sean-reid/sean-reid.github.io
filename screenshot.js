@@ -677,6 +677,12 @@ const interactions = {
       await new Promise(r => setTimeout(r, 1200));
     }
   },
+  'sequence-atlas': async (page) => {
+    // The page waits on an animation frame before drawing; headless puppeteer may never deliver one.
+    await page.waitForFunction(() => document.body.dataset.ready === '1', { timeout: 90000 });
+    await page.waitForFunction(() => document.querySelectorAll('#p-near li').length > 3, { timeout: 30000 });
+    await new Promise(r => setTimeout(r, 3000));
+  },
   'severed': async (page) => {
     // Wait for globe and data to load, then click a scenario
     await new Promise(r => setTimeout(r, 6000));
@@ -755,6 +761,7 @@ const sites = [
   { name: 'wason', url: 'https://sean-reid.github.io/wason/' },
   { name: 'keynote', url: 'https://keynote.dwainosaur.com', autoplay: true, wait: 'domcontentloaded' },
   { name: 'lipreadle', url: 'https://lipreadle.dwainosaur.com/', autoplay: true },
+  { name: 'sequence-atlas', url: 'https://sequence-atlas.dwainosaur.com/A000045#x=0&y=0&z=1.4' },
 ];
 
 // Sgr A* at twice the prograde ISCO for spin 0.9, matching blog/time.html

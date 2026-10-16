@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+    <title>Sequence Atlas - Sean Reid</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preload" as="image" href="img/sequence-atlas.webp">
+    <link rel="stylesheet" href="/nav.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="description" content="A map of the OEIS. Every integer sequence is a point, placed beside the sequences that behave like it.">
+    <link rel="canonical" href="https://sean-reid.github.io/blog/sequence-atlas.html">
+    <link rel="alternate" type="application/atom+xml" title="Sean Reid" href="/feed.xml">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Sean Reid">
+    <meta property="og:title" content="Sequence Atlas">
+    <meta property="og:description" content="A map of the OEIS. Every integer sequence is a point, placed beside the sequences that behave like it.">
+    <meta property="og:url" content="https://sean-reid.github.io/blog/sequence-atlas.html">
+    <meta property="og:image" content="https://sean-reid.github.io/blog/img/sequence-atlas.webp">
+    <meta property="article:published_time" content="2026-10-15">
+    <meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="/" class="site-nav-name">Sean Reid</a>
+    <div class="site-nav-controls">
+      <div class="site-nav-search-wrap"><input type="search" class="site-nav-search" placeholder="Search..." aria-label="Search projects" autocomplete="off"><span class="site-nav-search-hint" aria-hidden="true">/</span></div>
+      <button type="button" class="site-nav-random">Random</button>
+      <div class="search-dropdown" role="listbox" aria-label="Search results"></div>
+    </div>
+  </div>
+</nav>
+<main class="site-content">
+    <div class="container">
+        <header>
+            <h1>Sequence Atlas</h1>
+            <p class="meta">A map of the OEIS. Every integer sequence is a point, placed beside the sequences that behave like it.</p>
+            <p class="links-row">
+                <a href="https://sequence-atlas.dwainosaur.com">Live Demo</a>
+                <a href="https://github.com/sean-reid/sequence-atlas">Source</a>
+            </p>
+        </header>
+
+        <article>
+            <figure>
+                <img decoding="async" fetchpriority="high" src="img/sequence-atlas.webp" alt="The combined map of the OEIS as a cloud of colored points with island labels, and a side panel open on the Fibonacci numbers listing Lucas and Tribonacci among its nearest neighbors" width="2560" height="1600">
+                <figcaption>The combined map with its island labels, and the Fibonacci numbers selected in the pink island at the top. Its nearest neighbors are the Lucas numbers and the Tribonacci numbers.</figcaption>
+            </figure>
+
+            <p>The OEIS has about 390,000 integer sequences and the only way to move between them is by cross reference or by searching for terms. I wanted to see the whole thing at once. Sequence Atlas lays out every sequence that isn't marked dead and has at least ten terms, 376,817 of them at the October 2026 snapshot, as one point each, so that sequences which behave alike sit together. There are five maps: growth, arithmetic structure, linear recurrence, the cross-reference graph, and all four combined. Pick a point, or search by A-number, name, or a run of terms, and the panel shows the sequence, the island it sits in, and its twenty nearest neighbors with the features that put them close.</p>
+
+            <h2>Turning a sequence into numbers</h2>
+
+            <p>Every sequence becomes 69 numbers, computed from its first 80 terms, since the ones past that add noise. The growth features fit log of the terms against log n, against n, and against n log n, and keep the slopes and residuals, so a polynomial, an exponential, and a factorial each light up a different fit. There are also the last ratio of consecutive terms and its trend, the fraction of negative, zero, and repeated terms, and how many sign changes there are. The arithmetic features reduce every term mod 2 through 10 and 16 and record the entropy of the residues, the share of the commonest one, and the shortest period, plus the fraction of primes, squares, and powers of two, the gcd, and whether adjacent terms are coprime. For recurrences I run Berlekamp-Massey over the terms mod the Mersenne prime 2<sup>61</sup> - 1 to get the order of the shortest linear recurrence, up to 12, and take finite differences until they vanish to get a polynomial degree, up to 10. A Rust tool does all of this for the whole OEIS in 17 seconds.</p>
+
+            <p>The reference map doesn't come from the terms at all. The cross references form a graph with the sequences as nodes, and I take a 32-dimensional spectral embedding of its normalized adjacency, regularized the way Amini and others suggest by giving every pair of nodes a sliver of an edge, which pulls the thousands of small components into the whole instead of letting them each claim an eigenvector. Keyword flags and the log of the degree ride along as extra columns.</p>
+
+            <h2>Laying it out</h2>
+
+            <p>Each family's columns are standardized and run through UMAP with 15 neighbors, using a nearest-neighbor graph I compute once with NNDescent and reuse for the neighbor lists. Islands come from HDBSCAN on a sample of 120,000 points in the finished layout, with the rest assigned to the nearest labeled points, since the density clusters barely change past that sample and the full run takes many times longer. Each island gets up to three words from the names of its members, scored by how much more often a word or bigram appears inside the island than outside. That is where "convergents sqrt fibonacci" comes from, and it's a fair description of the neighborhood.</p>
+
+            <p>For each neighbor the panel names the two features where both sequences sit away from the corpus mean and close to each other. For the Lucas numbers next to Fibonacci that's recurrence order and the linear-recurrence flag, which is the right answer and also a little deflating, because it means the map mostly knows they're both order 2 recurrences with the same growth, not that one is the other's companion. The reference map knows that part.</p>
+
+            <h2>Serving 376,817 points</h2>
+
+            <p>A layout is a binary file: a count, four floats of bounds, then every point as a pair of 16-bit integers, which is 1.5 MB per family and renders as one WebGL draw call. Picking a point under the cursor uses a 256 by 256 grid bucket over the quantized coordinates so a hover only looks at a few cells. Everything per sequence, the terms, the neighbors, and the feature explanations, lives in shards of 100 sequences packed into one object per kind, and a Cloudflare Worker turns a shard request into a byte-range read from R2. Search goes to a D1 database with FTS5 indexes over names and terms, and a term query like 1, 1, 2, 3, 5 is a phrase match.</p>
+
+            <p>The OEIS gains a few hundred sequences a week, so a scheduled job runs every Monday. It recomputes features from the current dump, keeps the existing layouts frozen, and places each new sequence at the distance-weighted mean of its 15 nearest old sequences in feature space, in the island most of them belong to. Then it rebuilds the neighbor lists and shards, uploads what changed under a new dated prefix, loads the standby search database and flips a pointer so no query lands mid-import, and publishes the manifest last. Data URLs carry the manifest's build digest, so a republished file is a new URL and the year-long caches never serve a stale shard next to a new layout. A full re-embed, which moves every point, is a manual run I expect to do rarely.</p>
+        </article>
+
+    </div>
+</main>
+<footer class="site-footer">
+      <div class="site-footer-links">
+        <a href="https://github.com/sean-reid">GitHub</a>
+        <a href="https://mathstodon.xyz/@seanreid">Mathstodon</a>
+        <a href="https://seanmreid.bandcamp.com">Bandcamp</a>
+        <a href="https://socrates-of-athens.github.io">Poetry</a>
+        <a href="https://www.buymeacoffee.com/seanreid">Coffee</a>
+      </div>
+    </footer>
+<script src="/nav.js"></script>
+</body>
+</html>
