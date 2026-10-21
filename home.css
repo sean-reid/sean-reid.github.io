@@ -165,4 +165,15 @@ button:focus-visible {
     .project-list {
         grid-template-columns: 1fr;
     }
+
+    .intro-links {
+        flex-wrap: nowrap;
+        justify-content: space-between;
+        gap: 0;
+    }
+
+    .intro-links a {
+        font-size: clamp(0.75rem, 3.6vw, 0.95rem);
+        white-space: nowrap;
+    }
 }

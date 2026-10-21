@@ -168,10 +168,6 @@ button:focus-visible {
 
 
 @media (max-width: 600px) {
-    body {
-        padding: 1.5rem 1rem;
-    }
-
     header h1 {
         font-size: 1.6rem;
     }
