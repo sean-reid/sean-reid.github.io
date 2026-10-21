@@ -92,7 +92,7 @@
 
             <p>Choices are assembled per request from the ranked pool and shuffled with Fisher-Yates driven by <a href="https://gist.github.com/tommyettinger/46a874533244883189143505d203312c">mulberry32</a> seeded with the round ID. The shuffle has to be deterministic for the share feature. Finishing a game produces a <a href="https://www.nytimes.com/games/wordle/index.html">Wordle</a>-style result block plus a challenge link carrying the exact round IDs, and whoever opens it replays the same rounds with the choices in the same order.</p>
 
-            <p>The front end is <a href="https://svelte.dev/docs/kit">SvelteKit</a> on Cloudflare Pages, and the next round is prefetched while you read the reveal screen. A sibling project, <a href="/blog/unquote.html">unquote</a>, goes the other way and searches the same dialogue.</p>
+            <p>The front end is <a href="https://svelte.dev/docs/kit">SvelteKit</a> on Cloudflare Pages, and the next round is prefetched while you read the reveal screen.</p>
         </article>
 
     </div>
