@@ -40,14 +40,8 @@ header h1 {
 }
 
 .links-row a {
-    color: var(--link);
-    text-decoration: none;
     font-size: 0.9rem;
     padding: 0.6rem 0;
-}
-
-.links-row a:hover {
-    text-decoration: underline;
 }
 
 article {
@@ -151,12 +145,6 @@ article figcaption a {
     overflow-x: auto;
     overflow-y: hidden;
     padding: 0.25rem 0;
-}
-
-a:focus-visible,
-button:focus-visible {
-    outline: 2px solid var(--link);
-    outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -23,7 +23,7 @@
 }
 
 .pub-title a:hover {
-    color: var(--link);
+    text-decoration: underline;
 }
 
 .pub-desc {
@@ -43,12 +43,6 @@
 }
 
 .pub-links a {
-    color: var(--link);
-    text-decoration: none;
     font-size: 0.9rem;
     padding: 0.6rem 0;
-}
-
-.pub-links a:hover {
-    text-decoration: underline;
 }
