@@ -222,8 +222,29 @@ body {
 }
 
 @media (max-width: 600px) {
+  .site-nav-left {
+    gap: 0.75rem;
+  }
+
+  .site-nav-controls {
+    flex: 1;
+    min-width: 0;
+    justify-content: flex-end;
+  }
+
+  .site-nav-search-wrap {
+    flex: 0 1 220px;
+    min-width: 0;
+  }
+
   .site-nav-search {
-    width: 140px;
+    width: 100%;
+    min-width: 0;
+    padding-right: 0.6rem;
+  }
+
+  .site-nav-inner:has(.site-nav-search:focus) .site-nav-left {
+    display: none;
   }
 
   .site-nav-search-hint {
@@ -236,7 +257,13 @@ body {
   }
 
   .site-footer-links {
-    gap: 0 0.9rem;
-    font-size: 0.85rem;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: 0;
+  }
+
+  .site-footer-links a {
+    font-size: clamp(0.75rem, 3.6vw, 0.95rem);
+    white-space: nowrap;
   }
 }
