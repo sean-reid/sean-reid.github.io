@@ -546,11 +546,6 @@ const interactions = {
     await page.waitForSelector('.ranking li', { timeout: 10000 });
     await new Promise(r => setTimeout(r, 800));
   },
-  'unquote': async (page) => {
-    // URL carries the query; just wait for results to render
-    await page.waitForSelector('.results', { timeout: 30000 });
-    await new Promise(r => setTimeout(r, 2500));
-  },
   'randomify': async (page) => {
     // The app spins on mount; wait for the result card and platform links
     await page.waitForSelector('[data-testid="result"]', { timeout: 45000 });
@@ -737,7 +732,6 @@ const sites = [
   { name: 'fourier', url: 'https://sean-reid.github.io/fourier/' },
   { name: 'sounds', url: 'https://sean-reid.github.io/sounds/' },
   { name: 'pulse', url: 'https://sean-reid.github.io/pulse/', interactive: true },
-  { name: 'unquote', url: 'https://unquote.dwainosaur.com/?q=' + encodeURIComponent('i have a bad feeling about this') },
   { name: 'randomify', url: 'https://randomify.net' },
   { name: 'rebase', url: 'https://sean-reid.github.io/rebase/' },
   { name: 'movie-quotes', url: 'https://quotes.dwainosaur.com' },
