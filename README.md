@@ -14,7 +14,7 @@ build.js            Writes index.html, publications.html, search.json, sitemap.x
 templates/          Nav and footer shared by every page
 home.css            Homepage styles
 publications.css    Publications page styles
-nav.css, nav.js     Shared nav, search, random, KaTeX loading
+nav.css, nav.js     Color palette, shared nav, search, random, KaTeX loading
 scripts/            check-links.js: every local href and src resolves
 screenshot.js       Puppeteer captures of the live projects into blog/img/<slug>.webp
 blog/<slug>.html    One writeup per project
