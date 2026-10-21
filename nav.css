@@ -1,4 +1,19 @@
-/* Site-wide nav and footer */
+/* Site-wide palette, nav, and footer */
+:root {
+  --bg: #fafafa;
+  --surface: #fff;
+  --text: #1a1a1a;
+  --text-2: #333;
+  --text-3: #666;
+  --link: #0366d6;
+  --link-hover: #0256c7;
+  --border: #e0e0e0;
+  --border-soft: #f0f0f0;
+  --highlight: #f0f5ff;
+  --mark: #fff3b0;
+  --shadow: rgba(0, 0, 0, 0.08);
+}
+
 body {
   margin: 0;
 }
@@ -7,10 +22,10 @@ body {
   position: sticky;
   top: 0;
   z-index: 9999;
-  background: #fafafa;
-  border-bottom: 1px solid #e0e0e0;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
   padding: 0.75rem 1rem;
-  box-shadow: 0 -50px 0 50px #fafafa;
+  box-shadow: 0 -50px 0 50px var(--bg);
 }
 
 .site-nav-inner {
@@ -30,27 +45,27 @@ body {
 
 .site-nav-link {
   font-size: 0.9rem;
-  color: #333;
+  color: var(--text-2);
   text-decoration: none;
   white-space: nowrap;
   padding: 0.6rem 0;
 }
 
 .site-nav-link:hover {
-  color: #0366d6;
+  color: var(--link);
 }
 
 .site-nav-name {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--text);
   text-decoration: none;
   white-space: nowrap;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica', 'Arial', sans-serif;
 }
 
 .site-nav-name:hover {
-  color: #0366d6;
+  color: var(--link);
 }
 
 .site-nav-controls {
@@ -68,17 +83,17 @@ body {
   font-family: inherit;
   font-size: 16px !important;
   padding: 0.35rem 1.8rem 0.35rem 0.6rem;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border);
   border-radius: 4px;
   outline: none;
   width: 220px;
-  background: white;
-  color: #1a1a1a;
+  background: var(--surface);
+  color: var(--text);
   -webkit-text-size-adjust: 100%;
 }
 
 .site-nav-search:focus {
-  border-color: #0366d6;
+  border-color: var(--link);
 }
 
 .site-nav-search-hint {
@@ -87,8 +102,8 @@ body {
   top: 50%;
   transform: translateY(-50%);
   font-size: 0.7rem;
-  color: #767676;
-  border: 1px solid #ccc;
+  color: var(--text-3);
+  border: 1px solid var(--border);
   border-radius: 3px;
   padding: 0 0.3rem;
   line-height: 1.4;
@@ -104,7 +119,7 @@ body {
 .site-nav-random {
   font: inherit;
   font-size: 0.85rem;
-  color: #0366d6;
+  color: var(--link);
   background: none;
   border: 0;
   padding: 0.6rem 0.25rem;
@@ -113,7 +128,7 @@ body {
 }
 
 .site-nav-random:hover {
-  color: #0256c7;
+  color: var(--link-hover);
 }
 
 /* Search dropdown */
@@ -124,10 +139,10 @@ body {
   width: 380px;
   max-height: 70vh;
   overflow-y: auto;
-  background: white;
-  border: 1px solid #e0e0e0;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 6px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 16px var(--shadow);
   margin-top: 0.4rem;
   display: none;
   z-index: 200;
@@ -142,7 +157,7 @@ body {
   padding: 0.6rem 0.8rem;
   text-decoration: none;
   color: inherit;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--border-soft);
   transition: background 0.1s;
 }
 
@@ -152,30 +167,30 @@ body {
 
 .search-result:hover,
 .search-result.active {
-  background: #f0f5ff;
+  background: var(--highlight);
 }
 
 .search-result-title {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--text);
   margin-bottom: 0.15rem;
 }
 
 .search-result-meta {
   font-size: 0.78rem;
-  color: #666;
+  color: var(--text-3);
   margin-bottom: 0.2rem;
 }
 
 .search-result-context {
   font-size: 0.75rem;
-  color: #666;
+  color: var(--text-3);
   line-height: 1.4;
 }
 
 .search-result-context mark {
-  background: #fff3b0;
+  background: var(--mark);
   color: inherit;
   padding: 0 1px;
   border-radius: 2px;
@@ -184,7 +199,7 @@ body {
 .search-empty {
   padding: 0.8rem;
   font-size: 0.85rem;
-  color: #666;
+  color: var(--text-3);
   text-align: center;
 }
 
@@ -195,12 +210,12 @@ body {
 
 /* Footer: static on mobile, sticky on desktop */
 .site-footer {
-  background: #fafafa;
-  border-top: 1px solid #e0e0e0;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
   padding: 0.5rem 1rem;
   padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
   text-align: center;
-  box-shadow: 0 50px 0 50px #fafafa;
+  box-shadow: 0 50px 0 50px var(--bg);
 }
 
 .site-footer-links {
@@ -211,14 +226,14 @@ body {
 }
 
 .site-footer-links a {
-  color: #333;
+  color: var(--link);
   text-decoration: none;
   font-size: 0.95rem;
   padding: 0.5rem 0;
 }
 
 .site-footer-links a:hover {
-  color: #0366d6;
+  text-decoration: underline;
 }
 
 @media (max-width: 600px) {

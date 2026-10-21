@@ -7,8 +7,8 @@
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica', 'Arial', sans-serif;
     line-height: 1.7;
-    color: #1a1a1a;
-    background: #fafafa;
+    color: var(--text);
+    background: var(--bg);
     padding: 0;
 }
 
@@ -29,7 +29,7 @@ header h1 {
 }
 
 .meta {
-    color: #666;
+    color: var(--text-3);
     font-size: 0.95rem;
     margin-bottom: 0.75rem;
 }
@@ -40,7 +40,7 @@ header h1 {
 }
 
 .links-row a {
-    color: #0366d6;
+    color: var(--link);
     text-decoration: none;
     font-size: 0.9rem;
     padding: 0.6rem 0;
@@ -64,11 +64,11 @@ article h2 {
     font-weight: 600;
     margin-top: 2.5rem;
     margin-bottom: 0.75rem;
-    color: #333;
+    color: var(--text-2);
 }
 
 article code {
-    background: #f0f0f0;
+    background: var(--border-soft);
     padding: 0.15em 0.4em;
     border-radius: 3px;
     font-size: 0.9em;
@@ -84,9 +84,9 @@ article li {
 }
 
 article blockquote {
-    border-left: 3px solid #ddd;
+    border-left: 3px solid var(--border);
     padding-left: 1rem;
-    color: #555;
+    color: var(--text-3);
     margin-bottom: 1.25rem;
     font-style: italic;
 }
@@ -99,7 +99,7 @@ article figure img {
     width: 100%;
     height: auto;
     border-radius: 6px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--border);
 }
 
 article figure:first-of-type img {
@@ -137,13 +137,13 @@ article figure.compare figcaption {
 
 article figcaption {
     font-size: 0.82rem;
-    color: #666;
+    color: var(--text-3);
     margin-top: 0.5rem;
     line-height: 1.4;
 }
 
 article figcaption a {
-    color: #666;
+    color: var(--text-3);
     text-decoration: underline;
 }
 
@@ -155,7 +155,7 @@ article figcaption a {
 
 a:focus-visible,
 button:focus-visible {
-    outline: 2px solid #0366d6;
+    outline: 2px solid var(--link);
     outline-offset: 2px;
 }
 
