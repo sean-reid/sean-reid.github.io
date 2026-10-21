@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 'use strict';
 
-// Generates index.html, per-post head metadata, search.json, sitemap.xml,
-// feed.xml, robots.txt, and 404.html from site.json, posts.json, and the
-// post files under blog/. `node build.js --check` fails if any output on
-// disk differs from what it would write.
+// Generates index.html, publications.html, per-post head metadata,
+// search.json, sitemap.xml, feed.xml, robots.txt, and 404.html from
+// site.json, posts.json, publications.json, and the post files under
+// blog/. `node build.js --check` fails if any output on disk differs
+// from what it would write.
 
 const fs = require('fs');
 const path = require('path');
@@ -13,6 +14,7 @@ const root = __dirname;
 const check = process.argv.includes('--check');
 const site = JSON.parse(fs.readFileSync(path.join(root, 'site.json'), 'utf8'));
 const posts = JSON.parse(fs.readFileSync(path.join(root, 'posts.json'), 'utf8'));
+const publications = JSON.parse(fs.readFileSync(path.join(root, 'publications.json'), 'utf8'));
 const nav = fs.readFileSync(path.join(root, 'templates', 'nav.html'), 'utf8').trim();
 const footer = fs.readFileSync(path.join(root, 'templates', 'footer.html'), 'utf8').trim();
 
@@ -222,8 +224,64 @@ ${footer}
 `;
 }
 
+function monthYear(date) {
+  return new Date(`${date}T00:00:00Z`).toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+}
+
+function publication(pub) {
+  const links = pub.links.map((l) => `<a href="${l.href}">${esc(l.label)}</a>`).join('\n                    ');
+  return `            <li>
+                <div class="pub-title"><a href="${pub.links[0].href}">${esc(pub.title)}</a></div>
+                <p class="pub-desc">${esc(pub.desc)}</p>
+                <p class="pub-venue">${esc(pub.venue)}, ${monthYear(pub.date)}</p>
+                <p class="pub-links">
+                    ${links}
+                </p>
+            </li>`;
+}
+
+function renderPublications() {
+  const description = 'Papers and preprints by Sean Reid.';
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+    <title>Publications - ${esc(site.name)}</title>
+    <meta name="description" content="${description}">
+    <link rel="canonical" href="${site.url}/publications.html">
+    <link rel="alternate" type="application/atom+xml" title="${esc(site.name)}" href="/feed.xml">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="${esc(site.name)}">
+    <meta property="og:title" content="Publications">
+    <meta property="og:description" content="${description}">
+    <meta property="og:url" content="${site.url}/publications.html">
+    <link rel="stylesheet" href="/blog/style.css">
+    <link rel="stylesheet" href="/publications.css">
+    <link rel="stylesheet" href="/nav.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+${nav}
+    <main class="site-content">
+    <div class="container">
+        <header>
+            <h1>Publications</h1>
+        </header>
+        <ul class="pub-list">
+${publications.map(publication).join('\n')}
+        </ul>
+    </div>
+    </main>
+${footer}
+    <script src="/nav.js"></script>
+</body>
+</html>
+`;
+}
+
 function renderSitemap() {
-  const urls = [`  <url><loc>${site.url}/</loc></url>`].concat(
+  const urls = [`  <url><loc>${site.url}/</loc></url>`, `  <url><loc>${site.url}/publications.html</loc></url>`].concat(
     posts.map((p) => `  <url><loc>${site.url}/blog/${p.slug}.html</loc><lastmod>${p.date}</lastmod></url>`));
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -317,6 +375,7 @@ function main() {
     process.exit(1);
   }
   outputs.set('index.html', renderIndex(infos));
+  outputs.set('publications.html', renderPublications());
   outputs.set('search.json', JSON.stringify(search));
   outputs.set('sitemap.xml', renderSitemap());
   outputs.set('feed.xml', renderFeed(infos));

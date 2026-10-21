@@ -22,6 +22,24 @@ body {
   gap: 1rem;
 }
 
+.site-nav-left {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.site-nav-link {
+  font-size: 0.9rem;
+  color: #333;
+  text-decoration: none;
+  white-space: nowrap;
+  padding: 0.6rem 0;
+}
+
+.site-nav-link:hover {
+  color: #0366d6;
+}
+
 .site-nav-name {
   font-size: 1.1rem;
   font-weight: 600;

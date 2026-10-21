@@ -1,0 +1,54 @@
+.pub-list {
+    list-style: none;
+}
+
+.pub-list li {
+    padding: 1.25rem 0;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.pub-list li:first-child {
+    padding-top: 0;
+}
+
+.pub-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.pub-title a {
+    color: #1a1a1a;
+    text-decoration: none;
+}
+
+.pub-title a:hover {
+    color: #0366d6;
+}
+
+.pub-desc {
+    color: #333;
+    margin-bottom: 0.25rem;
+}
+
+.pub-venue {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.pub-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1.5rem;
+}
+
+.pub-links a {
+    color: #0366d6;
+    text-decoration: none;
+    font-size: 0.9rem;
+    padding: 0.6rem 0;
+}
+
+.pub-links a:hover {
+    text-decoration: underline;
+}

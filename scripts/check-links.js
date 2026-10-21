@@ -9,7 +9,7 @@ const path = require('path');
 
 const root = path.join(__dirname, '..');
 const posts = new Set(JSON.parse(fs.readFileSync(path.join(root, 'posts.json'), 'utf8')).map((p) => p.slug));
-const pages = ['index.html', '404.html'].concat(
+const pages = ['index.html', 'publications.html', '404.html'].concat(
   fs.readdirSync(path.join(root, 'blog')).filter((f) => f.endsWith('.html')).map((f) => path.join('blog', f)));
 
 let bad = 0;
