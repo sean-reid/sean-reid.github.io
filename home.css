@@ -42,14 +42,8 @@ body {
 }
 
 .intro-links a {
-    color: var(--link);
-    text-decoration: none;
     font-size: 0.95rem;
     padding: 0.5rem 0;
-}
-
-.intro-links a:hover {
-    text-decoration: underline;
 }
 
 .projects,
@@ -128,19 +122,13 @@ body {
 }
 
 .project-list a:hover .project-list-name {
-    color: var(--link);
+    text-decoration: underline;
 }
 
 .project-list .list-desc {
     color: var(--text-3);
     font-size: 0.8rem;
     margin-left: 0.25rem;
-}
-
-a:focus-visible,
-button:focus-visible {
-    outline: 2px solid var(--link);
-    outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
