@@ -8,16 +8,16 @@
     <link rel="preload" as="image" href="img/random-game.webp">
     <link rel="stylesheet" href="/nav.css">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <meta name="description" content="Tells you what to guess next in a closest-number-wins game with other players.">
+    <meta name="description" content="Your best next guess in a closest-number-wins game, with the odds drawn on a number line.">
     <link rel="canonical" href="https://sean-reid.github.io/blog/random-game.html">
     <link rel="alternate" type="application/atom+xml" title="Sean Reid" href="/feed.xml">
     <meta property="og:type" content="article">
     <meta property="og:site_name" content="Sean Reid">
     <meta property="og:title" content="Random Game">
-    <meta property="og:description" content="Tells you what to guess next in a closest-number-wins game with other players.">
+    <meta property="og:description" content="Your best next guess in a closest-number-wins game, with the odds drawn on a number line.">
     <meta property="og:url" content="https://sean-reid.github.io/blog/random-game.html">
     <meta property="og:image" content="https://sean-reid.github.io/blog/img/random-game.webp">
-    <meta property="article:published_time" content="2026-03-29">
+    <meta property="article:published_time" content="2026-10-24">
     <meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
@@ -38,7 +38,7 @@
     <div class="container">
         <header>
             <h1>Random Game</h1>
-            <p class="meta">Tells you what to guess next in a closest-number-wins game with other players.</p>
+            <p class="meta">Your best next guess in a closest-number-wins game, with the odds drawn on a number line.</p>
             <p class="links-row">
                 <a href="https://sean-reid.github.io/random-game/">Live Demo</a>
                 <a href="https://github.com/sean-reid/random-game">Source</a>
@@ -48,14 +48,24 @@
         <article>
             <figure>
                 <img decoding="async" fetchpriority="high" src="img/random-game.webp" alt="Screenshot of Random Game" width="2560" height="1600">
-                <figcaption>Three inputs for the range and the latest guess, and the recommended next guess below.</figcaption>
+                <figcaption>Guesses at 30 and 80, one player still to come. Under the line, the stretch each guess owns. Above it, what you'd end up with from every spot, with the best one marked.</figcaption>
             </figure>
 
-            <p>There's an icebreaker where someone picks a number in a range, say 1 to 100, everyone guesses, and the closest wins. Alone it's <a href="https://en.wikipedia.org/wiki/Binary_search">binary search</a>. With other people guessing too, the midpoint of the whole range stops being the right move. You want the midpoint of the largest stretch nobody has claimed yet, because that's where you have the best chance of being closest.</p>
+            <p>There's an icebreaker where someone picks a number in a range, say 1 to 100, everyone guesses, and the closest wins. Alone it's <a href="https://en.wikipedia.org/wiki/Binary_search">binary search</a>. With other people guessing it's a land grab. Every guess owns the stretch of numbers it's closest to, and if the secret number is anywhere in the range with equal chance, your odds are the width of your stretch over the width of the range.</p>
 
-            <p>I built this for a recurring office game where the prize was picking the lunch restaurant. I kept losing because I was guessing "intuitively" and competing with everyone else's intuition for the same part of the number line. Most people guess round numbers. They cluster around multiples of 10 and especially around 50, and it's common to see three people guess in the 40 to 60 range while the ends of the range sit empty. After switching to this I started winning more.</p>
+            <p>I built the first version for a recurring office game where the prize was picking the lunch restaurant. I kept losing because I was guessing "intuitively" and competing with everyone else's intuition for the same part of the number line. Most people guess round numbers. They cluster around multiples of 10 and especially around 50, and it's common to see three people in the 40 to 60 range while the ends of the range sit empty.</p>
 
-            <p>You enter the minimum, the maximum, and each guess as it's made. It sorts the bounds and the guesses, finds the widest gap between neighbors, and tells you the midpoint of that gap. If the number is uniform on the range, and I treat it as if it is, the chance it falls in a gap is proportional to the gap's width, so the widest gap is the best bet and bisecting it is the greedy move. With the range 1 to 100 and a guess of 30, the gaps are 1 to 30 and 30 to 100, so it says 65. If someone then guesses 80, the widest gap is 30 to 80 and it says 55.</p>
+            <p>That version found the widest gap between neighbouring guesses and told you to bisect it. It won lunches, but with the range 1 to 100 and one guess at 30 it said 65, the midpoint of the gap above 30. Guess 65 and you own 48 to 100, about half the range. Guess 31 and you own 31 to 100, which is 70%. For a gap at the edge of the range, hug the neighbour. For a gap between two guesses you get half of it wherever you stand, so the midpoint is no better than anywhere else inside it. The midpoint only earns its place as a hedge against whoever guesses after you.</p>
+
+            <p>The rewrite takes that hedge seriously, and the first attempt got it wrong in a new way. Hug 31 and the next player hugs you back at 32 and walks off with 69% of the range, leaving you one number. So the tool asks how many players still guess after you. My first model had each of them take the best spot left, which sounds right and recommends sitting at 52 after someone says 50 with two players to come, on the theory that the open stretch from 1 to 49 is worth more to the next person than squeezing you. That's a one-point margin against a human who feels like saying 53.</p>
+
+            <p>Real players don't take the best spot left. Some bisect the biggest gap, which is what my old tool did and what an intuitive player does. Some guess wherever. A few hug a neighbour and take the most they can. So the engine now draws each later player from a mix of those three habits and plays the rest of the round out a few hundred times for every spot you could take, scoring the spot by the share you hold on average when the round ends, and keeping the tenth percentile as what a bad round looks like. After a lone 50 with two players to come it says 24, for about 32% on average and about 20% in a bad round. After 30 with one to come it says 72, for about 41%. With nobody after you it still says 31.</p>
+
+            <p>The mix starts at a guess, half bisectors, a third wherever, the rest huggers, and the app refits it from the rounds you log at your own table. You name each guesser, reveal the number at the end, and the ordered guesses tell it what board each person faced and what they did with it. Your own guesses are left out, since they came from the tool. A few rounds move it only a little. The scoreboard and the round log live in your browser, and the round is in the URL so you can send it to the table.</p>
+
+            <p>The secret number stays uniform. I spent a while on surveys of how people pick a "random" number between 1 and 100, and the spike at 37 and 73 that everyone quotes shows up in one survey and not the next. What does hold is that 7s and 3s are over-picked and round numbers under-picked. None of it has been measured for any other range, so the tool ignores it.</p>
+
+            <p>The bracket under the line also shows each guess's share of the range, and the band under the curve is the tenth percentile. Tap the line to prefill a number, add it when someone says it, and the picture redraws. It's a static page, so nothing leaves your phone.</p>
         </article>
 
     </div>

@@ -672,6 +672,14 @@ const interactions = {
       await new Promise(r => setTimeout(r, 1200));
     }
   },
+  'random-game': async (page) => {
+    for (const g of ['30', '80']) {
+      await page.type('#guess', g);
+      await page.click('#add');
+      await new Promise(r => setTimeout(r, 300));
+    }
+    await new Promise(r => setTimeout(r, 1000));
+  },
   'sequence-atlas': async (page) => {
     // The page waits on an animation frame before drawing; headless puppeteer may never deliver one.
     await page.waitForFunction(() => document.body.dataset.ready === '1', { timeout: 90000 });
