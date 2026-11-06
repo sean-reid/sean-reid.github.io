@@ -35,18 +35,18 @@
     <summary>A daily lipreading puzzle. A muted clip of a mouth saying a five-letter word, and you guess it.</summary>
   </entry>
   <entry>
-    <title>Time</title>
-    <link href="https://sean-reid.github.io/blog/time.html"/>
-    <id>https://sean-reid.github.io/blog/time.html</id>
-    <updated>2026-09-23T00:00:00Z</updated>
-    <summary>Two clocks, one on Earth and one on a ship you fly around the Sun, a neutron star, or Sagittarius A*, with the drift between them computed from real geodesics</summary>
-  </entry>
-  <entry>
     <title>Squares</title>
     <link href="https://sean-reid.github.io/blog/squares.html"/>
     <id>https://sean-reid.github.io/blog/squares.html</id>
     <updated>2026-09-23T00:00:00Z</updated>
     <summary>A photo redrawn as a squared rectangle, where Kirchhoff's laws pick every square size and a search over planar networks picks the arrangement</summary>
+  </entry>
+  <entry>
+    <title>Time</title>
+    <link href="https://sean-reid.github.io/blog/time.html"/>
+    <id>https://sean-reid.github.io/blog/time.html</id>
+    <updated>2026-09-23T00:00:00Z</updated>
+    <summary>Two clocks, one on Earth and one on a ship you fly around the Sun, a neutron star, or Sagittarius A*, with the drift between them computed from real geodesics</summary>
   </entry>
   <entry>
     <title>Kakeya</title>
