@@ -4,8 +4,15 @@
   <link href="https://sean-reid.github.io/"/>
   <link href="https://sean-reid.github.io/feed.xml" rel="self"/>
   <id>https://sean-reid.github.io/</id>
-  <updated>2026-10-24T00:00:00Z</updated>
+  <updated>2026-11-05T00:00:00Z</updated>
   <author><name>Sean Reid</name></author>
+  <entry>
+    <title>Sprouts</title>
+    <link href="https://sean-reid.github.io/blog/sprouts.html"/>
+    <id>https://sean-reid.github.io/blog/sprouts.html</id>
+    <updated>2026-11-05T00:00:00Z</updated>
+    <summary>Conway and Paterson's pen-and-paper game in the browser, against an AI that solves the board with nimbers where it can and draws its lines through a triangulation of the face.</summary>
+  </entry>
   <entry>
     <title>Random Game</title>
     <link href="https://sean-reid.github.io/blog/random-game.html"/>
@@ -28,18 +35,18 @@
     <summary>A daily lipreading puzzle. A muted clip of a mouth saying a five-letter word, and you guess it.</summary>
   </entry>
   <entry>
-    <title>Time</title>
-    <link href="https://sean-reid.github.io/blog/time.html"/>
-    <id>https://sean-reid.github.io/blog/time.html</id>
-    <updated>2026-09-23T00:00:00Z</updated>
-    <summary>Two clocks, one on Earth and one on a ship you fly around the Sun, a neutron star, or Sagittarius A*, with the drift between them computed from real geodesics</summary>
-  </entry>
-  <entry>
     <title>Squares</title>
     <link href="https://sean-reid.github.io/blog/squares.html"/>
     <id>https://sean-reid.github.io/blog/squares.html</id>
     <updated>2026-09-23T00:00:00Z</updated>
     <summary>A photo redrawn as a squared rectangle, where Kirchhoff's laws pick every square size and a search over planar networks picks the arrangement</summary>
+  </entry>
+  <entry>
+    <title>Time</title>
+    <link href="https://sean-reid.github.io/blog/time.html"/>
+    <id>https://sean-reid.github.io/blog/time.html</id>
+    <updated>2026-09-23T00:00:00Z</updated>
+    <summary>Two clocks, one on Earth and one on a ship you fly around the Sun, a neutron star, or Sagittarius A*, with the drift between them computed from real geodesics</summary>
   </entry>
   <entry>
     <title>Kakeya</title>
@@ -271,13 +278,6 @@
     <id>https://sean-reid.github.io/blog/lacuna.html</id>
     <updated>2026-03-29T00:00:00Z</updated>
     <summary>A two-player game where you draw the board as you play and score the regions you close off.</summary>
-  </entry>
-  <entry>
-    <title>Sprouts</title>
-    <link href="https://sean-reid.github.io/blog/sprouts.html"/>
-    <id>https://sean-reid.github.io/blog/sprouts.html</id>
-    <updated>2026-03-29T00:00:00Z</updated>
-    <summary>Conway and Paterson's pen-and-paper game in the browser, against an AI that finds its moves on a morphological skeleton.</summary>
   </entry>
   <entry>
     <title>Captcha Royale</title>
