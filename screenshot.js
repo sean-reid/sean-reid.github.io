@@ -62,38 +62,8 @@ const interactions = {
     await new Promise(r => setTimeout(r, 8000));
   },
   'sprouts': async (page) => {
-    // Click "4 NODES" button to start
-    const buttons = await page.$$('button');
-    for (const btn of buttons) {
-      const text = await page.evaluate(el => el.textContent, btn);
-      if (text && text.includes('4')) {
-        await btn.click();
-        break;
-      }
-    }
-    await new Promise(r => setTimeout(r, 1000));
-    // Try to draw a line between two nodes by clicking and dragging on the canvas
-    const canvas = await page.$('canvas');
-    if (canvas) {
-      const box = await canvas.boundingBox();
-      // Click near center-ish area to start a move, drag to another node
-      await page.mouse.move(box.x + box.width * 0.43, box.y + box.height * 0.45);
-      await page.mouse.down();
-      await new Promise(r => setTimeout(r, 100));
-      // Drag toward another node
-      for (let i = 0; i < 20; i++) {
-        await page.mouse.move(
-          box.x + box.width * (0.43 + i * 0.008),
-          box.y + box.height * (0.45 + i * 0.01)
-        );
-        await new Promise(r => setTimeout(r, 30));
-      }
-      await page.mouse.up();
-      await new Promise(r => setTimeout(r, 500));
-      // Click to place node
-      await page.mouse.click(box.x + box.width * 0.55, box.y + box.height * 0.55);
-    }
-    await new Promise(r => setTimeout(r, 3000));
+    // The shared game replays in the engine, then points out the last move for two seconds
+    await new Promise(r => setTimeout(r, 8000));
   },
   'papermaker': async (page) => {
     // Click generate paper and wait for PDF
@@ -700,11 +670,14 @@ const interactions = {
   },
 };
 
+// Ten moves on nine spots, as the share button on the live site encodes them
+const SPROUTS_GAME = 'BQgCAAkA6AMKAAoAAAEBApIJ6Ac5KDsmPSJDIEMcRRrKAVMAAAIBAQDEC6oHAQkBC-IBpAsCDQANAg0MAxQBDAcGAwgLBAUWHRYbFh0KDQgVDgsGBQgFCgAIARIICAImCCQGJgYOAhYIEAMAABAJBAEOBgwIDgiPAicBAgIJAADYBcQGAgoBOsoI4AMNBQ0FDQUDBAMEAwQTEBQHGwoHBAsACQIXBBcEFwRXDlUQVRIXBBkEFwYJAg0ABwQVCBESEwwpHi8gMQ4tDjULJxYnFgVEGiASGCIEGgYJCgUQCQwLFA8UCRYFDAEOAw4VNA04CzgHHAceBR4DJAAoACQAJAgyAxwBKgsqBSoBCgMMAAoADgYMAgwINAwwDjQEDAAOBgoCAgIAAAIBAAACAQA2DjYAOABmAWYJYhkaBSAFGgkEAQQBBAEYBRMKGAkEAQQBBAEEAQYABAAKAQgHCgEEAQYABgAEAQQDBAEEAAQBBgAUBxQRFAcWCRwEFgcAAB4PAgAsETALLhMSBwkAEgMMARQCDAAYABgAGAAGAgYACAAGAgYEBgQyLglaSBIUBBQAEgsAABALAAAYFwMdAB8AGQAZABkEQwxBDkEMQxBBEkMcXR5dCmMEFQEZBhMEBw4NAAcACw8ZAwmLCc0BAgMCEQAAlgX8BQ0OAQb6A-AEEBIMDBAMAgIaGgIAFBQUFhQUBAYECggAAAEAAAIBCAYGDgYIUVMDBAIYAADGAZgOAxABD4QLsA0FBAMGBwINBCsFBwsHCQAPAQkHEQUREwcNAxECDwAXABsBGQQhBiMMIQojCCUKIwgVBhkEFQwjEh8eIxIZDB0GGwgnDCcOKQpPFFMOUQUhACMJIQUDDQMNAw2mCK8BBAwCIA8A4AfwCw';
+
 const sites = [
   { name: 'captcha-royale', url: 'https://sean-reid.github.io/captcha-royale/' },
   { name: 'crossword-generator', url: 'https://sean-reid.github.io/crossword-generator/' },
   { name: 'gravity', url: 'https://sean-reid.github.io/gravity/' },
-  { name: 'sprouts', url: 'https://sean-reid.github.io/sprouts/' },
+  { name: 'sprouts', url: 'https://sprouts.dwainosaur.com/#game=' + SPROUTS_GAME },
   { name: 'papermaker', url: 'https://sean-reid.github.io/papermaker/' },
   { name: 'flow', url: 'https://sean-reid.github.io/flow/' },
   { name: 'lacuna', url: 'https://sean-reid.github.io/lacuna/' },

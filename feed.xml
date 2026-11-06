@@ -4,8 +4,15 @@
   <link href="https://sean-reid.github.io/"/>
   <link href="https://sean-reid.github.io/feed.xml" rel="self"/>
   <id>https://sean-reid.github.io/</id>
-  <updated>2026-10-24T00:00:00Z</updated>
+  <updated>2026-11-05T00:00:00Z</updated>
   <author><name>Sean Reid</name></author>
+  <entry>
+    <title>Sprouts</title>
+    <link href="https://sean-reid.github.io/blog/sprouts.html"/>
+    <id>https://sean-reid.github.io/blog/sprouts.html</id>
+    <updated>2026-11-05T00:00:00Z</updated>
+    <summary>Conway and Paterson's pen-and-paper game in the browser, against an AI that solves the board with nimbers where it can and draws its lines through a triangulation of the face.</summary>
+  </entry>
   <entry>
     <title>Random Game</title>
     <link href="https://sean-reid.github.io/blog/random-game.html"/>
@@ -271,13 +278,6 @@
     <id>https://sean-reid.github.io/blog/lacuna.html</id>
     <updated>2026-03-29T00:00:00Z</updated>
     <summary>A two-player game where you draw the board as you play and score the regions you close off.</summary>
-  </entry>
-  <entry>
-    <title>Sprouts</title>
-    <link href="https://sean-reid.github.io/blog/sprouts.html"/>
-    <id>https://sean-reid.github.io/blog/sprouts.html</id>
-    <updated>2026-03-29T00:00:00Z</updated>
-    <summary>Conway and Paterson's pen-and-paper game in the browser, against an AI that finds its moves on a morphological skeleton.</summary>
   </entry>
   <entry>
     <title>Captcha Royale</title>

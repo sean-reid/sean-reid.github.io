@@ -8,16 +8,16 @@
     <link rel="preload" as="image" href="img/sprouts.webp">
     <link rel="stylesheet" href="/nav.css">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <meta name="description" content="Conway and Paterson's pen-and-paper game in the browser, against an AI that finds its moves on a morphological skeleton.">
+    <meta name="description" content="Conway and Paterson's pen-and-paper game in the browser, against an AI that solves the board with nimbers where it can and draws its lines through a triangulation of the face.">
     <link rel="canonical" href="https://sean-reid.github.io/blog/sprouts.html">
     <link rel="alternate" type="application/atom+xml" title="Sean Reid" href="/feed.xml">
     <meta property="og:type" content="article">
     <meta property="og:site_name" content="Sean Reid">
     <meta property="og:title" content="Sprouts">
-    <meta property="og:description" content="Conway and Paterson's pen-and-paper game in the browser, against an AI that finds its moves on a morphological skeleton.">
+    <meta property="og:description" content="Conway and Paterson's pen-and-paper game in the browser, against an AI that solves the board with nimbers where it can and draws its lines through a triangulation of the face.">
     <meta property="og:url" content="https://sean-reid.github.io/blog/sprouts.html">
     <meta property="og:image" content="https://sean-reid.github.io/blog/img/sprouts.webp">
-    <meta property="article:published_time" content="2026-03-29">
+    <meta property="article:published_time" content="2026-11-05">
     <meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
@@ -38,9 +38,9 @@
     <div class="container">
         <header>
             <h1>Sprouts</h1>
-            <p class="meta">Conway and Paterson's pen-and-paper game in the browser, against an AI that finds its moves on a morphological skeleton.</p>
+            <p class="meta">Conway and Paterson's pen-and-paper game in the browser, against an AI that solves the board with nimbers where it can and draws its lines through a triangulation of the face.</p>
             <p class="links-row">
-                <a href="https://sean-reid.github.io/sprouts/">Live Demo</a>
+                <a href="https://sprouts.dwainosaur.com/">Live Demo</a>
                 <a href="https://github.com/sean-reid/sprouts">Source</a>
             </p>
         </header>
@@ -48,41 +48,49 @@
         <article>
             <figure>
                 <img decoding="async" fetchpriority="high" src="img/sprouts.webp" alt="Screenshot of Sprouts" width="2560" height="1600">
-                <figcaption>A game of Sprouts with 4 starting spots.</figcaption>
+                <figcaption>Ten moves into a game on nine spots. The move list says what each line did.</figcaption>
             </figure>
 
             <p><a href="https://en.wikipedia.org/wiki/Sprouts_(game)">Sprouts</a> is a pen-and-paper game that John Conway and Michael Paterson invented at Cambridge in 1967. You start with \(n\) dots, called spots. A move draws a curve from one spot to another, or from a spot back to itself, without crossing any existing line, and then puts a new spot somewhere on that curve. No spot may have more than three lines touching it. Whoever makes the last legal move wins. I wanted to play it against a computer.</p>
 
             <figure class="small">
                 <img decoding="async" src="img/cc/sprouts-game.webp" alt="A game of Sprouts in progress" loading="lazy" width="800" height="559">
-                <figcaption>A two-spot game in progress. Each spot takes at most three lines and lines never cross. <a href="https://commons.wikimedia.org/wiki/File:Sprouts-2spot-game.png">Wikimedia Commons</a></figcaption>
+                <figcaption>A two-spot game in progress. <a href="https://commons.wikimedia.org/wiki/File:Sprouts-2spot-game.png">Wikimedia Commons</a></figcaption>
             </figure>
 
             <h2>How long a game lasts</h2>
 
-            <p>Call the unused line slots on a spot its lives. There are \(3n\) at the start. Every move spends two lives, one at each end of the curve (or two on the same spot for a loop), and creates a spot that already has two lines, so one life. Each move costs exactly one life net, and every move adds exactly two edges to the graph, because the new spot splits the curve. The last move still leaves that new spot's life unspent, so at least one life remains when the game ends and a game lasts at most \(3n - 1\) moves.</p>
+            <p>Call the unused line slots on a spot its lives. There are \(3n\) at the start. Every move spends two lives, one at each end of the curve (or two on the same spot for a loop), and creates a spot that already has two lines, so one life. Each move costs exactly one life net, and the last move still leaves that new spot's life unspent, so a game lasts at most \(3n - 1\) moves.</p>
 
-            <p>The lower bound takes one more idea. When the game ends, every surviving spot has exactly one life, because a spot with two could still draw a loop to itself. Each survivor's two neighbors are dead, and no dead spot neighbors two survivors, since two lines into the same dead spot share a face and the survivors at their far ends could be joined. So there are at least twice as many dead spots as survivors. After \(m\) moves there are \(n + m\) spots and \(S = 3n - m\) survivors, and \(n + m \geq 3S\) gives \(m \geq 2n\). <em>Winning Ways</em> (Berlekamp, Conway, and Guy) calls a dead spot that neighbors no survivor a Pharisee, and counting them makes it exact: \(m = 2n + P/4\). So a game runs between \(2n\) and \(3n - 1\) moves. With 6 spots that's 12 to 17.</p>
+            <p>When the game ends, every surviving spot has exactly one life, because a spot with two could still draw a loop to itself. Each survivor's two neighbors are dead, and no dead spot neighbors two survivors, since two lines into the same dead spot share a face and the survivors at their far ends could be joined. So there are at least twice as many dead spots as survivors. After \(m\) moves there are \(n + m\) spots and \(S = 3n - m\) survivors, and \(n + m \geq 3S\) gives \(m \geq 2n\). <em>Winning Ways</em> (Berlekamp, Conway, and Guy) calls a dead spot that neighbors no survivor a Pharisee, and counting them makes it exact: \(m = 2n + P/4\). So a game runs between \(2n\) and \(3n - 1\) moves. With 6 spots that's 12 to 17.</p>
 
-            <p>Who wins is a different question. Applegate, Jacobson, and Sleator computed it by exhaustive search up to 11 spots in 1991 and conjectured that the first player wins exactly when \(n \bmod 6\) is 3, 4, or 5. Later searches carried that pattern to \(n \leq 44\). Nobody has proved it holds in general. Sprouts is an impartial game, so every position has a nim-value in principle, but I didn't compute any. My AI is heuristic.</p>
+            <p>Who wins is a different question. Applegate, Jacobson, and Sleator computed it by exhaustive search up to 11 spots in 1991 and conjectured that the first player wins exactly when \(n \bmod 6\) is 3, 4, or 5. Lemoine and Viennot carried the pattern to 44 spots by computing <a href="https://en.wikipedia.org/wiki/Sprague%E2%80%93Grundy_theorem">nimbers</a>, one value for each independent part of the board instead of one search over the whole thing. Nobody has proved it in general. The AI here does the same thing on smaller boards.</p>
 
-            <h2>Moves aren't discrete</h2>
+            <h2>The position without the drawing</h2>
 
-            <p>In most board games a move is a thing you can enumerate. Sprouts moves are curves in the plane, and legality depends on whether the curve crosses anything. My first attempt sampled each candidate curve at many points and tested each sample against existing lines. It was slow and wrong in both directions. Curves that passed near a line registered as collisions depending on sampling density, and real crossings slipped between samples.</p>
+            <p>The first version of this treated the board as a picture. It rasterized the lines, thinned the free space to a skeleton, and pathfound along that, and legality was a pixel test. It was slow and wrong in both directions, and the search ran on a graph that guessed at which spots could still reach each other. At one point it declared a game over with a legal move still on the board.</p>
 
-            <p>The fix came from image processing. Treat the board as a binary image where lines and spots are obstacles and everything else is free. Thin the free space with the <a href="https://en.wikipedia.org/wiki/Topological_skeleton">Zhang-Suen algorithm</a>, which strips boundary pixels while preserving connectivity, and what's left is a one-pixel-wide <a href="https://en.wikipedia.org/wiki/Medial_axis">medial axis</a> running down the middle of every open corridor. That skeleton is a graph, and any path along it is a curve that clears existing geometry by construction.</p>
+            <p>The rewrite keeps the drawing out of the rules. A position is a <a href="https://en.wikipedia.org/wiki/Rotation_system">rotation system</a>: each spot lists its lines in counterclockwise order, and that alone determines the faces, which is everything Sprouts cares about. Two spots can be joined when both have a life left and they share a face. A line that joins two spots on the same boundary splits its face, and which side the other pieces of that boundary land on is part of the move. A line I draw gets read into this model: the direction it leaves each spot, against that spot's existing lines, says which corner it uses, and a point-in-polygon test on the closed curve it completes says which pieces it cuts off. The move list, legality, and game over all come from the model. The geometry only has to check that the curve doesn't cross anything.</p>
 
-            <p>Plain thinning wasn't enough. In the endgame the free space is a few thin winding channels next to one or two big open regions, and a skeleton computed the same way everywhere either loses the channels or sits too close to walls in the open. So before thinning I dilate the obstacles by 35 percent of the local corridor width, measured with a <a href="https://en.wikipedia.org/wiki/Distance_transform">distance transform</a>, clamped between 3 and 50 pixels at the base scale. Wide areas get heavy dilation and the skeleton is forced to their center. Narrow passages get almost none and survive. When even that fails, and in tight endgames it does, an <a href="https://en.wikipedia.org/wiki/A*_search_algorithm">A*</a> search runs over the raw free pixels with relaxed clearance.</p>
+            <h2>Playing the sum</h2>
 
-            <h2>The AI</h2>
+            <p>Sprouts is an impartial game, so every position has a nimber, and a position made of independent parts has the XOR of its parts' nimbers. The player to move loses exactly when that sum is zero. A move changes one face, but a spot with two lines has a corner in each face beside it, so faces that share a live spot are one game. The faces linked that way are the regions, and each is solved on its own.</p>
 
-            <p>To generate moves, the AI pathfinds along the skeleton between every pair of spots that both have a life left, plus a loop for every spot with two or more, falling back to the free-space A* when the skeleton path fails. Each path is a concrete candidate move. It then abstracts the position into a graph, runs <a href="https://en.wikipedia.org/wiki/Minimax">minimax</a> with <a href="https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning">alpha-beta pruning</a> on the abstract graph, and returns the concrete curve of the best move for drawing. The search is iteratively deepened from depth 1 up to a cap the position chooses, at most 16.</p>
+            <p>A spot with three lines never ends a move again, so the game in a region depends only on the live corners around each boundary, which corners share a spot, and which boundaries share a face. A four-spot game has about 650,000 positions as rotation systems and 1,891 once dead spots are forgotten and mirror images are identified. Nimbers are stored by that form and kept for as long as the page is open, so the next game starts with most of its endgames already solved.</p>
 
-            <p>When the abstract graph updates after a move it takes the union of the two endpoints' neighborhoods, and it never removes a pair of spots that a new line has just separated into different regions. So the search considers some moves that aren't legal on the real board, and going deeper doesn't fix that. The move it finally plays is always one of the concrete root candidates, so the cost is wasted search and a skewed evaluation rather than an illegal line on the board. It plays a decent game anyway.</p>
+            <p>When every region is small enough to solve within a budget, about a quarter of a second, the AI plays a move that leaves a zero sum, or when there isn't one, the move that leaves the opponent the most room. Six fresh spots have 18 lives between them and are already too much to solve from cold, so bigger positions go to an alpha-beta search with iterative deepening under an 800 ms clock. The search keys its transposition table on the same live form, and when it reaches a position whose regions are all solved it scores that exactly instead of guessing. The guess, where it has to, is the parity of the lives left plus a count of the pairs that can still be joined. The clock is the whole turn's thinking whatever the spot count, so a 24-spot game plays at the same pace as a 4-spot one, with a much shallower search.</p>
 
-            <p>The AI always plays second, and an opening book covers its first reply to the common human openings at 4, 5, and 6 spots. When it draws a curve it also has to choose where the new spot goes. It samples the middle 80 percent of the path, skipping the ends where spots cluster, and takes the point with the greatest clearance from any obstacle, to leave as much room as possible for later moves.</p>
+            <h2>Drawing the move</h2>
 
-            <p>The game logic and AI are Rust compiled to <a href="https://webassembly.org/">WebAssembly</a>, running in a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API">Web Worker</a> because a search on a crowded 6-spot board takes a few seconds and shouldn't freeze the canvas.</p>
+            <p>The search picks a move in the model, and then it has to be drawn. Lines keep a clearance from other lines and from spots so the board stays readable and later moves have somewhere to go. The router erodes the face by those clearances, pushing every wall inward and cutting a disc around every spot except the move's two ends, and triangulates what's left with a <a href="https://en.wikipedia.org/wiki/Constrained_Delaunay_triangulation">constrained Delaunay triangulation</a>. Any path through the free triangles keeps the clearances by construction, and if the two ends are in different pieces of the eroded face, there is no room.</p>
+
+            <p>The path also has to be the right move. A face with pieces inside it has a different move for each side the curve passes them on, so the search over the triangles tracks which pieces it has passed on which side and looks for the class the model named. A <a href="https://en.wikipedia.org/wiki/Funnel_algorithm">funnel</a> pulls the corridor taut, a relaxation step moves it off the walls where there's room, and a cubic spline is fit to the result. The curve is then read back through the same embedding my hand-drawn lines go through, and if it reads as a different move it's refused. When a move can't be drawn at all the AI tries the next one in its ranking. Everything in this pipeline is sums, products, and square roots, no trig and no hypot, because the WebAssembly build has to draw the same curve bit for bit as the native one or a shared game comes out different on the other end.</p>
+
+            <p>After every move the board settles. Each pair of things that could be too close has a ratio, its distance over the clearance it wants, and the settle repeatedly pushes apart the pairs near the tightest one while holding the topology fixed: every line still has to read back as the move it was, and nothing new may cross. The new spot rides along its curve. Crowded corners spread out, and a long game on a big board stays drawable where the old version ran out of room.</p>
+
+            <h2>Playing it</h2>
+
+            <p>Games run from 2 to 24 spots on a sunflower spiral. You can undo and step through the game, and the move list says what each line did and how many spots it cut off. A share link stores each move as its index in the move list, a byte or two a move. The other side's engine reroutes and resettles the same moves, so it draws its own lines, and the link carries the curves instead when a move won't regenerate the same way. On a phone a magnifier sits beside your finger while you draw, and you can pinch to zoom mid-stroke. It plays from the keyboard too. The engine is Rust compiled to <a href="https://webassembly.org/">WebAssembly</a>, running in a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API">Web Worker</a>.</p>
         </article>
 
     </div>
