@@ -704,7 +704,7 @@ const sites = [
   { name: 'nyt-crosswords', url: 'https://sean-reid.github.io/nyt-crosswords/' },
   { name: 'random-game', url: 'https://sean-reid.github.io/random-game/' },
   { name: 'severed', url: 'https://sean-reid.github.io/severed/' },
-  { name: 'discern', url: 'https://discern.seanreid.workers.dev/' },
+  { name: 'discern', url: 'https://discern.dwainosaur.com/' },
   { name: 'bananas-for-scale', url: 'https://sean-reid.github.io/bananas-for-scale/' },
   { name: 'bananas-for-scale-entry', url: 'https://sean-reid.github.io/bananas-for-scale/thing/giraffe/' },
   { name: 'deconflict', url: 'https://deconflict.app/' },
