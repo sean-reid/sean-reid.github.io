@@ -1,6 +1,6 @@
 # sean-reid.github.io
 
-Personal site and project writeups, at [sean-reid.github.io](https://sean-reid.github.io/). Static HTML on GitHub Pages. A small Node script generates the homepage, the publications page, the per-post metadata, the search index, the sitemap, and the feed from two manifests and the post files.
+Personal site and project writeups, at [seanre.id](https://seanre.id/). Static HTML on GitHub Pages. A small Node script generates the homepage, the publications page, the per-post metadata, the search index, the sitemap, and the feed from two manifests and the post files.
 
 ## Layout
 
