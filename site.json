@@ -18,7 +18,8 @@
     { "id": "games", "label": "Games and puzzles" },
     { "id": "music", "label": "Music and audio" },
     { "id": "text", "label": "Text and images" },
-    { "id": "tools", "label": "Tools and data" }
+    { "id": "tools", "label": "Tools and data" },
+    { "id": "silly", "label": "Silliness" }
   ],
   "featuredCount": 8
 }
