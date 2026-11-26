@@ -40,7 +40,7 @@
             <h1>Time</h1>
             <p class="meta">Two clocks, one on Earth and one on a ship you fly around the Sun, a neutron star, or Sagittarius A*, with the drift between them computed from real geodesics</p>
             <p class="links-row">
-                <a href="https://time.dwainosaur.com">Live Demo</a>
+                <a href="https://time.seanre.id">Live Demo</a>
                 <a href="https://github.com/sean-reid/time">Source</a>
             </p>
         </header>
@@ -75,7 +75,7 @@
 
             <p>Time can be sped up in steps from real time to a year per second. The problem is that tight orbits need small steps: a geodesic orbit takes about 320 integrator steps and a Newtonian one about 3,142, and a frame can afford roughly 20,000. So for the orbit the ship is on right now, I compute the fastest warp the integrator can honor at 60 frames a second and hide anything faster. Then, separately, a meter records how many simulated seconds each real frame actually advanced, over the last 12 frames, ignoring any frame longer than 0.25 s as a stall. If the achieved rate trails the setting by more than 5 percent, the page shows the achieved number instead of the setting. Kick into a tighter orbit and the dial pulls itself down after a moment.</p>
 
-            <p>The plate the scene is drawn on is stretched by the metric: radial spacing follows proper distance from the horizon, so the isochrone rings crowd toward it. Distances are to scale, zoom is logarithmic, and a scale bar with its light travel time is always on screen. Every mass, radius, spin, and orbital element in the body picker cites a source, and the list of sources is on the <a href="https://time.dwainosaur.com/how">how page</a>.</p>
+            <p>The plate the scene is drawn on is stretched by the metric: radial spacing follows proper distance from the horizon, so the isochrone rings crowd toward it. Distances are to scale, zoom is logarithmic, and a scale bar with its light travel time is always on screen. Every mass, radius, spin, and orbital element in the body picker cites a source, and the list of sources is on the <a href="https://time.seanre.id/how">how page</a>.</p>
         </article>
 
     </div>
