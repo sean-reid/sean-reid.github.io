@@ -9,14 +9,14 @@
     <link rel="stylesheet" href="/nav.css">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <meta name="description" content="A desktop app for playing music together over the internet, on a server that rents itself for the evening and then deletes itself.">
-    <link rel="canonical" href="https://sean-reid.github.io/blog/jamstream.html">
+    <link rel="canonical" href="https://seanre.id/blog/jamstream.html">
     <link rel="alternate" type="application/atom+xml" title="Sean Reid" href="/feed.xml">
     <meta property="og:type" content="article">
     <meta property="og:site_name" content="Sean Reid">
     <meta property="og:title" content="JamStream">
     <meta property="og:description" content="A desktop app for playing music together over the internet, on a server that rents itself for the evening and then deletes itself.">
-    <meta property="og:url" content="https://sean-reid.github.io/blog/jamstream.html">
-    <meta property="og:image" content="https://sean-reid.github.io/blog/img/jamstream.webp">
+    <meta property="og:url" content="https://seanre.id/blog/jamstream.html">
+    <meta property="og:image" content="https://seanre.id/blog/img/jamstream.webp">
     <meta property="article:published_time" content="2026-08-08">
     <meta name="twitter:card" content="summary_large_image">
 </head>
@@ -40,7 +40,7 @@
             <h1>JamStream</h1>
             <p class="meta">A desktop app for playing music together over the internet, on a server that rents itself for the evening and then deletes itself.</p>
             <p class="links-row">
-                <a href="https://sean-reid.github.io/jamstream/">Downloads and Guide</a>
+                <a href="https://jamstream.seanre.id/">Downloads and Guide</a>
                 <a href="https://github.com/sean-reid/jamstream">Source</a>
             </p>
         </header>
@@ -138,7 +138,7 @@
 
             <p>The latency table comes from that harness. I judge the 2.5 ms tick budget at p99, because the deadline is per tick and a mean divides the expensive tick into the seven cheap ones, and the timed runs get their own CI runner after contention barely moved the median but moved the p99 seventeen-fold. The protocol and the Opus decoder are fuzzed, since they parse network bytes on a publicly reachable machine.</p>
 
-            <p>It's written in Rust and in beta. The app ships signed and notarized for macOS and as plain binaries for Windows and Linux, and the session server is a static musl build that cloud-init downloads and checksum-verifies at boot. Downloads and the full guide are at <a href="https://sean-reid.github.io/jamstream/">sean-reid.github.io/jamstream</a>.</p>
+            <p>It's written in Rust and in beta. The app ships signed and notarized for macOS and as plain binaries for Windows and Linux, and the session server is a static musl build that cloud-init downloads and checksum-verifies at boot. Downloads and the full guide are at <a href="https://jamstream.seanre.id/">jamstream.seanre.id</a>.</p>
         </article>
 
     </div>
