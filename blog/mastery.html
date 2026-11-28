@@ -20,7 +20,7 @@
     <meta property="article:published_time" content="2026-04-16">
     <meta name="twitter:card" content="summary_large_image">
 </head>
-<body>
+<body class="layout-notebook">
 <nav class="site-nav">
   <div class="site-nav-inner">
     <div class="site-nav-left">
@@ -38,36 +38,19 @@
     <div class="container">
         <header>
             <h1>Mastery</h1>
-            <p class="meta">100 skills scored by hand on 19 difficulty axes, with 12 challenges you can try in the browser.</p>
-            <p class="links-row">
-                <a href="https://seanre.id/mastery/">Live Demo</a>
-                <a href="https://github.com/sean-reid/mastery">Source</a>
-            </p>
         </header>
 
         <article>
-            <figure>
+            <figure class="small">
                 <img decoding="async" fetchpriority="high" src="img/mastery.webp" alt="Screenshot of Mastery showing the ranking page with category filters and a skill card for Coracle Building" width="2560" height="1600">
-                <figcaption>The ranking page, with the 100 skills sorted by composite score.</figcaption>
             </figure>
-
-            <p>The "10,000 hours" line treats every skill as the same shape. Chess and cardiac surgery might both take a decade, but they differ on failure cost, physical demand, and how fast the field moves under you. So I scored 100 skills on 19 axes, each from 0 to 10 with a cited source, and ranked them. Two skills with the same composite score can have completely different profiles.</p>
-
-            <h2>The axes</h2>
-
-            <p>The axes include time to expert performance, feedback delay, failure cost, cognitive demand, and perishability. The composite is a weighted average with time to expert weighted heaviest at 0.08, and I set the weights by hand.</p>
-
-            <p>Every score also has a confidence from 0 to 1. Chess time-to-expert gets 0.95, because Elo and the median grandmaster age at title are hard numbers. The hydraulophone's plateau density gets 0.35, because there are maybe a dozen serious players in the world and nobody has studied how they improve. The median confidence across all 1,900 scores is 0.75. Each skill's methodology panel shows the confidences next to the citations.</p>
-
-            <h2>The skills</h2>
-
-            <p>The 100 skills fall into 10 categories: games, languages, instruments, sports, trades, academic, physical feats, performance, survival and fieldwork, and technology. Trades and academic have 12 each, technology and survival 8. Chess, piano, and gymnastics are in there as calibration points, next to Carolinian wayfinding, mokume-gane (Japanese layered metalwork), vinkensport (Belgian competitive finch singing), and ferrofluid sculpting. The familiar ones calibrate the scale, and I'm least sure of the numbers for the obscure ones.</p>
-
-            <h2>The challenges</h2>
-
-            <p>Twelve skills have a playable challenge that tests a fragment of the real thing, all on the Web Audio API and Canvas. Pitch Matcher plays a reference tone and you match it with a slider. The score is in cents, and under 5 counts as a match. Pattern Memory recreates de Groot's 1946 chess experiment: a position for five seconds, then pick it out of four boards. Polyrhythm Tapper has you hold 2:3, 3:4, and 4:5 on the keyboard. Beat Detector plays two slightly detuned tones and asks you to tune out the wavering, which is how organ tuners work. Star Navigation has you pick guide stars for the legs of a Pacific voyage. Number Flash is flash anzan, with the note that competitors sum 15 numbers in 1.5 seconds. The others cover stone balancing, zellige tilework, foley, mokume-gane layering, the click consonants of Taa using recordings from Wikimedia Commons, and static apnea.</p>
-
-            <p>They map back to the axes. Pitch Matcher is precision and feedback delay, and Pattern Memory is cognitive demand.</p>
+            <ul>
+                <li><span>Chess and cardiac surgery might both take a decade, but they differ on failure cost, physical demand, and how fast the field moves under you.</span></li>
+                <li><span>So I scored 100 skills on 19 axes, each from 0 to 10 with a cited source, and ranked them.</span></li>
+                <li><span>Two skills with the same composite score can have completely different profiles.</span></li>
+                <li><span class="tag">play</span><span><a href="https://seanre.id/mastery/">seanre.id/mastery</a></span></li>
+                <li><span class="tag">source</span><span><a href="https://github.com/sean-reid/mastery">github.com/sean-reid/mastery</a></span></li>
+            </ul>
         </article>
 
     </div>
