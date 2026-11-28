@@ -20,7 +20,7 @@
     <meta property="article:published_time" content="2026-05-05">
     <meta name="twitter:card" content="summary_large_image">
 </head>
-<body>
+<body class="layout-notebook">
 <nav class="site-nav">
   <div class="site-nav-inner">
     <div class="site-nav-left">
@@ -38,42 +38,18 @@
     <div class="container">
         <header>
             <h1>Sounds</h1>
-            <p class="meta">A voxel world where the music is generated from the biome you're standing in.</p>
-            <p class="links-row">
-                <a href="https://seanre.id/sounds/">Live Demo</a>
-                <a href="https://github.com/sean-reid/sounds">Source</a>
-            </p>
         </header>
 
         <article>
-            <figure>
+            <figure class="small">
                 <img decoding="async" fetchpriority="high" src="img/sounds.webp" alt="Screenshot of Sounds showing a procedural voxel world" width="2560" height="1600">
-                <figcaption>A voxel landscape. What's playing depends on where the player is standing and the time of day.</figcaption>
             </figure>
-
-            <p>Walk through a generated voxel world and everything you hear is composed on the spot from where you are. In a temperate forest an <a href="https://en.wikipedia.org/wiki/Aeolian_mode">Aeolian</a> lead plays over jazz-voiced pad chords. In the dunes the scale flips to <a href="https://en.wikipedia.org/wiki/Phrygian_dominant_scale">Phrygian dominant</a> with a flamenco bass line, and deep ocean slows everything to a <a href="https://en.wikipedia.org/wiki/Lydian_mode">Lydian</a> drone. The voxel game around the music is only there to give you somewhere to walk.</p>
-
-            <h2>The world</h2>
-
-            <p>Terrain is three octaves of <a href="https://en.wikipedia.org/wiki/Simplex_noise">simplex noise</a>. Separate temperature and moisture fields pick one of 20 biomes, from deep ocean and coral reef through mangrove, bayou, savanna, dunes, mushroom, and alpine meadow, up to glacial peaks and frozen tundra. Height at a biome border is blended with a <a href="https://en.wikipedia.org/wiki/Smoothstep">smoothstep</a> so there are no cliffs where the climate changes. Chunks are 16 blocks square and load in a ring around the player. There are three device profiles, and the only real difference is shadows: 2048-pixel shadow maps on desktop, 1024 on tablet, none on phones.</p>
-
-            <h2>Seven voices</h2>
-
-            <p>The music engine runs seven <a href="https://tonejs.github.io/">Tone.js</a> voices on their own schedules. The lead plays phrases of three to eight notes from the current biome's scale, biased by where you look. Look up and the melody trends higher. The pad plays FM chords on two-bar cycles. The bass picks a strategy by biome: walking, dub, ostinato, bossa nova, afrobeat, blues, flamenco, drone, spectral, and industrial. Percussion synthesizes its drum sounds from scratch and layers them into a kit per biome. An ambient voice runs brown and pink noise through bandpass filters, with shimmer near water and rumble underground. An arpeggiator has five patterns. And a ping voice plays a sine tone with a long reverb tail when you click. It's the only sound you control directly. Everything runs through a 4-second reverb at 0.3 wet, a feedback delay, and a limiter at -3 dB. Each voice decides what to play every beat rather than reading from pre-written bars.</p>
-
-            <p>A harmony engine keeps the voices agreeing. It tracks the current chord, its tensions and avoid notes, and a tension value that rises and falls over a progression, and the lead, pad, bass, and arp all take their notes from it. The progression library holds modal vamps, ii-V-I cadences, blues shuffles, bossa nova, afrobeat, flamenco Phrygian cadences, drones, gamelan cycles, chromatic sequences, raga pedal tones. The scale system has 35 scales, from pentatonic major and <a href="https://en.wikipedia.org/wiki/Dorian_mode">Dorian</a> to <a href="https://en.wikipedia.org/wiki/Slendro">slendro</a>, <a href="https://en.wikipedia.org/wiki/Iwato_scale">iwato</a>, and Bhairav. Each biome picks a scale, a tempo range, a bass strategy, a kit, an arp pattern, and a progression style on top of a genre preset.</p>
-
-            <p>The rhythm library holds 17 patterns transcribed from the clave family and its relatives: <a href="https://en.wikipedia.org/wiki/Clave_(rhythm)">son and rumba clave</a>, <a href="https://en.wikipedia.org/wiki/Tresillo_(rhythm)">tresillo</a>, cinquillo, bossa nova, and then habanera, agbadza, bembe, gahu, cascara, and songo. Two of them are wrong. My habanera hits pulses 0, 3, and 5 of eight where the real one is 0, 3, 4, and 6, and my bembe drops the twelfth pulse and turns into a variant of agbadza. Timing is humanized by up to 5 ms either side of the grid, and a kit is held for 64 steps before the engine will consider switching.</p>
-
-            <h2>Crossing a border</h2>
-
-            <p>When you walk from one biome into another the parameters don't snap. The engine samples the biomes in a 32-block radius around the player at 8-block steps, weights each sample by distance, and normalizes the weights to sum to one, so the music parameters are a weighted mix of the biomes nearby. Then each parameter is smoothed exponentially with its own time constant: 8 seconds for the biome mix, 4 for elevation, 2 for movement speed, 1 for camera pitch. You hear the gradient as you cross it.</p>
-
-            <h2>Time</h2>
-
-            <p>A ten-minute day cycle drives a second layer of change. At night the reverb wet mix ramps from 0.3 to 0.45, the arpeggiator loses 4 dB, and the pad gains 3. By day the lead is 4 dB louder than at night. The same forest at midnight and at noon has the same scale, the same bass, and a different mix. On top of that, the engine cycles through four sections, ambient for 16 bars, building for 12, full for 20, and breakdown for 8, each with its own gain targets per voice and a two-second ramp between them.</p>
-
-            <p>Controls are WASD and mouse on desktop, a virtual joystick and touch-look on phones, and click or two-finger tap to ping. There's no objective.</p>
+            <ul>
+                <li><span>Walk through a generated voxel world and everything you hear is composed on the spot from where you are.</span></li>
+                <li><span>In the dunes the scale flips to Phrygian dominant with a flamenco bass line, and deep ocean slows everything to a Lydian drone.</span></li>
+                <li><span class="tag">play</span><span><a href="https://seanre.id/sounds/">seanre.id/sounds</a></span></li>
+                <li><span class="tag">source</span><span><a href="https://github.com/sean-reid/sounds">github.com/sean-reid/sounds</a></span></li>
+            </ul>
         </article>
 
     </div>
