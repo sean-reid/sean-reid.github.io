@@ -88,7 +88,7 @@ function extract(post, html) {
   const article = html.match(/<article[^>]*>([\s\S]*?)<\/article>/);
   if (!h1) fail(`${slug}: no <h1>`);
   if (!article) fail(`${slug}: no <article>`);
-  const description = meta ? text(meta[1]) : post.description || '';
+  const description = (meta && text(meta[1])) || post.description || '';
   if (!description) fail(`${slug}: no <p class="meta"> and no "description" in posts.json`);
   const anchors = links ? [...links[1].matchAll(/<a href="([^"]+)">([^<]+)<\/a>/g)] : [];
   if (links && !anchors.some((a) => /demo|download|play|site/i.test(a[2]))) fail(`${slug}: links-row has no demo link`);

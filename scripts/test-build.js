@@ -26,12 +26,15 @@ function build() {
   return spawnSync('node', ['build.js'], { cwd: tmp, encoding: 'utf8' });
 }
 
-function setPost(html, description) {
-  fs.writeFileSync(postFile, html);
+function setPost(html, fields = {}, slug = 'haiku') {
+  const file = path.join(tmp, 'blog', `${slug}.html`);
+  fs.writeFileSync(file, html);
   const posts = JSON.parse(originalPosts);
-  if (description) posts.find((p) => p.slug === 'haiku').description = description;
+  Object.assign(posts.find((p) => p.slug === slug), fields);
   fs.writeFileSync(postsFile, JSON.stringify(posts));
 }
+
+const description = { description: 'A screensaver that writes haiku.' };
 
 const bare = original
   .replace(/\s*<p class="meta">[\s\S]*?<\/p>/, '')
@@ -43,7 +46,12 @@ try {
   assert.strictEqual(r.status, 1, 'a post with no summary and no description must fail');
   assert.match(r.stderr, /haiku: no <p class="meta"> and no "description" in posts.json/);
 
-  setPost(bare, 'A screensaver that writes haiku.');
+  setPost(original.replace(/<p class="meta">[\s\S]*?<\/p>/, '<p class="meta"></p>'), description);
+  r = build();
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(fs.readFileSync(postFile, 'utf8'), /<meta name="description" content="A screensaver that writes haiku\.">/);
+
+  setPost(bare, description);
   r = build();
   assert.strictEqual(r.status, 0, r.stderr);
   let out = fs.readFileSync(postFile, 'utf8');
@@ -51,16 +59,43 @@ try {
   assert.match(out, /og:image" content="https:\/\/seanre\.id\/blog\/img\/haiku\.webp"/);
 
   const noImage = bare.replace(/<figure>[\s\S]*?<\/figure>/, '');
-  setPost(noImage, 'A screensaver that writes haiku.');
+  setPost(noImage, description);
   r = build();
   assert.strictEqual(r.status, 0, r.stderr);
   out = fs.readFileSync(postFile, 'utf8');
   assert.doesNotMatch(out, /og:image/);
   assert.match(out, /twitter:card" content="summary"/);
 
-  setPost(original);
+  setPost(noImage, { ...description, image: 'img/haiku.webp' });
   r = build();
   assert.strictEqual(r.status, 0, r.stderr);
+  out = fs.readFileSync(postFile, 'utf8');
+  assert.match(out, /og:image" content="https:\/\/seanre\.id\/blog\/img\/haiku\.webp"/);
+  assert.match(out, /twitter:card" content="summary_large_image"/);
+
+  setPost(noImage, { ...description, image: 'img/missing.webp' });
+  r = build();
+  assert.strictEqual(r.status, 1, 'a posts.json image that does not exist must fail');
+  assert.match(r.stderr, /haiku: hero image img\/missing\.webp missing/);
+
+  setPost(original);
+  const first = JSON.parse(originalPosts)[0].slug;
+  const firstFile = path.join(tmp, 'blog', `${first}.html`);
+  const firstOriginal = fs.readFileSync(firstFile, 'utf8');
+  setPost(firstOriginal.replace(/<figure[^>]*>[\s\S]*?<\/figure>/g, ''), {}, first);
+  r = build();
+  assert.strictEqual(r.status, 1, 'the first post must have an image');
+  assert.match(r.stderr, new RegExp(`${first}: the first post feeds the index og:image`));
+
+  setPost(firstOriginal, {}, first);
+  r = build();
+  assert.strictEqual(r.status, 0, r.stderr);
+  for (const f of ['index.html', 'search.json', 'feed.xml', 'blog/haiku.html', `blog/${first}.html`]) {
+    assert.ok(
+      fs.readFileSync(path.join(tmp, f)).equals(fs.readFileSync(path.join(root, f))),
+      `${f} must build to the committed file`,
+    );
+  }
   console.log('ok: build.js tolerates posts without a summary, buttons, or image');
 } finally {
   fs.rmSync(tmp, { recursive: true, force: true });
