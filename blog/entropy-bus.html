@@ -8,19 +8,19 @@
     <link rel="preload" as="image" href="img/entropy-bus.webp">
     <link rel="stylesheet" href="/nav.css">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <meta name="description" content="A racing game where the bus goes faster the less predictable your typing is">
+    <meta name="description" content="A racing game where the bus goes faster the less predictable your typing is.">
     <link rel="canonical" href="https://seanre.id/blog/entropy-bus.html">
     <link rel="alternate" type="application/atom+xml" title="Sean Reid" href="/feed.xml">
     <meta property="og:type" content="article">
     <meta property="og:site_name" content="Sean Reid">
     <meta property="og:title" content="Entropy Bus">
-    <meta property="og:description" content="A racing game where the bus goes faster the less predictable your typing is">
+    <meta property="og:description" content="A racing game where the bus goes faster the less predictable your typing is.">
     <meta property="og:url" content="https://seanre.id/blog/entropy-bus.html">
     <meta property="og:image" content="https://seanre.id/blog/img/entropy-bus.webp">
     <meta property="article:published_time" content="2026-03-29">
     <meta name="twitter:card" content="summary_large_image">
 </head>
-<body>
+<body class="layout-note">
 <nav class="site-nav">
   <div class="site-nav-inner">
     <div class="site-nav-left">
@@ -38,40 +38,15 @@
     <div class="container">
         <header>
             <h1>Entropy Bus</h1>
-            <p class="meta">A racing game where the bus goes faster the less predictable your typing is</p>
-            <p class="links-row">
-                <a href="https://seanre.id/entropy-bus/">Live Demo</a>
-                <a href="https://github.com/sean-reid/entropy-bus">Source</a>
-            </p>
         </header>
 
         <article>
             <figure>
                 <img decoding="async" fetchpriority="high" src="img/entropy-bus.webp" alt="Screenshot of Entropy Bus" width="2560" height="1600">
-                <figcaption>A run in progress. The bar at the top is the entropy score for the last four seconds of typing.</figcaption>
             </figure>
 
-            <p>The bus accelerates on the <a href="https://en.wikipedia.org/wiki/Entropy_(information_theory)">Shannon entropy</a> of whatever you type. Hold one key and it crawls. Use everything on the keyboard, letters, digits, punctuation, shifted symbols, with no rhythm to it, and it moves.</p>
-
-            <h2>Scoring a keypress</h2>
-
-            <p>I keep the last four seconds of keypresses. Fewer than five distinct keys in that window scores 0.05 and fewer than ten scores 0.15. Past that I take the entropy of the key frequencies,</p>
-
-            \[H = -\sum_{i} p_i \log_2 p_i\]
-
-            <p>and divide by \(\log_2 n\) for the \(n\) distinct keys seen, which puts it between 0 and 1.</p>
-
-            <p>That number on its own was too easy to max out. Five keys pressed in equal proportion score a perfect 1, and five keys isn't much randomness. So I multiply by a diversity term, \((n/50)^{2.5}\), which is why the unique-key counter in the corner runs to 50. Then pattern checks over the last 15 presses knock the score down. More than two adjacent-character steps like "asdf" halves it. More than three ABAB alternations multiplies it by 0.6. Any two-key sequence repeated more than twice multiplies it by 0.7. A final factor rewards typing quickly, up to about 10 presses a second. I don't look at rhythm on desktop at all, only on mobile.</p>
-
-            <p>Each keypress adds 0.8 times that score to the bus's velocity, capped at 15, and velocity loses 4 percent every frame. Stop typing and the bus coasts to a stop within a second or two. The race is 1000 meters.</p>
-
-            <h2>Playing it</h2>
-
-            <p>Fingers get tired, but what actually slows the bus is that my brain wants to settle into a sequence and repeat it, and the score drops the moment it does. I found myself doing strange things while playing, like closing my eyes and typing with my palms. Humans are bad at <a href="https://en.wikipedia.org/wiki/Random_number_generation#Human_generation">generating random sequences</a> on demand. We avoid repeating a key and overuse alternation.</p>
-
-            <p>On a phone there's one big button instead, so key variety is gone. There I score the standard deviation of the intervals between taps, divided by 200 ms and capped at 1, times a rate factor. Tapping at irregular intervals beats tapping to a beat.</p>
-
-            <p>My best runs come in around 80 seconds. Getting under 70 means keeping the bar green the whole way.</p>
+            <p>The bus accelerates on the Shannon entropy of whatever you type. Hold one key and it crawls. Use everything on the keyboard with no rhythm to it, and it moves.</p>
+            <p class="quiet-links"><a href="https://seanre.id/entropy-bus/">Play</a> <a href="https://github.com/sean-reid/entropy-bus">Source</a></p>
         </article>
 
     </div>

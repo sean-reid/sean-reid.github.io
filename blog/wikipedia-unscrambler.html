@@ -8,19 +8,19 @@
     <link rel="preload" as="image" href="img/wikipedia-unscrambler.webp">
     <link rel="stylesheet" href="/nav.css">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <meta name="description" content="A word game that scrambles a passage from one of yesterday's most-read Wikipedia articles">
+    <meta name="description" content="A word game that scrambles a passage from one of yesterday's most-read Wikipedia articles.">
     <link rel="canonical" href="https://seanre.id/blog/wikipedia-unscrambler.html">
     <link rel="alternate" type="application/atom+xml" title="Sean Reid" href="/feed.xml">
     <meta property="og:type" content="article">
     <meta property="og:site_name" content="Sean Reid">
     <meta property="og:title" content="Wikipedia Unscrambler">
-    <meta property="og:description" content="A word game that scrambles a passage from one of yesterday's most-read Wikipedia articles">
+    <meta property="og:description" content="A word game that scrambles a passage from one of yesterday's most-read Wikipedia articles.">
     <meta property="og:url" content="https://seanre.id/blog/wikipedia-unscrambler.html">
     <meta property="og:image" content="https://seanre.id/blog/img/wikipedia-unscrambler.webp">
     <meta property="article:published_time" content="2026-03-29">
     <meta name="twitter:card" content="summary_large_image">
 </head>
-<body>
+<body class="layout-note">
 <nav class="site-nav">
   <div class="site-nav-inner">
     <div class="site-nav-left">
@@ -38,30 +38,16 @@
     <div class="container">
         <header>
             <h1>Wikipedia Unscrambler</h1>
-            <p class="meta">A word game that scrambles a passage from one of yesterday's most-read Wikipedia articles</p>
-            <p class="links-row">
-                <a href="https://seanre.id/wikipedia-unscrambler/">Live Demo</a>
-                <a href="https://github.com/sean-reid/wikipedia-unscrambler">Source</a>
-            </p>
         </header>
 
         <article>
             <figure>
                 <img decoding="async" fetchpriority="high" src="img/wikipedia-unscrambler.webp" alt="Screenshot of Wikipedia Unscrambler" width="2560" height="1600">
-                <figcaption>A 120-word passage with every word scrambled, and the title guess box below it.</figcaption>
             </figure>
 
-            <p>The <a href="https://en.wikipedia.org/wiki/Typoglycemia">typoglycemia</a> meme says you can read jumbled text as long as the first and last letters stay put. That's an overstatement, but context does a lot of the work when you read, and I wanted a game that measured how much. So this scrambles every letter of every word, first and last included, and gives you nothing but the words around it.</p>
-
-            <p>The game fetches a real article, cuts out four sentences, and shuffles each word in place with punctuation left where it was. You type your guess for each word into its slot and it locks green when you're right. Separately, you can guess the article title at any point. A few unscrambled words tell you the topic, and the topic tells you what the remaining words could be. Hints for the title give the character count, then the first letter, then the first word.</p>
-
-            <h2>Yesterday's top 500 as a difficulty dial</h2>
-
-            <p>An article on the United States is far easier to unscramble than one on a species of moth, so I use <a href="https://wikimedia.org/api/rest_v1/">Wikimedia's pageview API</a> as the difficulty signal. I pull yesterday's 500 most-viewed articles on English Wikipedia, drop the Main Page and anything with a namespace prefix, and slice by rank. Easy is the top 50, medium is 50 to 200, hard is 200 to 500. The top 50 is mostly countries, celebrities, and whatever was in the news, and the hard tier is full of articles I've never opened.</p>
-
-            <p>Because the ranking is a day old, the puzzles rotate on their own and I never have to curate a list.</p>
-
-            <p>If the article has more than ten sentences I skip the first three to six before taking my four, because the lede usually names the subject outright. Extracts under 200 characters get thrown away and another article drawn. All three difficulties are fetched at once and keep their own state, so switching from easy to hard doesn't lose the easy puzzle. The pageview and extract APIs both allow cross-origin requests, so there's nothing for a server to do.</p>
+            <p>The typoglycemia meme says you can read jumbled text as long as the first and last letters stay put. That's an overstatement, but context does a lot of the work when you read, and I wanted a game that measured how much. So this scrambles every letter of every word and gives you nothing but the words around it.</p>
+            <p>The passages come from yesterday's most-read Wikipedia articles, so the puzzles rotate on their own.</p>
+            <p class="quiet-links"><a href="https://seanre.id/wikipedia-unscrambler/">Play</a> <a href="https://github.com/sean-reid/wikipedia-unscrambler">Source</a></p>
         </article>
 
     </div>

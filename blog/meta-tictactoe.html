@@ -20,7 +20,7 @@
     <meta property="article:published_time" content="2026-03-29">
     <meta name="twitter:card" content="summary_large_image">
 </head>
-<body>
+<body class="layout-note">
 <nav class="site-nav">
   <div class="site-nav-inner">
     <div class="site-nav-left">
@@ -38,43 +38,16 @@
     <div class="container">
         <header>
             <h1>Meta Tic-Tac-Toe</h1>
-            <p class="meta">Ultimate tic-tac-toe against an alpha-beta search written in Rust and compiled to WebAssembly.</p>
-            <p class="links-row">
-                <a href="https://seanre.id/meta-tictactoe/">Live Demo</a>
-                <a href="https://github.com/sean-reid/meta-tictactoe">Source</a>
-            </p>
         </header>
 
         <article>
             <figure>
                 <img decoding="async" fetchpriority="high" src="img/meta-tictactoe.webp" alt="Screenshot of Meta Tic-Tac-Toe" width="2560" height="1600">
-                <figcaption>A game in progress. The highlighted sub-board is the one the player has to play in.</figcaption>
             </figure>
 
-            <p><a href="https://en.wikipedia.org/wiki/Ultimate_tic-tac-toe">Ultimate tic-tac-toe</a> takes a game that's been solved since childhood and makes it hard. The board is a 3x3 grid of smaller tic-tac-toe boards, and you win by claiming three sub-boards in a row. The cell you play in decides which sub-board your opponent must play in next. Pick the top-right cell of any sub-board and your opponent is sent to the top-right sub-board.</p>
-
-            <figure class="small">
-                <img decoding="async" src="img/cc/super-tictactoe.webp" alt="Ultimate tic-tac-toe board" loading="lazy" width="800" height="800">
-                <figcaption>The routing rule. The cell you play in picks the sub-board your opponent has to play in. <a href="https://commons.wikimedia.org/wiki/File:Super_tic-tac-toe_rules_example.png">Wikimedia Commons</a></figcaption>
-            </figure>
-
-            <p>When you're sent to a sub-board that's already won or full, you get a free choice of any open sub-board. That's usually bad for the person who sent you there. A lot of the game is about not handing out free choices.</p>
-
-            <h2>The search</h2>
-
-            <p>Ordinary tic-tac-toe has 255,168 possible games and you can enumerate them in a blink. The ultimate version has at most \(3^{81}\) board configurations, about \(4 \times 10^{38}\), and the branching factor swings from 9 in a forced position to the low dozens when you have free choice, so I use depth-limited <a href="https://en.wikipedia.org/wiki/Minimax">minimax</a> with <a href="https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning">alpha-beta pruning</a> and a time budget instead. The search is iterative deepening. It searches to depth 1, then 2, and so on up to a cap of 20, and stops starting new iterations once half of a 1.5 second budget is gone. If an iteration runs past the full budget it's abandoned and the move from the last completed depth is used. The best move from each iteration goes to the front of the move list for the next one, which is what makes the pruning effective.</p>
-
-            <p>Move ordering scores each candidate before the search looks at it. Center cells and center boards score higher, a move that wins a sub-board gets a 1,000-point bonus, and a move that sends the opponent to a board where they can win immediately loses 200. There's also a 50-point bonus for sending the opponent to a won or full board, which gives them free choice. That bonus is a bug, though it only affects search order, so the search can still reject the move.</p>
-
-            <h2>The evaluation</h2>
-
-            <p>At the depth limit each position gets a score from the searching side's point of view. A won game is plus or minus 100,000. Otherwise I look at the eight lines through the 3x3 meta-board. Each sub-board a player has won along a line is worth 40 times a positional weight that favors the center board over corners and edges, and the line as a whole is worth 800 if one player holds two boards on it and the other holds none. A line with boards from both players is dead and scores nothing. Sub-boards still in play add a smaller score of their own for two in a row, scaled by the same positional weight, plus a bonus per sub-board where the player is one move from winning along an unblocked meta-line. A routing term rewards forcing the opponent into a sub-board where you already have a winning move waiting, and penalizes being forced into one where they do.</p>
-
-            <p>The weights are hand-tuned. It's beatable, but it punishes a careless free choice and will give up a sub-board to set up a meta-line.</p>
-
-            <h2>Rust to WebAssembly</h2>
-
-            <p>The search and evaluation are Rust compiled to WebAssembly. Each call passes the full board state across and gets a move back, so the Rust side holds no state between moves and the JavaScript side owns the game.</p>
+            <p>Ultimate tic-tac-toe takes a game that's been solved since childhood and makes it hard. The board is a 3x3 grid of smaller boards, and the cell you play in decides which board your opponent must play in next.</p>
+            <p>The opponent is an alpha-beta search written in Rust and compiled to WebAssembly.</p>
+            <p class="quiet-links"><a href="https://seanre.id/meta-tictactoe/">Play</a> <a href="https://github.com/sean-reid/meta-tictactoe">Source</a></p>
         </article>
 
     </div>
