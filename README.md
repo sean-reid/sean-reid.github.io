@@ -6,7 +6,8 @@ Personal site and project writeups, at [seanre.id](https://seanre.id/). Static H
 
 ```
 site.json           Name, bio, links, project groups
-posts.json          One entry per post: slug, name, short line, group, date. Order is rank.
+posts.json          One entry per post: slug, name, short line, group, date, and optionally
+                    description and image for a post without a meta line or figure. Order is rank.
 publications.json   One entry per paper: title, one line, venue, date, links. Order is display order.
 build.js            Writes index.html, publications.html, search.json, sitemap.xml, feed.xml,
                     robots.txt, 404.html, and rewrites each post's head metadata, nav, footer,
@@ -15,7 +16,8 @@ templates/          Nav and footer shared by every page
 home.css            Homepage styles
 publications.css    Publications page styles
 nav.css, nav.js     Color palette, shared nav, search, random, KaTeX loading
-scripts/            check-links.js: every local href and src resolves
+scripts/            check-links.js: every local href and src resolves; test-build.js: the
+                    build handles posts without a meta line, links, or image
 screenshot.js       Puppeteer captures of the live projects into blog/img/<slug>.webp
 blog/<slug>.html    One writeup per project
 blog/style.css      Writeup styles
@@ -35,4 +37,4 @@ Add an entry to `publications.json` with the title, a one-line description, the 
 
 ## Checks
 
-`npm run check` fails if any generated file is out of date or any local link is broken. CI runs the same two commands on every push and pull request.
+`npm run check` fails if any generated file is out of date, any local link is broken, or the build mishandles a post without a meta line, links, or image. CI runs the same three commands on every push and pull request.
