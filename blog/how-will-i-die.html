@@ -8,19 +8,19 @@
     <link rel="preload" as="image" href="img/how-will-i-die.webp">
     <link rel="stylesheet" href="/nav.css">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <meta name="description" content="What people of your age, sex, and country eventually die of, projected forward from WHO mortality data">
+    <meta name="description" content="What people of your age, sex, and country eventually die of, projected forward from WHO mortality data.">
     <link rel="canonical" href="https://seanre.id/blog/how-will-i-die.html">
     <link rel="alternate" type="application/atom+xml" title="Sean Reid" href="/feed.xml">
     <meta property="og:type" content="article">
     <meta property="og:site_name" content="Sean Reid">
     <meta property="og:title" content="How Will I Die">
-    <meta property="og:description" content="What people of your age, sex, and country eventually die of, projected forward from WHO mortality data">
+    <meta property="og:description" content="What people of your age, sex, and country eventually die of, projected forward from WHO mortality data.">
     <meta property="og:url" content="https://seanre.id/blog/how-will-i-die.html">
     <meta property="og:image" content="https://seanre.id/blog/img/how-will-i-die.webp">
     <meta property="article:published_time" content="2026-07-11">
     <meta name="twitter:card" content="summary_large_image">
 </head>
-<body>
+<body class="layout-note">
 <nav class="site-nav">
   <div class="site-nav-inner">
     <div class="site-nav-left">
@@ -38,60 +38,15 @@
     <div class="container">
         <header>
             <h1>How Will I Die</h1>
-            <p class="meta">What people of your age, sex, and country eventually die of, projected forward from WHO mortality data</p>
-            <p class="links-row">
-                <a href="https://seanre.id/how-will-i-die/">Live Demo</a>
-                <a href="https://github.com/sean-reid/how-will-i-die">Source</a>
-            </p>
         </header>
 
         <article>
             <figure>
                 <img decoding="async" fetchpriority="high" src="img/how-will-i-die.webp" alt="Screenshot of How Will I Die showing the ranked causes of death for men aged 55 to 59 in Japan" width="2560" height="1600">
-                <figcaption>The ranking for men aged 55 to 59 in Japan. The waffle grid is the share projected to die of the top cause.</figcaption>
             </figure>
 
-            <p>Pick a country, an age, and a sex, and I give you a ranked list of what people like you eventually die of, with a rough likelihood next to each. The numbers come from the <a href="https://www.who.int/data/gho">WHO</a>, cover 185 countries, and describe a population rather than you. Everything is computed once at build time and written to one small JSON file per country. The build recomputes those files from the committed intermediate data and fails if a value differs, which once caught tied probabilities sorting in a different order on the Linux runner.</p>
-
-            <h2>Eventually, not this year</h2>
-
-            <p>The snapshot version of this question, what did people who died at your age die of, misleads. A 25-year-old is far more likely to die in a car crash this year than of heart disease, but most 25-year-olds survive the year, and over a lifetime the slow diseases win. So I answer the forward question. Of everyone alive at your age today, what fraction will eventually die of each cause? Everyone dies of something, so the shares sum to one. Dying of one cause removes you from the pool for all the others, which makes this a <a href="https://en.wikipedia.org/wiki/Survival_analysis#Competing_risks">competing-risks</a> calculation.</p>
-
-            <h2>Two sources for the cause split</h2>
-
-            <p>Survival, the chance of making it from one age band to the next, comes from the <a href="https://www.who.int/data/gho">WHO Global Health Observatory</a> <a href="https://en.wikipedia.org/wiki/Life_table">life tables</a>, which exist for every member state on five-year bands from 2000 to 2021. They decide when a cohort dies. What it dies of needs a second source, and I use one of two depending on the country.</p>
-
-            <p>Where the <a href="https://platform.who.int/mortality">WHO Mortality Database</a> has any registered deaths coded in <a href="https://icd.who.int/browse10">ICD-10</a> between 2000 and 2019, I use it. That's 101 countries. Fifty of them have all 20 years, 24 have fewer than 15, and Lebanon has one. The other 84 countries fall back to the <a href="https://www.who.int/data/global-health-estimates">Global Health Estimates</a> 2021 files, which are modeled rather than registered, come on seven coarse age bands, and carry less cause detail. The site badges those as modeled and gives them wider intervals.</p>
-
-            <p>Both sources end up on the GHE cause list. Each ICD-10 code maps to the most specific GHE range it falls in. The Mortality Database keys countries by WHO numeric code, so there's a crosswalk to <a href="https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3">ISO 3166-1 alpha-3</a> to line the three sources up.</p>
-
-            <p>Death certificates are noisy. A real share of them carry <a href="https://en.wikipedia.org/wiki/Garbage_code">garbage codes</a>: unspecified heart failure, cancer of unknown primary site, injury of undetermined intent, symptoms with no cause named. Left alone, "unspecified" outranks real causes. Following the GHE method, I redistribute each garbage code's deaths onto plausible real causes within the same country, year, sex, and age cell, in proportion to the deaths already there. Unspecified cardiovascular deaths go to cardiovascular causes, unknown-site cancers to the malignancies, undetermined-intent injuries to the injury causes.</p>
-
-            <h2>Carrying the rates forward</h2>
-
-            <p>Today's rates frozen for 80 years would be wrong, so both halves of the model are fit on 2000 to 2019 and projected. I leave the pandemic years out of the fit.</p>
-
-            <p>The all-cause level is <a href="https://en.wikipedia.org/wiki/Lee%E2%80%93Carter_model">Lee-Carter</a> (Lee and Carter, 1992), per country and sex. It factors the log death rate into an age profile and one time index,</p>
-
-            \[\ln m(x,t) = a(x) + b(x)\,k(t),\]
-
-            <p>taken from the first singular vector of the centered log-rate matrix. I forecast \(k\) as a random walk with drift and damp the drift by 0.98 a year, so an 80-year projection saturates instead of running off in a straight line. Projected rates are floored at half the lowest rate ever observed for that age.</p>
-
-            <p>The cause mix within an age band is a composition, so I forecast it in <a href="https://en.wikipedia.org/wiki/Compositional_data#Center_logratio_transform">centered-log-ratio</a> space. Fit a linear trend per cause, shrink the slope toward zero for rare causes, damp it by 0.9 a year so it saturates within about a decade, and transform back. Every forecast stays positive and sums to one, and stays near the recent mix instead of chasing a 20-year slope across a lifetime.</p>
-
-            <h2>The cohort life table</h2>
-
-            <p>A cohort alive at age \(x\) today reaches age \(x+k\) in year \(2025+k\), so each future band is evaluated on that year's projected rates. Within a band of width \(w\) I treat the hazard as constant, so the chance of dying in it given survival to it is \(q = 1 - e^{-w\,m}\). The WHO tables use their own within-band adjustments, and my \(q\) differs from their published values by up to 0.004 in infancy and by more in the oldest bands. With \(S_b\) for survival to band \(b\) and \(f_c(b)\) for the projected share of that band's deaths due to cause \(c\),</p>
-
-            \[\pi_c = \sum_b S_b\,q_b\,f_c(b).\]
-
-            <p>The open 85+ band takes everyone left, so the shares sum to one by construction. For men aged 55 to 59 in Japan cancer comes first at about one in three, with lower respiratory infections, stroke, and other circulatory disease clustered near one in twelve. For men aged 40 to 44 in the United States cancer leads at about a fifth, with dementia and ischemic heart disease just behind.</p>
-
-            <h2>Uncertainty</h2>
-
-            <p>Each cohort is run 200 times with the Lee-Carter drift and the cause trends perturbed by their estimated standard errors, and the interval is the 5th to 95th percentile of the draws. That band is narrower than a proper random walk would give. I apply the drift error linearly in the horizon and don't simulate the walk's own year-to-year noise, so the spread grows in proportion to the horizon and comes from the drift estimate alone. It's then clamped by hand-set constants, wider for modeled countries, and no half-width exceeds 20 percentage points. The edges of the band are mine, which is why the site leads with rank order and rounds to "about 1 in 3".</p>
-
-            <p>The composition forecast starts from each country's 2019 row, and ten countries in the registered tier (the Bahamas, Iran, Iraq, Morocco, Norway, Puerto Rico, Saudi Arabia, El Salvador, Tunisia, and Venezuela) have no 2019 data. The fit fills missing years with zero deaths, so those ten start from a near-uniform cause mix and their rankings aren't reliable.</p>
+            <p>Pick a country, an age, and a sex, and I give you a ranked list of what people like you eventually die of, with a rough likelihood next to each. The numbers describe a population rather than you.</p>
+            <p class="quiet-links"><a href="https://seanre.id/how-will-i-die/">Try it</a> <a href="https://github.com/sean-reid/how-will-i-die">Source</a></p>
         </article>
 
     </div>
