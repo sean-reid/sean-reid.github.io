@@ -79,38 +79,31 @@ function attr(tag, name) {
   return m ? m[1] : null;
 }
 
-function extract(slug, html) {
+function extract(post, html) {
+  const slug = post.slug;
   const h1 = html.match(/<h1>([\s\S]*?)<\/h1>/);
   const meta = html.match(/<p class="meta">([\s\S]*?)<\/p>/);
   const links = html.match(/<p class="links-row">([\s\S]*?)<\/p>/);
-  const hero = html.match(/<article>[\s\S]*?<img[^>]*>/);
-  const article = html.match(/<article>([\s\S]*?)<\/article>/);
+  const article = html.match(/<article[^>]*>([\s\S]*?)<\/article>/);
   if (!h1) fail(`${slug}: no <h1>`);
-  if (!meta) fail(`${slug}: no <p class="meta">`);
-  if (!links) fail(`${slug}: no <p class="links-row">`);
-  if (!hero) fail(`${slug}: no hero image in <article>`);
   if (!article) fail(`${slug}: no <article>`);
+  const description = (meta && text(meta[1])) || post.description || '';
+  if (!description) fail(`${slug}: no <p class="meta"> and no "description" in posts.json`);
   const anchors = links ? [...links[1].matchAll(/<a href="([^"]+)">([^<]+)<\/a>/g)] : [];
-  const demo = anchors.find((a) => /demo|download|play|site/i.test(a[2]));
-  const source = anchors.find((a) => /source/i.test(a[2]));
-  if (!demo) fail(`${slug}: links-row has no demo link`);
-  if (!source) fail(`${slug}: links-row has no source link`);
-  const heroTag = hero ? hero[0].match(/<img[^>]*>/)[0] : '';
+  if (links && !anchors.some((a) => /demo|download|play|site/i.test(a[2]))) fail(`${slug}: links-row has no demo link`);
+  if (links && !anchors.some((a) => /source/i.test(a[2]))) fail(`${slug}: links-row has no source link`);
+  const heroTag = article ? (article[1].match(/<img[^>]*>/) || [''])[0] : '';
   return {
     title: h1 ? text(h1[1]) : slug,
-    meta: meta ? text(meta[1]) : '',
-    demo: demo ? demo[1] : '',
-    demoLabel: demo ? demo[2] : '',
-    source: source ? source[1] : '',
-    heroSrc: attr(heroTag, 'src') || '',
+    meta: description,
+    heroSrc: attr(heroTag, 'src') || post.image || '',
     body: article ? text(article[1]) : '',
   };
 }
 
 function headBlock(post, info) {
   const url = `${site.url}/blog/${post.slug}.html`;
-  const image = `${site.url}/blog/${info.heroSrc}`;
-  return [
+  const lines = [
     `    <meta name="description" content="${esc(info.meta)}">`,
     `    <link rel="canonical" href="${url}">`,
     `    <link rel="alternate" type="application/atom+xml" title="${esc(site.name)}" href="/feed.xml">`,
@@ -119,16 +112,19 @@ function headBlock(post, info) {
     `    <meta property="og:title" content="${esc(info.title)}">`,
     `    <meta property="og:description" content="${esc(info.meta)}">`,
     `    <meta property="og:url" content="${url}">`,
-    `    <meta property="og:image" content="${image}">`,
+  ];
+  if (info.heroSrc) lines.push(`    <meta property="og:image" content="${site.url}/blog/${info.heroSrc}">`);
+  lines.push(
     `    <meta property="article:published_time" content="${post.date}">`,
-    `    <meta name="twitter:card" content="summary_large_image">`,
-  ].join('\n');
+    `    <meta name="twitter:card" content="${info.heroSrc ? 'summary_large_image' : 'summary'}">`,
+  );
+  return lines.join('\n');
 }
 
 const generatedHead = /^\s*<(?:meta (?:name="description"|property="og:[^"]*"|property="article:[^"]*"|name="twitter:[^"]*")|link rel="(?:canonical|alternate)")[^>]*>\s*\n/gm;
 
 function renderPost(post, html) {
-  const info = extract(post.slug, html);
+  const info = extract(post, html);
   let out = html.replace(generatedHead, '');
   out = out.replace(/\n?\s*<\/head>/, `\n${headBlock(post, info)}\n</head>`);
   out = out.replace(/<nav class="site-nav">[\s\S]*?<\/nav>/, nav);
@@ -365,11 +361,12 @@ function main() {
     if (!groupIds.has(post.group)) fail(`${post.slug}: unknown group ${post.group}`);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(post.date)) fail(`${post.slug}: bad date ${post.date}`);
     const { out, info } = renderPost(post, fs.readFileSync(file, 'utf8'));
-    if (!fs.existsSync(path.join(blogDir, info.heroSrc))) fail(`${post.slug}: hero image ${info.heroSrc} missing`);
+    if (info.heroSrc && !fs.existsSync(path.join(blogDir, info.heroSrc))) fail(`${post.slug}: hero image ${info.heroSrc} missing`);
     infos.set(post.slug, info);
     outputs.set(path.join('blog', `${post.slug}.html`), out);
     search.push({ href: `/blog/${post.slug}.html`, title: info.title, meta: info.meta, body: info.body });
   }
+  if (!infos.get(posts[0].slug)?.heroSrc) fail(`${posts[0].slug}: the first post feeds the index og:image and needs an image`);
   if (errors.length) {
     for (const e of errors) console.error(e);
     process.exit(1);
