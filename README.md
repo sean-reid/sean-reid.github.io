@@ -6,8 +6,8 @@ Personal site and project writeups, at [seanre.id](https://seanre.id/). Static H
 
 ```
 site.json           Name, bio, links, project groups
-posts.json          One entry per post: slug, name, short line, group, date, and optionally
-                    description and image for a post without a meta line or figure. Order is rank.
+posts.json          One entry per post: slug, name, short line, group, date, a description for a
+                    post without a meta line, and optionally an image. Order is rank.
 publications.json   One entry per paper: title, one line, venue, date, links. Order is display order.
 build.js            Writes index.html, publications.html, search.json, sitemap.xml, feed.xml,
                     robots.txt, 404.html, and rewrites each post's head metadata, nav, footer,

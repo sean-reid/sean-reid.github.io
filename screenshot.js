@@ -240,10 +240,6 @@ const interactions = {
     // Wait for homepage to fully render with featured items
     await new Promise(r => setTimeout(r, 5000));
   },
-  'bananas-for-scale-entry': async (page) => {
-    // Wait for thing page to fully render with measurements and conversions
-    await new Promise(r => setTimeout(r, 5000));
-  },
   'deconflict': async (page) => {
     // Clear localStorage to get fresh state with sample buttons
     await page.evaluate(() => localStorage.clear());
@@ -706,7 +702,6 @@ const sites = [
   { name: 'severed', url: 'https://seanre.id/severed/' },
   { name: 'discern', url: 'https://discern.seanre.id/' },
   { name: 'bananas-for-scale', url: 'https://bananas-for-scale.dwainosaur.com/' },
-  { name: 'bananas-for-scale-entry', url: 'https://bananas-for-scale.dwainosaur.com/thing/giraffe/' },
   { name: 'deconflict', url: 'https://deconflict.app/' },
   { name: 'mastery', url: 'https://seanre.id/mastery/' },
   { name: 'string', url: 'https://string.seanre.id/' },

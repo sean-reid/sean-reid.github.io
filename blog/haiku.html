@@ -20,7 +20,7 @@
     <meta property="article:published_time" content="2026-03-29">
     <meta name="twitter:card" content="summary_large_image">
 </head>
-<body>
+<body class="layout-note">
 <nav class="site-nav">
   <div class="site-nav-inner">
     <div class="site-nav-left">
@@ -38,36 +38,16 @@
     <div class="container">
         <header>
             <h1>Haiku</h1>
-            <p class="meta">A screensaver that generates a new haiku every ten seconds from a small grammar.</p>
-            <p class="links-row">
-                <a href="https://seanre.id/haiku/">Live Demo</a>
-                <a href="https://github.com/sean-reid/haiku">Source</a>
-            </p>
         </header>
 
         <article>
             <figure>
                 <img decoding="async" fetchpriority="high" src="img/haiku.webp" alt="Screenshot of Haiku" width="2560" height="1600">
-                <figcaption>One poem from the ocean theme, with the New button and Auto toggle under it.</figcaption>
             </figure>
 
-            <p>I wanted a screensaver that wrote poetry. Not well, necessarily, but with the right shape and at least a passing resemblance to something a person might say. So this page makes a new <a href="https://en.wikipedia.org/wiki/Haiku">haiku</a> every ten seconds, fades it in over a slowly moving background, and never stops.</p>
-
-            <p>The hard constraint is 5, 7, 5 syllables. Picking random words and hoping they add up almost never works. The syllable budget has to be exact, and the three lines have to sound like they belong to the same poem.</p>
-
-            <h2>The grammar</h2>
-
-            <p>Each line has its own handful of templates. The first line is scene-setting, so its templates are noun phrases: a <code>scene_np</code>, or noun, preposition, noun. The second line has to carry a verb, and its four templates all include one. The third line closes, with a <code>close_phrase</code> or an adverb in front of a noun phrase. The nonterminals expand to a sequence of parts of speech, and then I fill that sequence with words whose syllables sum to the line's target.</p>
-
-            <p>The word bank is a JSON file of 979 words across seven parts of speech, grouped by syllable count. When the filler needs a two-syllable noun it goes straight to that bucket. If a template can't be filled within the budget, I throw it away and try another template rather than forcing a word in.</p>
-
-            <h2>Themes</h2>
-
-            <p>Early versions drew from one big pool. The poems scanned fine and felt random, snow in line one and the ocean in line two. So I split the vocabulary into eight themes (winter, spring, summer, autumn, ocean, mountain, night sky, forest), each with its own nouns, verbs, and adjectives. One theme is chosen per poem and every line draws from it. Only when the theme has no word that fits does the filler fall back to general words of three syllables or fewer.</p>
-
-            <p>The same noun in lines one and three, or "the" opening every line, reads as mechanical. I track every word used across the poem and block exact repeats and stem repeats, where one word is a prefix of the other and the shared part is at least three letters. So "drift" in line one blocks "drifting" in line three. Determiners count too, so "the" appears at most once per poem. Only prepositions and conjunctions may repeat. After filling, "a" becomes "an" when the next word starts with a vowel.</p>
-
-            <p>The auto cycle is ten seconds. A New button skips ahead, and an Auto toggle pauses the cycle. The old poem blurs out and the new one reveals one line at a time, 280 ms apart, over a dark gradient with a few blurred color blobs drifting across it.</p>
+            <p>This page makes a new haiku every ten seconds, fades it in over a slowly moving background, and never stops.</p>
+            <p>The hard constraint is 5, 7, 5 syllables.</p>
+            <p class="quiet-links"><a href="https://seanre.id/haiku/">Try it</a> <a href="https://github.com/sean-reid/haiku">Source</a></p>
         </article>
 
     </div>

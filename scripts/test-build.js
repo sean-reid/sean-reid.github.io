@@ -30,33 +30,43 @@ function setPost(html, fields = {}, slug = 'haiku') {
   const file = path.join(tmp, 'blog', `${slug}.html`);
   fs.writeFileSync(file, html);
   const posts = JSON.parse(originalPosts);
-  Object.assign(posts.find((p) => p.slug === slug), fields);
+  const post = posts.find((p) => p.slug === slug);
+  for (const [k, v] of Object.entries(fields)) {
+    if (v === undefined) delete post[k];
+    else post[k] = v;
+  }
   fs.writeFileSync(postsFile, JSON.stringify(posts));
 }
 
 const description = { description: 'A screensaver that writes haiku.' };
 
+const noDescription = { description: undefined };
+
 const bare = original
   .replace(/\s*<p class="meta">[\s\S]*?<\/p>/, '')
   .replace(/\s*<p class="links-row">[\s\S]*?<\/p>/, '');
+const legacy = bare.replace(
+  '</h1>',
+  '</h1>\n<p class="meta">A summary line.</p>\n<p class="links-row"><a href="https://seanre.id/haiku/">Live Demo</a> <a href="https://github.com/sean-reid/haiku">Source</a></p>',
+);
 
 try {
-  setPost(bare);
+  setPost(bare, noDescription);
   let r = build();
   assert.strictEqual(r.status, 1, 'a post with no summary and no description must fail');
   assert.match(r.stderr, /haiku: no <p class="meta"> and no "description" in posts.json/);
 
-  setPost(original.replace(/<p class="meta">[\s\S]*?<\/p>/, '<p class="meta"></p>'), description);
+  setPost(legacy.replace(/<p class="meta">[\s\S]*?<\/p>/, '<p class="meta"></p>'), description);
   r = build();
   assert.strictEqual(r.status, 0, r.stderr);
   assert.match(fs.readFileSync(postFile, 'utf8'), /<meta name="description" content="A screensaver that writes haiku\.">/);
 
-  setPost(original, description);
+  setPost(legacy, description);
   r = build();
   assert.strictEqual(r.status, 0, r.stderr);
   assert.doesNotMatch(fs.readFileSync(postFile, 'utf8'), /<meta name="description" content="A screensaver that writes haiku\.">/);
 
-  setPost(original.replace(/(<p class="links-row">[\s\S]*?)<a href="[^"]*">Source<\/a>/, '$1'));
+  setPost(legacy.replace(/(<p class="links-row">[\s\S]*?)<a href="[^"]*">Source<\/a>/, '$1'));
   r = build();
   assert.strictEqual(r.status, 1, 'a links-row without a source link must fail');
   assert.match(r.stderr, /haiku: links-row has no source link/);
@@ -68,7 +78,7 @@ try {
   assert.match(out, /<meta name="description" content="A screensaver that writes haiku\.">/);
   assert.match(out, /og:image" content="https:\/\/seanre\.id\/blog\/img\/haiku\.webp"/);
 
-  const noImage = bare.replace(/<figure>[\s\S]*?<\/figure>/, '');
+  const noImage = bare.replace(/<figure[^>]*>[\s\S]*?<\/figure>/g, '');
   setPost(noImage, description);
   r = build();
   assert.strictEqual(r.status, 0, r.stderr);
