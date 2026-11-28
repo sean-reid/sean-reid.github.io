@@ -158,7 +158,7 @@
     <link href="https://seanre.id/blog/movie-quotes.html"/>
     <id>https://seanre.id/blog/movie-quotes.html</id>
     <updated>2026-07-11T00:00:00Z</updated>
-    <summary>A three-choice film quote quiz whose wrong answers are picked by sentence embeddings.</summary>
+    <summary>A film quote quiz: pick which of three lines is from the movie.</summary>
   </entry>
   <entry>
     <title>Eigencircuits</title>

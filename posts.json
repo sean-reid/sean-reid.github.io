@@ -14,7 +14,7 @@
   { "slug": "oeis-pi-search", "name": "oeis pi search", "desc": "where OEIS sequences first appear in pi", "group": "math", "date": "2026-09-23" },
   { "slug": "pulse", "name": "pulse", "desc": "heart rate from a webcam", "group": "math", "date": "2026-05-09" },
   { "slug": "clowns-and-mimes", "name": "clowns and mimes", "desc": "multiplayer tag on a torus or Klein bottle", "description": "Team tag in the dark on a torus or Klein bottle, online or against bots.", "group": "games", "date": "2026-05-05" },
-  { "slug": "movie-quotes", "name": "movie quotes", "desc": "movie quote quiz with embedding-picked decoys", "group": "games", "date": "2026-07-11" },
+  { "slug": "movie-quotes", "name": "movie quotes", "desc": "movie quote quiz with embedding-picked decoys", "description": "A film quote quiz: pick which of three lines is from the movie.", "group": "games", "date": "2026-07-11" },
   { "slug": "rhythm", "name": "rhythm", "desc": "drum rhythms from stacked Markov chains", "group": "music", "date": "2026-09-23" },
   { "slug": "cyclical", "name": "cyclical", "desc": "chord progressions that take a long time to resolve", "group": "music", "date": "2026-09-23" },
   { "slug": "eigencircuits", "name": "eigencircuits", "desc": "fake arXiv papers from a seeded grammar", "group": "silly", "date": "2026-07-11" },
