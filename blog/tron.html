@@ -8,19 +8,19 @@
     <link rel="preload" as="image" href="img/tron.webp">
     <link rel="stylesheet" href="/nav.css">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <meta name="description" content="A lightcycle game where riding close to walls makes you faster, against bots that pick moves by flood fill.">
+    <meta name="description" content="Lightcycles in the browser against AI opponents.">
     <link rel="canonical" href="https://seanre.id/blog/tron.html">
     <link rel="alternate" type="application/atom+xml" title="Sean Reid" href="/feed.xml">
     <meta property="og:type" content="article">
     <meta property="og:site_name" content="Sean Reid">
     <meta property="og:title" content="Tron">
-    <meta property="og:description" content="A lightcycle game where riding close to walls makes you faster, against bots that pick moves by flood fill.">
+    <meta property="og:description" content="Lightcycles in the browser against AI opponents.">
     <meta property="og:url" content="https://seanre.id/blog/tron.html">
     <meta property="og:image" content="https://seanre.id/blog/img/tron.webp">
     <meta property="article:published_time" content="2026-04-06">
     <meta name="twitter:card" content="summary_large_image">
 </head>
-<body>
+<body class="layout-visual">
 <nav class="site-nav">
   <div class="site-nav-inner">
     <div class="site-nav-left">
@@ -38,39 +38,15 @@
     <div class="container">
         <header>
             <h1>Tron</h1>
-            <p class="meta">A lightcycle game where riding close to walls makes you faster, against bots that pick moves by flood fill.</p>
-            <p class="links-row">
-                <a href="https://seanre.id/tron/">Live Demo</a>
-                <a href="https://github.com/sean-reid/tron">Source</a>
-            </p>
         </header>
 
         <article>
             <figure>
                 <img decoding="async" fetchpriority="high" src="img/tron.webp" alt="Screenshot of Tron" width="2560" height="1600">
-                <figcaption>The player's cyan cycle and several bots mid-game, with the walls they've left behind.</figcaption>
             </figure>
 
-            <p>Lightcycles race across a grid and each leaves a wall behind it. Hit any wall and you die. The game is from the 1982 <a href="https://en.wikipedia.org/wiki/Tron">Tron</a> film. Mine has a speed mechanic that rewards risky riding and bots that pick a direction for a reason. You play against a pack of them, one per 700 cells of arena up to 25. Controls are WASD or arrows on desktop and swipe on a phone.</p>
-
-            <h2>Wall riding</h2>
-
-            <p>The speed boost is the design idea. Whenever any wall or another cycle's trail is within 3 cells of you in any of the four cardinal directions, your cycle accelerates toward 1.7 times base speed, ramping over about six ticks so the change doesn't jolt. Base speed is one cell every 80 ms. Your own trail doesn't count, because the cell directly behind you is always your own fresh wall and you'd be boosting permanently. So threading along existing walls is fast and one mistake from death. The cycle pulses at 6 Hz while boosted. The bots use the same rule, which means they can outrun you in a corridor.</p>
-
-            <h2>Picking a direction</h2>
-
-            <figure class="small">
-                <img decoding="async" src="img/cc/voronoi-euclidean.svg" alt="Voronoi diagram" loading="lazy">
-                <figcaption>A Voronoi diagram in the plane. The bots compute the grid version of this, with path length through open cells in place of straight-line distance. <a href="https://commons.wikimedia.org/wiki/File:Euclidean_Voronoi_diagram.svg">Wikimedia Commons</a></figcaption>
-            </figure>
-
-            <p>The bots use the standard Voronoi heuristic for this game. For each direction that doesn't kill it immediately, the bot asks how many cells it could reach before anyone else if everyone raced outward from where they are. It answers with a multi-source breadth-first search: the bot's candidate next cell and every other living cycle's current cell go into one queue at the same time, the search expands one ring per step, and each open cell is marked for whoever gets there first. The score for that direction is the count of cells the bot claimed. It picks the highest, prefers to keep going straight on a tie, and then commits to that direction for 3 ticks so it doesn't dither. The fill visits every cell at most once, so it's linear in the arena size, and the claimed buffer and queue are preallocated typed arrays that get reused. The bot is seeded at the cell it's about to move into while the opponents are seeded where they stand, so its territory estimate runs a cell optimistic.</p>
-
-            <p>It looks one ply ahead. It rarely traps itself and will cut you off when it has the space advantage, but it has no idea that a corridor it's entering will close behind it three moves from now.</p>
-
-            <h2>Death and debris</h2>
-
-            <p>When a bot dies its trail stays on the board as an obstacle for two seconds, then vanishes the instant the bot respawns somewhere else. While you survive, the arena keeps filling with other people's walls. Your score is the number of seconds you survived, added up across games, with your longest run tracked separately.</p>
+            <p>One of my first programming experiences was making Snake on a TI-84 calculator. This project hearkens back to then, with the added twist of AI lightcycle opponents.</p>
+            <p class="quiet-links"><a href="https://seanre.id/tron/">Play</a> <a href="https://github.com/sean-reid/tron">Source</a></p>
         </article>
 
     </div>

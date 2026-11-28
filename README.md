@@ -26,7 +26,7 @@ blog/img/           Hero screenshots and figures
 
 ## Adding a project
 
-1. Copy any writeup in `blog/` to `blog/<slug>.html`. Change the title, preload, h1, meta line, the two links, the hero image, and the article. Leave the nav and footer alone; the build replaces them.
+1. Copy a writeup in `blog/` with the layout you want to `blog/<slug>.html`. Change the title, preload, h1, images, links, and the article. A post without a meta line needs a description in `posts.json`. Leave the nav and footer alone; the build replaces them.
 2. Add an entry to `posts.json` at the position it should rank. The first eight entries are the featured cards.
 3. Add the site to `screenshot.js` and run `npm run screenshot -- <slug>`. It needs `cwebp` on the path.
 4. Run `npm run build`, then `npm run check`. Commit the generated files with the post.

@@ -39,7 +39,7 @@
     <link href="https://seanre.id/blog/lipreadle.html"/>
     <id>https://seanre.id/blog/lipreadle.html</id>
     <updated>2026-09-28T00:00:00Z</updated>
-    <summary>A daily lipreading puzzle. A muted clip of a mouth saying a five-letter word, and you guess it.</summary>
+    <summary>A daily Wordle-style puzzle where you read the word off someone's lips.</summary>
   </entry>
   <entry>
     <title>Squares</title>
@@ -95,7 +95,7 @@
     <link href="https://seanre.id/blog/wason.html"/>
     <id>https://seanre.id/blog/wason.html</id>
     <updated>2026-09-23T00:00:00Z</updated>
-    <summary>A daily puzzle built on Wason's selection task, generated in the browser from the date alone</summary>
+    <summary>A procedurally generated daily Wason selection task.</summary>
   </entry>
   <entry>
     <title>LaTeX Preview</title>
@@ -158,7 +158,7 @@
     <link href="https://seanre.id/blog/movie-quotes.html"/>
     <id>https://seanre.id/blog/movie-quotes.html</id>
     <updated>2026-07-11T00:00:00Z</updated>
-    <summary>A three-choice film quote quiz whose wrong answers are picked by sentence embeddings.</summary>
+    <summary>A film quote quiz: pick which of three lines is from the movie.</summary>
   </entry>
   <entry>
     <title>Eigencircuits</title>
@@ -207,7 +207,7 @@
     <link href="https://seanre.id/blog/clowns-and-mimes.html"/>
     <id>https://seanre.id/blog/clowns-and-mimes.html</id>
     <updated>2026-05-05T00:00:00Z</updated>
-    <summary>Team tag in a dark labyrinth on a torus, a M&amp;ouml;bius strip, or a Klein bottle. The server decides every freeze.</summary>
+    <summary>Team tag in the dark on a torus or Klein bottle, online or against bots.</summary>
   </entry>
   <entry>
     <title>Sounds</title>
@@ -249,14 +249,14 @@
     <link href="https://seanre.id/blog/discern.html"/>
     <id>https://seanre.id/blog/discern.html</id>
     <updated>2026-04-07T00:00:00Z</updated>
-    <summary>A real-or-generated photo game that rates players and images against each other with Elo.</summary>
+    <summary>A game that tests how well you tell real photos from generated ones.</summary>
   </entry>
   <entry>
     <title>Tron</title>
     <link href="https://seanre.id/blog/tron.html"/>
     <id>https://seanre.id/blog/tron.html</id>
     <updated>2026-04-06T00:00:00Z</updated>
-    <summary>A lightcycle game where riding close to walls makes you faster, against bots that pick moves by flood fill.</summary>
+    <summary>Lightcycles in the browser against AI opponents.</summary>
   </entry>
   <entry>
     <title>Severed</title>
@@ -277,7 +277,7 @@
     <link href="https://seanre.id/blog/gravity.html"/>
     <id>https://seanre.id/blog/gravity.html</id>
     <updated>2026-03-29T00:00:00Z</updated>
-    <summary>A top-down shooter where the closer you fly to a black hole, the faster the rest of the arena runs</summary>
+    <summary>A space shooter where you fly real orbits toward a black hole.</summary>
   </entry>
   <entry>
     <title>Lacuna</title>
