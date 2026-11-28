@@ -17,3 +17,5 @@ jobs:
         run: node build.js --check
       - name: local links resolve
         run: node scripts/check-links.js
+      - name: build tolerates sparse posts
+        run: node scripts/test-build.js

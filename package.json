@@ -13,7 +13,7 @@
   },
   "scripts": {
     "build": "node build.js",
-    "check": "node build.js --check && node scripts/check-links.js",
+    "check": "node build.js --check && node scripts/check-links.js && node scripts/test-build.js",
     "screenshot": "node screenshot.js"
   },
   "devDependencies": {
