@@ -20,7 +20,7 @@
     <meta property="article:published_time" content="2026-03-29">
     <meta name="twitter:card" content="summary_large_image">
 </head>
-<body>
+<body class="layout-notebook">
 <nav class="site-nav">
   <div class="site-nav-inner">
     <div class="site-nav-left">
@@ -38,36 +38,18 @@
     <div class="container">
         <header>
             <h1>Papermaker</h1>
-            <p class="meta">SCIgen's fake computer science papers, generated in the browser and typeset to PDF.</p>
-            <p class="links-row">
-                <a href="https://papermaker.dwainosaur.com/">Live Demo</a>
-                <a href="https://github.com/sean-reid/papermaker">Source</a>
-            </p>
         </header>
 
         <article>
-            <figure>
+            <figure class="small">
                 <img decoding="async" fetchpriority="high" src="img/papermaker.webp" alt="Screenshot of Papermaker" width="2560" height="1600">
-                <figcaption>The author and system name fields, with the first page of the compiled PDF below them.</figcaption>
             </figure>
-
-            <p>In 2005 three <a href="https://www.csail.mit.edu/">MIT</a> grad students, Jeremy Stribling, Max Krohn, and Dan Aguayo, built <a href="https://pdos.csail.mit.edu/archive/scigen/">SCIgen</a>, which generates fake computer science papers from a <a href="https://en.wikipedia.org/wiki/Context-free_grammar">context-free grammar</a>. They submitted one to the <a href="https://en.wikipedia.org/wiki/SCIgen#Use">World Multiconference on Systemics, Cybernetics and Informatics</a> and it was accepted. It was called "<a href="https://pdos.csail.mit.edu/archive/scigen/rooter.pdf">Rooter: A Methodology for the Typical Unification of Access Points and Redundancy</a>" and it meant nothing at all.</p>
-
-            <p>Papermaker is SCIgen in the browser. One click produces a typeset two-column PDF with an abstract, an introduction, related work, results with figures, and references. The papers have the right shape and the right density of jargon and say nothing.</p>
-
-            <h2>The grammar</h2>
-
-            <p>SCIgen's grammar is a 3,777-line text file of production rules, each a symbol followed by one expansion, with alternatives listed as repeated rules and picked at random. It knows that a results section refers to figures, that figures have axes and legends, and that related work cites authors and venues. Two rule suffixes give it a little memory. A counter rule hands out the next integer each time it fires, and a companion rule draws a random integer below the current count, which is how a <code>\ref</code> ends up pointing at a figure that exists.</p>
-
-            <h2>Perl to Rust to the browser</h2>
-
-            <p>The original is Perl and writes LaTeX to disk. I rewrote the expansion engine in <a href="https://www.rust-lang.org/">Rust</a> and compiled it to <a href="https://webassembly.org/">WebAssembly</a> with <a href="https://rustwasm.github.io/docs/wasm-pack/">wasm-pack</a>. The rules go in a hash map and the random source is a seeded <code>SmallRng</code>, so a seed reproduces a paper. The grammar file and the graph grammar are fetched at runtime inside a Web Worker, and the worker fixes capitalization after sentence boundaries and in titles once the expansion is done.</p>
-
-            <h2>Figures and the compile</h2>
-
-            <p>The figures are my favorite part of the output. SCIgen's grammar emits gnuplot commands and graphviz for them, which was fine on a Unix box in 2005 and is useless in a browser, so a second worker rewrites them. It parses the gnuplot commands into <a href="https://ctan.org/pkg/pgfplots">pgfplots</a> charts of throughput against input size with a few fictional series, seeded from the command text so the same paper gets the same chart, and turns the graphviz figures into <a href="https://tikz.dev/">TikZ</a> flowcharts of boxes labeled with the paper's own component names. The bibliography gets the same treatment. BibTeX can't run, so the worker generates the entries and inlines a <code>thebibliography</code> environment. The data is random and the presentation is right, and a figure looked at on its own passes for an experimental result.</p>
-
-            <p>Then the LaTeX goes to latex.ytotech.com, a free compilation service with CORS enabled and the one piece of the project I don't run, and a PDF comes back.</p>
+            <ul>
+                <li><span>Papermaker is SCIgen in the browser.</span></li>
+                <li><span>The papers have the right shape and the right density of jargon and say nothing.</span></li>
+                <li><span class="tag">play</span><span><a href="https://papermaker.dwainosaur.com/">papermaker.dwainosaur.com</a></span></li>
+                <li><span class="tag">source</span><span><a href="https://github.com/sean-reid/papermaker">github.com/sean-reid/papermaker</a></span></li>
+            </ul>
         </article>
 
     </div>
