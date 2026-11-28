@@ -20,7 +20,7 @@
     <meta property="article:published_time" content="2026-03-29">
     <meta name="twitter:card" content="summary_large_image">
 </head>
-<body>
+<body class="layout-note">
 <nav class="site-nav">
   <div class="site-nav-inner">
     <div class="site-nav-left">
@@ -38,30 +38,16 @@
     <div class="container">
         <header>
             <h1>NYT Crosswords</h1>
-            <p class="meta">An ad-free browser player for New York Times crosswords from 1976 to 2017.</p>
-            <p class="links-row">
-                <a href="https://seanre.id/nyt-crosswords/">Live Demo</a>
-                <a href="https://github.com/sean-reid/nyt-crosswords">Source</a>
-            </p>
         </header>
 
         <article>
             <figure>
                 <img decoding="async" fetchpriority="high" src="img/nyt-crosswords.webp" alt="Screenshot of NYT Crosswords" width="2560" height="1600">
-                <figcaption>The puzzle from January 1, 1976. Date picker at the top, grid on the left, across clues on the right.</figcaption>
             </figure>
 
-            <p>The <a href="https://en.wikipedia.org/wiki/The_New_York_Times_crossword_puzzle">New York Times crossword</a> is behind a paywall, and the official app is full of ads even when you pay. I like doing old crosswords, the ones from the 70s and 80s where the clues reference things that no longer exist. Someone had already <a href="https://github.com/doshea/nyt_crosswords">scraped the puzzles</a> from January 1976 through December 2017 into JSON, so I built a page that plays them with no ads and no account.</p>
-
-            <h2>The data</h2>
-
-            <p>The scraped JSON wasn't in the shape <a href="https://www.npmjs.com/package/@jaredreisinger/react-crossword">react-crossword</a> wants, so I wrote a Python script to convert every puzzle once. The output lives in a <a href="https://github.com/sean-reid/nyt-crosswords-data">second repository</a> as one file per date, and the player fetches the file for whichever date you pick straight from GitHub. There's no server. The source is missing August 10 to November 5, 1978, and August 30, 2015 to May 1, 2016, so the player is too.</p>
-
-            <h2>The player</h2>
-
-            <p>A date picker at the top takes any date from January 1, 1976 to December 1, 2017, and the 1976 puzzle is baked in so there's something on screen while the first fetch happens. When you finish a word correctly the clue turns green and gets crossed out. The only buttons are Focus, Fill all answers, and Reset. There's no timer or scoring because I wanted it to feel like a crossword on paper.</p>
-
-            <p>I considered building the grid from scratch instead of using react-crossword, which already handles keyboard navigation and answer checking. Writing all of that from zero would have taken weeks and the result would have been worse.</p>
+            <p>The New York Times crossword is behind a paywall, and the official app is full of ads even when you pay.</p>
+            <p>I like doing old crosswords, the ones from the 70s and 80s where the clues reference things that no longer exist.</p>
+            <p class="quiet-links"><a href="https://seanre.id/nyt-crosswords/">Try it</a> <a href="https://github.com/sean-reid/nyt-crosswords">Source</a></p>
         </article>
 
     </div>
