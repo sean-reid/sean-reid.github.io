@@ -84,7 +84,6 @@ function extract(post, html) {
   const h1 = html.match(/<h1>([\s\S]*?)<\/h1>/);
   const meta = html.match(/<p class="meta">([\s\S]*?)<\/p>/);
   const links = html.match(/<p class="links-row">([\s\S]*?)<\/p>/);
-  const hero = html.match(/<article[^>]*>[\s\S]*?<img[^>]*>/);
   const article = html.match(/<article[^>]*>([\s\S]*?)<\/article>/);
   if (!h1) fail(`${slug}: no <h1>`);
   if (!article) fail(`${slug}: no <article>`);
@@ -93,7 +92,7 @@ function extract(post, html) {
   const anchors = links ? [...links[1].matchAll(/<a href="([^"]+)">([^<]+)<\/a>/g)] : [];
   if (links && !anchors.some((a) => /demo|download|play|site/i.test(a[2]))) fail(`${slug}: links-row has no demo link`);
   if (links && !anchors.some((a) => /source/i.test(a[2]))) fail(`${slug}: links-row has no source link`);
-  const heroTag = hero ? hero[0].match(/<img[^>]*>/)[0] : '';
+  const heroTag = article ? (article[1].match(/<img[^>]*>/) || [''])[0] : '';
   return {
     title: h1 ? text(h1[1]) : slug,
     meta: description,

@@ -51,6 +51,16 @@ try {
   assert.strictEqual(r.status, 0, r.stderr);
   assert.match(fs.readFileSync(postFile, 'utf8'), /<meta name="description" content="A screensaver that writes haiku\.">/);
 
+  setPost(original, description);
+  r = build();
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.doesNotMatch(fs.readFileSync(postFile, 'utf8'), /<meta name="description" content="A screensaver that writes haiku\.">/);
+
+  setPost(original.replace(/(<p class="links-row">[\s\S]*?)<a href="[^"]*">Source<\/a>/, '$1'));
+  r = build();
+  assert.strictEqual(r.status, 1, 'a links-row without a source link must fail');
+  assert.match(r.stderr, /haiku: links-row has no source link/);
+
   setPost(bare, description);
   r = build();
   assert.strictEqual(r.status, 0, r.stderr);
@@ -66,7 +76,7 @@ try {
   assert.doesNotMatch(out, /og:image/);
   assert.match(out, /twitter:card" content="summary"/);
 
-  setPost(noImage, { ...description, image: 'img/haiku.webp' });
+  setPost(noImage.replace('</article>', '</article><img src="img/tron.webp" alt="">'), { ...description, image: 'img/haiku.webp' });
   r = build();
   assert.strictEqual(r.status, 0, r.stderr);
   out = fs.readFileSync(postFile, 'utf8');
