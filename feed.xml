@@ -4,8 +4,15 @@
   <link href="https://seanre.id/"/>
   <link href="https://seanre.id/feed.xml" rel="self"/>
   <id>https://seanre.id/</id>
-  <updated>2026-11-05T00:00:00Z</updated>
+  <updated>2026-11-27T00:00:00Z</updated>
   <author><name>Sean Reid</name></author>
+  <entry>
+    <title>ooooh</title>
+    <link href="https://seanre.id/blog/ooooh.html"/>
+    <id>https://seanre.id/blog/ooooh.html</id>
+    <updated>2026-11-27T00:00:00Z</updated>
+    <summary>An iPhone app for thinking out loud with a patient listener.</summary>
+  </entry>
   <entry>
     <title>Sprouts</title>
     <link href="https://seanre.id/blog/sprouts.html"/>
