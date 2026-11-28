@@ -147,6 +147,156 @@ article figcaption a {
     padding: 0.25rem 0;
 }
 
+.layout-note header {
+    margin-bottom: 1rem;
+}
+
+.layout-note header h1 {
+    font-size: 1.35rem;
+}
+
+.layout-note article {
+    margin-bottom: 2rem;
+}
+
+.layout-note article figure {
+    margin: 0 0 1.25rem;
+}
+
+.layout-note article figure img,
+.layout-note article figure video {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: auto;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+}
+
+.layout-note article figcaption {
+    display: none;
+}
+
+.layout-note article p {
+    margin-bottom: 0.9rem;
+}
+
+.layout-notebook {
+    line-height: 1.45;
+}
+
+.layout-notebook header {
+    margin-bottom: 1.25rem;
+}
+
+.layout-notebook header h1 {
+    font-size: 1.5rem;
+}
+
+.layout-notebook article ul {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 1rem;
+}
+
+.layout-notebook article li {
+    display: flex;
+    gap: 0.9rem;
+    margin: 0;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--border-soft);
+    font-size: 0.95rem;
+}
+
+.layout-notebook article li:last-child {
+    border-bottom: 0;
+}
+
+.layout-notebook article li a {
+    display: inline-block;
+    padding: 0.55rem 0;
+    margin: -0.55rem 0;
+}
+
+.layout-notebook .tag {
+    flex: 0 0 5.5rem;
+    color: var(--text-3);
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.layout-notebook article p {
+    margin-bottom: 0.6rem;
+    font-size: 0.95rem;
+}
+
+.layout-notebook article figure {
+    margin: 0 0 1rem;
+}
+
+.layout-notebook article figure img {
+    width: 100%;
+    max-width: 220px;
+    aspect-ratio: auto;
+    display: block;
+    margin: 0;
+}
+
+@media (max-width: 480px) {
+    .layout-notebook article li {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .layout-notebook .tag {
+        flex: none;
+    }
+}
+
+.layout-visual header {
+    margin-bottom: 1.25rem;
+}
+
+.layout-visual article figure {
+    margin: 0 0 1rem;
+}
+
+.layout-visual article figure img,
+.layout-visual article figure video,
+.layout-visual article figure svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: auto;
+}
+
+.layout-visual article figcaption {
+    font-size: 0.85rem;
+}
+
+.layout-visual article p {
+    font-size: 1.05rem;
+    margin-bottom: 0.75rem;
+}
+
+@media (min-width: 900px) {
+    .layout-visual article figure {
+        position: relative;
+        left: 50%;
+        width: min(1000px, calc(100vw - 4rem));
+        transform: translateX(-50%);
+    }
+}
+
+.layout-flagship header {
+    margin-bottom: 2rem;
+}
+
+.layout-flagship .quiet-links {
+    font-size: 0.9rem;
+    color: var(--text-3);
+}
+
 @media (prefers-reduced-motion: reduce) {
     * {
         transition: none !important;
