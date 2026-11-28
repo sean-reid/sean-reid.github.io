@@ -8,19 +8,19 @@
     <link rel="preload" as="image" href="img/crossword-generator.webp">
     <link rel="stylesheet" href="/nav.css">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <meta name="description" content="Crossword grids as a SAT problem, plus a CLI that turns them into print-ready puzzle books">
+    <meta name="description" content="Crossword grids as a SAT problem, plus a CLI that turns them into print-ready puzzle books.">
     <link rel="canonical" href="https://seanre.id/blog/crossword-generator.html">
     <link rel="alternate" type="application/atom+xml" title="Sean Reid" href="/feed.xml">
     <meta property="og:type" content="article">
     <meta property="og:site_name" content="Sean Reid">
     <meta property="og:title" content="Crossword Generator">
-    <meta property="og:description" content="Crossword grids as a SAT problem, plus a CLI that turns them into print-ready puzzle books">
+    <meta property="og:description" content="Crossword grids as a SAT problem, plus a CLI that turns them into print-ready puzzle books.">
     <meta property="og:url" content="https://seanre.id/blog/crossword-generator.html">
     <meta property="og:image" content="https://seanre.id/blog/img/crossword-generator.webp">
     <meta property="article:published_time" content="2026-03-29">
     <meta name="twitter:card" content="summary_large_image">
 </head>
-<body>
+<body class="layout-note">
 <nav class="site-nav">
   <div class="site-nav-inner">
     <div class="site-nav-left">
@@ -38,44 +38,15 @@
     <div class="container">
         <header>
             <h1>Crossword Generator</h1>
-            <p class="meta">Crossword grids as a SAT problem, plus a CLI that turns them into print-ready puzzle books</p>
-            <p class="links-row">
-                <a href="https://seanre.id/crossword-generator/">Live Demo</a>
-                <a href="https://github.com/sean-reid/crossword-generator">Source</a>
-            </p>
         </header>
 
         <article>
             <figure>
                 <img decoding="async" fetchpriority="high" src="img/crossword-generator.webp" alt="A generated 8x8 crossword puzzle with clues" width="2560" height="1600">
-                <figcaption>An 8x8 grid from the browser demo, with its across and down clues.</figcaption>
             </figure>
 
-            <p>I noticed crossword puzzle books selling well on <a href="https://kdp.amazon.com/">Amazon KDP</a> and wanted to see if I could automate the whole thing from one command, grids and clues through page layout, cover, and a print-ready PDF. The main output is a CLI that writes a <a href="https://www.latex-project.org/">LaTeX</a> book, and I've generated a few 100-puzzle books with it at 10x10 and 16x16. The browser demo came later and runs the same Rust crate compiled to <a href="https://webassembly.org/">WebAssembly</a>.</p>
-
-            <h2>Why a SAT solver</h2>
-
-            <p>The open-source generators I looked at use <a href="https://en.wikipedia.org/wiki/Backtracking">backtracking</a>: place a word, place another, undo when nothing fits. On small grids that works. On bigger ones the grids I got out had dead zones where nothing interlocked and filler words jammed into whatever gaps were left. Filling a grid from a dictionary is <a href="https://en.wikipedia.org/wiki/NP-completeness">NP-complete</a> (it is problem GP14 in Garey and Johnson), so I didn't expect a clever search of my own to fix that. Writing down every rule a finished grid has to obey and handing the lot to <a href="https://github.com/jix/varisat">Varisat</a> seemed like the better bet.</p>
-
-            <h2>The encoding</h2>
-
-            <p>The <a href="https://github.com/sean-reid/crossword-generator/blob/main/wasm/src/encoder.rs">encoder</a> is placement-based. There is one Boolean variable for each word, position, and orientation where the word fits, and one for each cell and letter. A placement variable being true forces its letters into the grid cells and forces the cell before and after the word to be empty. Each cell has pairwise at-most-one clauses over its letters, so two crossing words agree wherever they share a cell just by both writing into the same variable. Every word gets at most one placement.</p>
-
-            <p>Those rules alone would let letters appear from nowhere, so every cell-letter variable also implies that at least one placement covers it with that letter. And any two adjacent letters, with an empty cell or the grid edge before them, must be the start of some placement. That is what makes every run of two or more letters a real word rather than a coincidence.</p>
-
-            <p>Connectivity was the awkward one. I want one connected grid rather than islands. The encoder picks the first filled cell in reading order as a root, then unrolls a breadth-first search into variables meaning "this cell reaches the root within \(i\) steps", each implied by the cell being filled and a neighbor reaching the root in \(i-1\). Every filled cell must reach the root. I cap the unrolling at 20 steps because the full bound made the formula too big, so a long snaking grid that needs more than 20 steps gets rejected even though it's legal.</p>
-
-            <p>Density is a cardinality constraint, at least half the cells filled, through a hand-rolled sequential counter whose auxiliary variables mean "at least \(j\) of the first \(i\) cells are filled". The same counter forces at least three across and three down words. Neither the CLI's <code>--density</code> nor its <code>--seed</code> flag reaches the encoder, so the 50 percent minimum is fixed and puzzles aren't reproducible.</p>
-
-            <p>The word pool per puzzle is small, about 100 words at 16x16, drawn 60 percent short (3 to 5 letters), 30 percent medium, and 10 percent long. One run I measured came to 333,000 variables and 28 seconds. When a pool can't fill the grid, Varisat proves it and the CLI skips that puzzle with a warning instead of searching forever.</p>
-
-            <h2>Words</h2>
-
-            <p>An unfiltered dictionary gave me medical abbreviations, archaisms nobody would recognize, and occasionally offensive entries. The shipped allowlist is 47,327 words cut down from the <a href="https://github.com/wordset/wordset-dictionary">WordSet</a> dictionary. A word only qualifies if it's 3 to 15 letters, all ASCII, and has a definition between 10 and 200 characters that doesn't contain the word itself, because that definition becomes the clue. The CLI takes a custom allowlist for themed books.</p>
-
-            <h2>The book</h2>
-
-            <p>Each puzzle takes a two-page spread, grid on the left and clues on the right, with a wider inner margin for the binding. Before the puzzles there is a title page, a copyright page with ISBN and edition fields, an optional introduction, and a table of contents. Trim sizes are 5x8, 5.5x8.5, 6x9, 7x10, and 8x10 inches. The cover is an SVG template sized to the trim, with the spine width computed from the page count at <a href="https://kdp.amazon.com/en_US/help/topic/G201834180">KDP's published</a> 0.002252 inches per page for black and white and 0.002347 for color. Puzzles are generated in parallel with <a href="https://docs.rs/rayon/latest/rayon/">rayon</a>, one per core.</p>
+            <p>I noticed crossword puzzle books selling well on Amazon KDP and wanted to see if I could automate the whole thing from one command, grids and clues through page layout, cover, and a print-ready PDF.</p>
+            <p class="quiet-links"><a href="https://seanre.id/crossword-generator/">Try it</a> <a href="https://github.com/sean-reid/crossword-generator">Source</a></p>
         </article>
 
     </div>
