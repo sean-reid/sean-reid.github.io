@@ -292,12 +292,12 @@ article figcaption a {
     margin-bottom: 2rem;
 }
 
-.layout-flagship .quiet-links {
+.quiet-links {
     font-size: 0.9rem;
     color: var(--text-3);
 }
 
-.layout-flagship .quiet-links a + a {
+.quiet-links a + a {
     margin-left: 1.25rem;
 }
 
