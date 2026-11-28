@@ -20,7 +20,7 @@
     <meta property="article:published_time" content="2026-03-29">
     <meta name="twitter:card" content="summary_large_image">
 </head>
-<body>
+<body class="layout-note">
 <nav class="site-nav">
   <div class="site-nav-inner">
     <div class="site-nav-left">
@@ -38,37 +38,15 @@
     <div class="container">
         <header>
             <h1>Tongue Simulator</h1>
-            <p class="meta">Type a sentence and watch a simulated tongue, jaw, and velum move through it while the browser speaks.</p>
-            <p class="links-row">
-                <a href="https://tongue-simulator.dwainosaur.com/">Live Demo</a>
-                <a href="https://github.com/sean-reid/tongue-simulator">Source</a>
-            </p>
         </header>
 
         <article>
             <figure>
                 <img decoding="async" fetchpriority="high" src="img/tongue-simulator.webp" alt="Screenshot of Tongue Simulator" width="2560" height="1600">
-                <figcaption>The vocal tract mid-sentence, with the tongue in red. The slider under the text box sets playback speed.</figcaption>
             </figure>
 
-            <p>Type some text, press Speak, and the browser reads it aloud while drawing a <a href="https://en.wikipedia.org/wiki/Midsagittal_plane">midsagittal</a> cross-section of the vocal tract, with the tongue, jaw, velum, and lips moving through the articulation for each sound in time with the audio.</p>
-
-            <figure class="small">
-                <img decoding="async" src="img/cc/sagittal-mouth.webp" alt="Lateral cross-section of the human vocal tract" loading="lazy" width="800" height="1148">
-                <figcaption>The vocal tract in cross-section. This is the view the simulator draws. <a href="https://commons.wikimedia.org/wiki/File:Sagittalmouth.png">Wikimedia Commons</a></figcaption>
-            </figure>
-
-            <h2>From text to targets</h2>
-
-            <p>Text becomes <a href="https://en.wikipedia.org/wiki/ARPABET">ARPAbet</a> phonemes through a 427-word dictionary pulled from CMUdict, with a rule-based fallback for anything else that handles digraphs, silent letters, and the magic-e pattern. Each phoneme has an articulatory target of 18 parameters, nine of them muscle activations (genioglossus, styloglossus, hyoglossus, and so on) and the rest things like jaw angle, lip rounding, and velum angle. A gestural score in the sense of Browman and Goldstein's articulatory phonology turns the phoneme timeline into a continuous trajectory, blending each phoneme's target with its neighbors so the tongue is already moving toward the next sound before the current one ends.</p>
-
-            <h2>The tongue as a soft body</h2>
-
-            <p>The tongue mesh is two chains of 15 nodes, a dorsal surface and a ventral one, with the root pinned. Distance constraints run along and between the chains, and each quad between neighboring node pairs carries an area constraint meant to keep the tongue's volume constant as it deforms, since the tongue is a muscular hydrostat with no skeleton. The solver is <a href="https://matthias-research.github.io/pages/publications/posBasedDyn.pdf">position-based dynamics</a> after M&uuml;ller et al. (2007). It predicts positions from velocities and muscle forces, projects the constraints ten times, and derives velocities from the corrected positions, at 240 Hz. The jaw, velum, hyoid, and lips are rigid bodies driven by PD controllers toward their targets, and a collision pass pushes the tongue off the palate. The area constraint has a sign error on two of the four corners, so volume isn't actually preserved. The distance constraints and the palate collision hold the shape anyway.</p>
-
-            <h2>Precomputed playback</h2>
-
-            <p>I precompute the simulation rather than run it live. Pressing Speak runs the whole PBD simulation for the utterance plus half a second of return to rest, after 50 warm-up steps at the rest pose, and stores a snapshot per 240 Hz frame. Playback interpolates between snapshots, so the physics can cost whatever it costs without dropping frames. The <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API">Web Speech API</a> gives no timeline, only word boundary events, so each boundary becomes an anchor pairing wall-clock time with simulation time, and between boundaries the playhead advances at the stretch ratio measured on the previous word. Before the first boundary I assume speech runs 1.6 times slower than the simulation's phoneme durations.</p>
+            <p>Type some text, press Speak, and the browser reads it aloud while drawing a cross-section of the vocal tract, with the tongue, jaw, velum, and lips moving through the articulation for each sound in time with the audio.</p>
+            <p class="quiet-links"><a href="https://tongue-simulator.dwainosaur.com/">Play</a> <a href="https://github.com/sean-reid/tongue-simulator">Source</a></p>
         </article>
 
     </div>
