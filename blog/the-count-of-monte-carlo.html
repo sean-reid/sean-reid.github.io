@@ -20,7 +20,7 @@
     <meta property="article:published_time" content="2026-03-29">
     <meta name="twitter:card" content="summary_large_image">
 </head>
-<body>
+<body class="layout-note">
 <nav class="site-nav">
   <div class="site-nav-inner">
     <div class="site-nav-left">
@@ -38,24 +38,15 @@
     <div class="container">
         <header>
             <h1>The Count of Monte Carlo</h1>
-            <p class="meta">Random characters settle into the text of Dumas one letter at a time.</p>
-            <p class="links-row">
-                <a href="https://the-count-of-monte-carlo.dwainosaur.com/">Live Demo</a>
-                <a href="https://github.com/sean-reid/the-count-of-monte-carlo">Source</a>
-            </p>
         </header>
 
         <article>
             <figure>
                 <img decoding="async" fetchpriority="high" src="img/the-count-of-monte-carlo.webp" alt="Screenshot of The Count of Monte Carlo" width="2560" height="1600">
-                <figcaption>The first of 5,805 passages, complete after 440 frames.</figcaption>
             </figure>
 
-            <p>The page loads <a href="https://en.wikipedia.org/wiki/The_Count_of_Monte_Cristo"><em>The Count of Monte Cristo</em></a> from a bundled copy of the <a href="https://www.gutenberg.org/ebooks/1184">Project Gutenberg</a> text, starting at "On the 24th of February", and cuts it into passages of about 100 words, breaking at a full stop where it can. Each passage starts as noise. Every letter, digit, and punctuation mark is replaced with a random character from a pool of 91. Spaces and line breaks stay where they are, so the paragraph keeps its shape while the words are gibberish.</p>
-
-            <p>Then, on every animation frame, each wrong character gets a 3% chance to snap to its correct value. With \(n\) wrong characters left, the expected number still wrong after \(t\) more frames is \(n(0.97)^t\). From 100 wrong characters to 1 takes about \(\ln(0.01)/\ln(0.97) \approx 151\) frames, two and a half seconds at 60 fps. The last character on its own waits 33 frames on average, and the very end of every passage is a finished paragraph with one letter still flickering. That tail is the maximum of many independent waits, and it's the part I find most watchable.</p>
-
-            <p>In practice the loop scans the passage in reading order and stops after five changes per frame, and the first couple of those are usually spent re-randomizing a wrong character so the noise keeps moving. So a fresh passage resolves from the front in a wave, which looks fine, and the pure 3% behavior only takes over once about a hundred characters remain. Words surface before their sentences do, a character's name first and then the line around it.</p>
+            <p>Each passage starts as noise. Then, on every animation frame, each wrong character gets a 3% chance to snap to its correct value.</p>
+            <p class="quiet-links"><a href="https://the-count-of-monte-carlo.dwainosaur.com/">Play</a> <a href="https://github.com/sean-reid/the-count-of-monte-carlo">Source</a></p>
         </article>
 
     </div>
