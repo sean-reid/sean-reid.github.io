@@ -297,6 +297,10 @@ article figcaption a {
     color: var(--text-3);
 }
 
+.layout-flagship .quiet-links a + a {
+    margin-left: 1.25rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
     * {
         transition: none !important;
